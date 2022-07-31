@@ -36,7 +36,7 @@ class StockTest
 
 	private function getStockLevel(Part $part)
 	{
-		$qb = $this->getContainer()->get('doctrine')->getManager()->createQueryBuilder();
+		$qb = $this->getContainer()->get('doctrine.orm.entity_manager')->createQueryBuilder();
 		return $qb->select('p.stockLevel')
 			->from(Part::class, 'p')
 			->where($qb->expr()->eq('p.id', ':id'))
@@ -64,9 +64,9 @@ class StockTest
 		$result = Json::decode($client->getResponse()->getContent());
 		$newStockLevel = $this->getStockLevel($part);
 
-		$this->assertEquals($oldStockLevel + 5, $newStockLevel);
-		$this->assertObjectHasAttribute('stockLevel', $result);
-		$this->assertEquals($newStockLevel, $result->stockLevel);
+		self::assertEquals($oldStockLevel + 5, $newStockLevel);
+		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 
 	public function testRemoveStock(): void
@@ -89,9 +89,9 @@ class StockTest
 		$result = Json::decode($client->getResponse()->getContent());
 		$newStockLevel = $this->getStockLevel($part);
 
-		$this->assertEquals($oldStockLevel - 7, $newStockLevel);
-		$this->assertObjectHasAttribute('stockLevel', $result);
-		$this->assertEquals($newStockLevel, $result->stockLevel);
+		self::assertEquals($oldStockLevel - 7, $newStockLevel);
+		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 
 	public function testSetStock(): void
@@ -113,8 +113,8 @@ class StockTest
 		$result = Json::decode($client->getResponse()->getContent());
 		$newStockLevel = $this->getStockLevel($part);
 
-		$this->assertEquals(33, $newStockLevel);
-		$this->assertObjectHasAttribute('stockLevel', $result);
-		$this->assertEquals($newStockLevel, $result->stockLevel);
+		self::assertEquals(33, $newStockLevel);
+		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 }

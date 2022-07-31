@@ -17,7 +17,7 @@ class PartDistributor
 	private ?Part $part;
 	#[ORM\ManyToOne(targetEntity: Distributor::class)]
 	#[Groups(['default'])]
-	private Distributor $distributor;
+	private ?Distributor $distributor;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $orderNumber;

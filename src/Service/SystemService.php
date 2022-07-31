@@ -50,11 +50,8 @@ class SystemService
 		$aData[] = new SystemInformationRecord('allow_url_fopen', ini_get('allow_url_fopen'), 'PHP');
 		$aData[] = new SystemInformationRecord('max_execution_time', ini_get('max_execution_time'), 'PHP');
 
-		$queryCache = get_class($this->entityManager->getConfiguration()->getQueryCacheImpl());
-		$metadataCache = get_class($this->entityManager->getConfiguration()->getMetadataCacheImpl());
-
-		$aData[] = new SystemInformationRecord('Query Cache Implementation', $queryCache, 'PHP');
-		$aData[] = new SystemInformationRecord('Metadata Cache Implementation', $metadataCache, 'PHP');
+		$aData[] = new SystemInformationRecord('Query Cache Implementation', get_class($this->entityManager->getConfiguration()->getQueryCache()), 'PHP');
+		$aData[] = new SystemInformationRecord('Metadata Cache Implementation', get_class($this->entityManager->getConfiguration()->getMetadataCache()), 'PHP');
 
 		$aData[] = new SystemInformationRecord(
 			'Disk Space (Total)',

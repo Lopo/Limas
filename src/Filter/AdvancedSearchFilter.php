@@ -26,9 +26,9 @@ class AdvancedSearchFilter
 		private readonly FilterService             $filterService,
 		private readonly IriConverterInterface     $iriConverter,
 		private readonly PropertyAccessorInterface $propertyAccessor,
-		private readonly ?RequestStack             $requestStack = null,
+		private readonly ?RequestStack             $requestStack = null/*,
 
-		array                                      $properties = null
+		array                                      $properties = null*/
 	)
 	{
 	}

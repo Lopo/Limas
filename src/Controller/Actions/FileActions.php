@@ -42,10 +42,9 @@ class FileActions
 
 	public function getFileAction(Request $request, int $id): Response
 	{
-		/** @var UploadedFile $file */
 		$file = $this->entityManager->find($this->getEntityClass($request), $id);
 		try {
-			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFullFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimeType()]);
+			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFullFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
 		} catch (FileNotFound $e) {
 			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFullFilename(), $file->getType()));
 			return new Response('404 File not found', Response::HTTP_NOT_FOUND);

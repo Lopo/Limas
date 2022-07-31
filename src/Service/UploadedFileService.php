@@ -38,7 +38,7 @@ class UploadedFileService
 	{
 		$file->setOriginalFilename($filesystemFile->getBasename());
 		$file->setExtension($filesystemFile->getExtension());
-		$file->setMimeType($filesystemFile->getMimeType());
+		$file->setMimetype($filesystemFile->getMimeType());
 		$file->setSize($filesystemFile->getSize());
 
 		$storage = $this->getStorage($file);
@@ -52,8 +52,7 @@ class UploadedFileService
 
 	public function replaceFromData(UploadedFile $file, $data, $filename): void
 	{
-		$tmpdir = ini_get('upload_tmp_dir') ?: sys_get_temp_dir();
-		$tempName = tempnam($tmpdir, 'LIMAS');
+		$tempName = tempnam(ini_get('upload_tmp_dir') ?? sys_get_temp_dir(), 'LIMAS');
 
 		file_put_contents($tempName, $data);
 

@@ -63,11 +63,11 @@ class DistributorAndManufacturerSearchTest
 			['filter' => Json::encode($filters)]
 		);
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
 
 		$data = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(1, $data->{'hydra:totalItems'});
+		self::assertEquals(1, $data->{'hydra:totalItems'});
 	}
 
 	public function testDistributorFilter(): void
@@ -93,10 +93,10 @@ class DistributorAndManufacturerSearchTest
 
 		$client->request('GET', $iri, ['filter' => Json::encode($filters)]);
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
 
 		$data = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(1, $data->{'hydra:totalItems'});
+		self::assertEquals(1, $data->{'hydra:totalItems'});
 	}
 }

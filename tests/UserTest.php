@@ -48,10 +48,10 @@ class UserTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(201, $client->getResponse()->getStatusCode());
-		$this->assertEquals('foobartest', $response->{'username'});
-//		$this->assertEmpty($response->{'password'});
-		$this->assertObjectNotHasAttribute('newPassword', $response);
+		self::assertEquals(201, $client->getResponse()->getStatusCode());
+		self::assertEquals('foobartest', $response->{'username'});
+//		self::assertEmpty($response->{'password'});
+		self::assertObjectNotHasAttribute('newPassword', $response);
 	}
 
 	public function testChangeUserPassword(): void
@@ -78,9 +78,9 @@ class UserTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
-//		$this->assertEmpty($response->{'password'});
-		$this->assertObjectNotHasAttribute('newPassword', $response);
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
+//		self::assertEmpty($response->{'password'});
+		self::assertObjectNotHasAttribute('newPassword', $response);
 	}
 
 	public function testSelfChangeUserPassword(): void
@@ -105,9 +105,9 @@ class UserTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
-		$this->assertObjectNotHasAttribute('password', $response);
-//		$this->assertEmpty($response->{'newPassword'});
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertObjectNotHasAttribute('password', $response);
+//		self::assertEmpty($response->{'newPassword'});
 
 		$client = static::makeClientWithCredentials('bernd2', 'foobar');
 
@@ -115,9 +115,9 @@ class UserTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals(500, $client->getResponse()->getStatusCode());
-		$this->assertObjectHasAttribute('@type', $response);
-		$this->assertEquals('hydra:Error', $response->{'@type'});
+		self::assertEquals(500, $client->getResponse()->getStatusCode());
+		self::assertObjectHasAttribute('@type', $response);
+		self::assertEquals('hydra:Error', $response->{'@type'});
 	}
 
 	public function testUserProtect(): void
@@ -128,7 +128,7 @@ class UserTest
 
 		$userService->protect($user);
 
-		$this->assertTrue($user->isProtected());
+		self::assertTrue($user->isProtected());
 
 		$client = static::makeAuthenticatedClient();
 
@@ -148,16 +148,16 @@ class UserTest
 		$response = Json::decode($client->getResponse()->getContent());
 
 		$exception = new UserProtectedException;
-		$this->assertEquals(500, $client->getResponse()->getStatusCode());
-		$this->assertObjectHasAttribute('hydra:description', $response);
-		$this->assertEquals($exception->getMessageKey(), $response->{'hydra:description'});
+		self::assertEquals(500, $client->getResponse()->getStatusCode());
+		self::assertObjectHasAttribute('hydra:description', $response);
+		self::assertEquals($exception->getMessageKey(), $response->{'hydra:description'});
 
 		$client->request('DELETE', $iri);
 
 		$response = Json::decode($client->getResponse()->getContent());
-		$this->assertEquals(500, $client->getResponse()->getStatusCode());
-		$this->assertObjectHasAttribute('hydra:description', $response);
-		$this->assertEquals($exception->getMessageKey(), $response->{'hydra:description'});
+		self::assertEquals(500, $client->getResponse()->getStatusCode());
+		self::assertObjectHasAttribute('hydra:description', $response);
+		self::assertEquals($exception->getMessageKey(), $response->{'hydra:description'});
 	}
 
 	public function testUserUnprotect(): void
@@ -168,7 +168,7 @@ class UserTest
 
 		$userService->unprotect($user);
 
-		$this->assertFalse($user->isProtected());
+		self::assertFalse($user->isProtected());
 	}
 
 	/**
@@ -202,7 +202,7 @@ class UserTest
 
 		$client->request('DELETE', $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($user));
 
-		$this->assertEquals(204, $client->getResponse()->getStatusCode());
-		$this->assertEmpty($client->getResponse()->getContent());
+		self::assertEquals(204, $client->getResponse()->getStatusCode());
+		self::assertEmpty($client->getResponse()->getContent());
 	}
 }

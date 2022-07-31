@@ -42,8 +42,8 @@ abstract class AbstractMoveCategoryTest
 			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
 		);
 
-		$this->assertEquals($rootCategory->getId(), $secondCategory->getParent()->getId());
-		$this->assertEquals('Root Node ➤ Second Category', $secondCategory->getCategoryPath());
+		self::assertEquals($rootCategory->getId(), $secondCategory->getParent()->getId());
+		self::assertEquals('Root Node ➤ Second Category', $secondCategory->getCategoryPath());
 	}
 
 	abstract public function getFixtureLoaderClass();

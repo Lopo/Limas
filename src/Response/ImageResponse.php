@@ -13,10 +13,10 @@ class ImageResponse
 {
 	public function __construct(int $maxWidth, int $maxHeight, int $code, string $message)
 	{
-		if (!$maxWidth) {
+		if (0 === $maxWidth) {
 			$maxWidth = 300;
 		}
-		if (!$maxHeight) {
+		if (0 === $maxHeight) {
 			$maxHeight = 300;
 		}
 

@@ -22,6 +22,7 @@ class StatisticSnapshot
 	private int $parts;
 	#[ORM\Column(type: Types::INTEGER)]
 	private int $categories;
+	/** @var Collection<StatisticSnapshotUnit> */
 	#[ORM\OneToMany(mappedBy: 'statisticSnapshot', targetEntity: StatisticSnapshotUnit::class, cascade: ['persist', 'remove'])]
 	private Collection $units;
 

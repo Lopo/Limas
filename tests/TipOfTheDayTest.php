@@ -38,30 +38,30 @@ class TipOfTheDayTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('name', $response);
-		$this->assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasAttribute('name', $response);
+		self::assertObjectHasAttribute('@type', $response);
 
-		$this->assertEquals('TipOfTheDay', $response->{'@type'});
-		$this->assertEquals('FOO', $response->name);
+		self::assertEquals('TipOfTheDay', $response->{'@type'});
+		self::assertEquals('FOO', $response->name);
 
 		$client->request('GET', '/api/tip_of_the_day_histories');
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('@type', $response);
-		$this->assertObjectHasAttribute('hydra:member', $response);
+		self::assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasAttribute('hydra:member', $response);
 
-		$this->assertEquals('hydra:Collection', $response->{'@type'});
+		self::assertEquals('hydra:Collection', $response->{'@type'});
 
-		$this->assertArrayHasKey(0, $response->{'hydra:member'});
-		$this->assertEquals('FOO', $response->{'hydra:member'}[0]->name);
+		self::assertArrayHasKey(0, $response->{'hydra:member'});
+		self::assertEquals('FOO', $response->{'hydra:member'}[0]->name);
 
 		$client->request(
 			'POST',
 			'/api/tip_of_the_days/markAllTipsAsUnread'
 		);
 
-		$this->assertEquals('OK', $client->getResponse()->getContent());
+		self::assertEquals('OK', $client->getResponse()->getContent());
 
 		$client->request(
 			'GET',
@@ -70,11 +70,11 @@ class TipOfTheDayTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('@type', $response);
-		$this->assertObjectHasAttribute('hydra:member', $response);
+		self::assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasAttribute('hydra:member', $response);
 
-		$this->assertEquals('hydra:Collection', $response->{'@type'});
+		self::assertEquals('hydra:Collection', $response->{'@type'});
 
-		$this->assertCount(0, $response->{'hydra:member'});
+		self::assertCount(0, $response->{'hydra:member'});
 	}
 }

@@ -49,6 +49,7 @@ class PartCategory
 	#[ORM\JoinColumn(onDelete: 'CASCADE')]
 	#[Groups(['tree'])]
 	protected mixed $parent = null;
+	/** @var Collection<PartCategory> */
 	#[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
 	#[ORM\OrderBy(['lft' => 'ASC'])]
 	#[Groups(['tree'])]

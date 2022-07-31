@@ -212,7 +212,7 @@ class TemporaryFileDenormalizer
 		$resolvedClass = ($this->getObjectClass(...))($object);
 
 		foreach ($normalizedData as $attribute => $value) {
-			if ($this->nameConverter) {
+			if (null !== $this->nameConverter) {
 				$attribute = $this->nameConverter->denormalize($attribute, $resolvedClass, $format, $context);
 			}
 
@@ -253,7 +253,7 @@ class TemporaryFileDenormalizer
 			try {
 				if ($this->isTemporaryFile($property = $reflectionClass->getProperty($attribute))) {
 					$oneToMany = $property->getAttributes(OneToMany::class);
-					if (count($oneToMany)) {
+					if (0 !== count($oneToMany)) {
 						$collection = new ArrayCollection;
 						foreach ($value as $key => $item) {
 							if (is_array($item) && isset($item['@id'])) {
@@ -270,7 +270,7 @@ class TemporaryFileDenormalizer
 						continue;
 					}
 					$oneToOne = $property->getAttributes(OneToOne::class);
-					if (count($oneToOne)) {
+					if (0 !== count($oneToOne)) {
 						if ($value !== null) {
 							if (is_array($value) && isset($value['@id'])) {
 								$item = $this->iriConverter->getItemFromIri($value['@id']);
@@ -309,7 +309,7 @@ class TemporaryFileDenormalizer
 			}
 		}
 
-		if (count($extraAttributes)) {
+		if (0 !== count($extraAttributes)) {
 			throw new ExtraAttributesException($extraAttributes);
 		}
 
@@ -336,10 +336,10 @@ class TemporaryFileDenormalizer
 
 	private function isTemporaryFile(\ReflectionProperty $property): bool
 	{
-		if (count($property->getAttributes(UploadedFileCollection::class))) {
+		if (0 !== count($property->getAttributes(UploadedFileCollection::class))) {
 			return true;
 		}
-		if (count($property->getAttributes(UploadedFile::class))) {
+		if (0 !== count($property->getAttributes(UploadedFile::class))) {
 			return true;
 		}
 		return false;
@@ -385,7 +385,7 @@ class TemporaryFileDenormalizer
 
 		foreach ($inverseSideReflection->getProperties() as $inverseSideProperty) {
 			$assoc = $inverseSideProperty->getAttributes(ManyToOne::class);
-			if (count($assoc) && $assoc[0]->newInstance()->targetEntity === $owningSideReflection->getName()) {
+			if (0 !== count($assoc) && $assoc[0]->newInstance()->targetEntity === $owningSideReflection->getName()) {
 				return $inverseSideProperty->getName();
 			}
 		}
@@ -434,7 +434,7 @@ class TemporaryFileDenormalizer
 
 	private function getAttributeMetadata(object|string $objectOrClass, string $attribute): ?AttributeMetadataInterface
 	{
-		if (!$this->classMetadataFactory) {
+		if (null === $this->classMetadataFactory) {
 			return null;
 		}
 

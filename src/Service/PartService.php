@@ -39,7 +39,7 @@ class PartService
 			$qb->andWhere($qb->expr()->neq('p.id', ':partId'))
 				->setParameter(':partId', $part->getId());
 		}
-		return !$qb->getQuery()->getSingleScalarResult();
+		return 0 === $qb->getQuery()->getSingleScalarResult();
 	}
 
 	public function checkPartLimit(): bool

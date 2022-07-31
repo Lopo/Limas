@@ -6,8 +6,8 @@ namespace Limas\Exceptions;
 class OnlySingleRootNodeAllowedException
 	extends \Exception
 {
-	public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null)
+	public function __construct(string $message = 'There may be only one root node', int $code = 0, ?\Throwable $previous = null)
 	{
-		parent::__construct('There may be only one root node', $code, $previous);
+		parent::__construct($message, $code, $previous);
 	}
 }

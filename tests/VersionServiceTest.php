@@ -38,12 +38,11 @@ class VersionServiceTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('hydra:member', $response);
-		$hm = $response->{'hydra:member'};
-		$this->assertCount(1, $response->{'hydra:member'});
+		self::assertObjectHasAttribute('hydra:member', $response);
+		self::assertCount(1, $response->{'hydra:member'});
 
 		$versionEntry = $response->{'hydra:member'}[0];
 
-		$this->assertEquals('New Limas Version 0.1.9 available', $versionEntry->title);
+		self::assertEquals('New Limas Version 0.1.9 available', $versionEntry->title);
 	}
 }

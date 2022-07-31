@@ -25,17 +25,17 @@ class SystemPreferenceTest
 	{
 		$this->getContainer()->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar');
 
-		$this->assertEquals('bar', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
+		self::assertEquals('bar', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
 
 		$this->getContainer()->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar2');
 
-		$this->assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
+		self::assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
 
 		$preference = $this->getContainer()->get(SystemPreferenceService::class)->getPreference('foo');
-		$this->assertEquals('foo', $preference->getPreferenceKey());
+		self::assertEquals('foo', $preference->getPreferenceKey());
 
 		$this->expectException(SystemPreferenceNotFoundException::class);
-		$this->assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo2'));
+		self::assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo2'));
 	}
 
 	public function testSystemPreferenceCreate(): void
@@ -56,6 +56,6 @@ class SystemPreferenceTest
 			])
 		);
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
 	}
 }

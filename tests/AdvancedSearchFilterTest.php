@@ -55,11 +55,11 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertCount(1, $data['hydra:member']);
-		$this->assertArrayHasKey('@id', $data['hydra:member'][0]);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertCount(1, $data['hydra:member']);
+		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
-		$this->assertEquals(
+		self::assertEquals(
 			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference('part.1')),
 			$data['hydra:member'][0]['@id']
 		);
@@ -85,11 +85,11 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertCount(1, $data['hydra:member']);
-		$this->assertArrayHasKey('@id', $data['hydra:member'][0]);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertCount(1, $data['hydra:member']);
+		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
-		$this->assertEquals(
+		self::assertEquals(
 			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference("part.1")),
 			$data['hydra:member'][0]['@id']
 		);
@@ -115,8 +115,8 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertCount(1, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertCount(1, $data['hydra:member']);
 	}
 
 	public function testIDReferenceArray(): void
@@ -144,8 +144,8 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertGreaterThan(1, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertGreaterThan(1, $data['hydra:member']);
 	}
 
 	public function testLikeFilter(): void
@@ -168,8 +168,8 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertGreaterThanOrEqual(2, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertGreaterThanOrEqual(2, $data['hydra:member']);
 	}
 
 	public function testSorter(): void
@@ -191,8 +191,8 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertGreaterThanOrEqual(2, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertGreaterThanOrEqual(2, $data['hydra:member']);
 	}
 
 	public function testOrFilterJoin(): void
@@ -225,8 +225,8 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertGreaterThanOrEqual(2, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertGreaterThanOrEqual(2, $data['hydra:member']);
 	}
 
 	public function testOrFilter(): void
@@ -259,7 +259,7 @@ class AdvancedSearchFilterTest
 
 		$data = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-		$this->assertArrayHasKey('hydra:member', $data);
-		$this->assertCount(2, $data['hydra:member']);
+		self::assertArrayHasKey('hydra:member', $data);
+		self::assertCount(2, $data['hydra:member']);
 	}
 }

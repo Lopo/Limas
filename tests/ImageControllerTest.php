@@ -48,12 +48,12 @@ class ImageControllerTest
 			$uri
 		);
 
-		$this->assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
+		self::assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
 
 		$imageSize = getimagesizefromstring($client->getResponse()->getContent());
 
-		$this->assertEquals(51, $imageSize[0]);
-		$this->assertEquals(23, $imageSize[1]);
+		self::assertEquals(51, $imageSize[0]);
+		self::assertEquals(23, $imageSize[1]);
 
 		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get('api_platform.iri_converter')->getItemFromIri($imageId));
 
@@ -62,6 +62,6 @@ class ImageControllerTest
 			$uri
 		);
 
-		$this->assertEquals(404, $client->getResponse()->getStatusCode());
+		self::assertEquals(404, $client->getResponse()->getStatusCode());
 	}
 }

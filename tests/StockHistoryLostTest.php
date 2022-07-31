@@ -67,7 +67,7 @@ class StockHistoryLostTest
 			Json::encode($responseObj)
 		);
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
-		$this->assertEquals(1, $em->find($part1::class, $part1->getId())->getStockLevels()->count());
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertEquals(1, $em->find($part1::class, $part1->getId())->getStockLevels()->count());
 	}
 }

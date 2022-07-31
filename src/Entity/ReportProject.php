@@ -16,11 +16,11 @@ class ReportProject
 	extends BaseEntity
 {
 	#[ORM\ManyToOne(targetEntity: Report::class, inversedBy: 'reportProjects')]
-	private Report $report;
+	private ?Report $report;
 	#[ORM\ManyToOne(targetEntity: Project::class)]
 	#[Groups(['default'])]
 	#[Assert\NotNull]
-	private Project $project;
+	private ?Project $project;
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $quantity;

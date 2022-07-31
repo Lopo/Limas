@@ -31,9 +31,11 @@ class BatchJob
 	#[ORM\Column(type: Types::STRING, length: 64, unique: true)]
 	#[Groups(['default'])]
 	private string $name;
+	/** @var Collection<BatchJobQueryField> */
 	#[ORM\OneToMany(mappedBy: 'batchJob', targetEntity: BatchJobQueryField::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $batchJobQueryFields;
+	/** @var Collection<BatchJobUpdateField> */
 	#[ORM\OneToMany(mappedBy: 'batchJob', targetEntity: BatchJobUpdateField::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $batchJobUpdateFields;

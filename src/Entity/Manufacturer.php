@@ -39,6 +39,7 @@ class Manufacturer
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $fax;
+	/** @var Collection<ManufacturerICLogo> */
 	#[ORM\OneToMany(mappedBy: 'manufacturer', targetEntity: ManufacturerICLogo::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]

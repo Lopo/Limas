@@ -189,8 +189,7 @@ EOD;
 		try {
 			$redisclient = new PredisClient;
 			$redisclient->connect();
-			$part = $redisclient->get($uid);
-			if ($part) {
+			if (null !== ($part = $redisclient->get($uid))) {
 				return json_decode($part, true, 512, JSON_THROW_ON_ERROR);
 			}
 			$redisclient->disconnect();
@@ -225,7 +224,7 @@ EOD;
 				'variables' => [
 					'q' => $q,
 					'limit' => $this->limit,
-					'start' => ($startpage - 1) * $this->limit // 0-based
+					'start' => ($startpage - 1) * (int)$this->limit // 0-based
 				]
 			])
 		])->getBody();

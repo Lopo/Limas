@@ -66,18 +66,18 @@ class InternalPartNumberTest
 			$content
 		);
 
-		$this->assertEquals(500, $client->getResponse()->getStatusCode());
+		self::assertEquals(500, $client->getResponse()->getStatusCode());
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('@type', $response);
-		$this->assertObjectHasAttribute('@context', $response);
-		$this->assertObjectHasAttribute('hydra:title', $response);
-		$this->assertObjectHasAttribute('hydra:description', $response);
+		self::assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasAttribute('@context', $response);
+		self::assertObjectHasAttribute('hydra:title', $response);
+		self::assertObjectHasAttribute('hydra:description', $response);
 
-		$this->assertEquals('/api/contexts/Error', $response->{'@context'});
-		$this->assertEquals('hydra:Error', $response->{'@type'});
-		$this->assertEquals('An error occurred', $response->{'hydra:title'});
-		$this->assertEquals('The internal part number is already used', $response->{'hydra:description'});
+		self::assertEquals('/api/contexts/Error', $response->{'@context'});
+		self::assertEquals('hydra:Error', $response->{'@type'});
+		self::assertEquals('An error occurred', $response->{'hydra:title'});
+		self::assertEquals('The internal part number is already used', $response->{'hydra:description'});
 	}
 }

@@ -25,6 +25,7 @@ class ProjectRun
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $quantity;
+	/** @var Collection<ProjectRunPart> */
 	#[ORM\OneToMany(mappedBy: 'projectRun', targetEntity: ProjectRunPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $parts;

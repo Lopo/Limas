@@ -93,29 +93,29 @@ class ProjectTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('@type', $response);
-		$this->assertEquals('Project', $response->{'@type'});
+		self::assertObjectHasAttribute('@type', $response);
+		self::assertEquals('Project', $response->{'@type'});
 
-		$this->assertObjectHasAttribute('name', $response);
-		$this->assertEquals('foobar', $response->name);
+		self::assertObjectHasAttribute('name', $response);
+		self::assertEquals('foobar', $response->name);
 
-		$this->assertObjectHasAttribute('description', $response);
-		$this->assertEquals('testdescription', $response->description);
+		self::assertObjectHasAttribute('description', $response);
+		self::assertEquals('testdescription', $response->description);
 
-		$this->assertObjectHasAttribute('parts', $response);
-		$this->assertIsArray($response->parts);
+		self::assertObjectHasAttribute('parts', $response);
+		self::assertIsArray($response->parts);
 
-		$this->assertCount(2, $response->parts);
-		$this->assertArrayHasKey(0, $response->parts);
-		$this->assertEquals('ProjectPart', $response->parts[0]->{'@type'});
-		$this->assertEquals(1, $response->parts[0]->quantity);
-		$this->assertEquals('testremark', $response->parts[0]->remarks);
-		$this->assertEquals('Part', $response->parts[0]->part->{'@type'});
+		self::assertCount(2, $response->parts);
+		self::assertArrayHasKey(0, $response->parts);
+		self::assertEquals('ProjectPart', $response->parts[0]->{'@type'});
+		self::assertEquals(1, $response->parts[0]->quantity);
+		self::assertEquals('testremark', $response->parts[0]->remarks);
+		self::assertEquals('Part', $response->parts[0]->part->{'@type'});
 
-		$this->assertObjectHasAttribute('attachments', $response);
-		$this->assertCount(1, $response->attachments);
-		$this->assertArrayHasKey(0, $response->attachments);
-		$this->assertEquals('ProjectAttachment', $response->attachments[0]->{'@type'});
+		self::assertObjectHasAttribute('attachments', $response);
+		self::assertCount(1, $response->attachments);
+		self::assertArrayHasKey(0, $response->attachments);
+		self::assertEquals('ProjectAttachment', $response->attachments[0]->{'@type'});
 
 		unset($response->parts[0]);
 	}
@@ -138,13 +138,13 @@ class ProjectTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsArray($response->parts);
-		$this->assertArrayNotHasKey(
+		self::assertIsArray($response->parts);
+		self::assertArrayNotHasKey(
 			1,
 			$response->parts,
 			'When removing an entry from the ArrayCollection, the array must be resorted!'
 		);
-		$this->assertCount(1, $response->parts);
+		self::assertCount(1, $response->parts);
 	}
 
 	public function testProjectAttachmentRemoval(): void
@@ -175,14 +175,14 @@ class ProjectTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsArray($response->attachments);
-		$this->assertArrayNotHasKey(
+		self::assertIsArray($response->attachments);
+		self::assertArrayNotHasKey(
 			1,
 			$response->attachments,
 			'When removing an entry from the ArrayCollection, the array must be resorted!'
 		);
 
-		$this->assertCount(0, $response->attachments);
+		self::assertCount(0, $response->attachments);
 	}
 
 	/**
@@ -203,11 +203,11 @@ class ProjectTest
 
 		$project = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('parts', $project);
-		$this->assertIsArray($project->parts);
+		self::assertObjectHasAttribute('parts', $project);
+		self::assertIsArray($project->parts);
 
 //		foreach ($project->parts as $part) {
-//			$this->assertObjectNotHasAttribute('project', $part);
+//			self::assertObjectNotHasAttribute('project', $part);
 //		}
 	}
 }

@@ -37,12 +37,12 @@ class UserPreferenceTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsObject($response, var_export($client->getResponse()->getContent(), true));
+		self::assertIsObject($response, var_export($client->getResponse()->getContent(), true));
 
-		$this->assertObjectHasAttribute('preferenceKey', $response);
-		$this->assertObjectHasAttribute('preferenceValue', $response);
-		$this->assertEquals('foobar', $response->preferenceKey);
-		$this->assertEquals('1234', $response->preferenceValue);
+		self::assertObjectHasAttribute('preferenceKey', $response);
+		self::assertObjectHasAttribute('preferenceValue', $response);
+		self::assertEquals('foobar', $response->preferenceKey);
+		self::assertEquals('1234', $response->preferenceValue);
 
 		$client->jsonRequest(
 			'GET',
@@ -51,13 +51,13 @@ class UserPreferenceTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsArray($response);
+		self::assertIsArray($response);
 
 		$preference = $response[0];
 
-		$this->assertObjectHasAttribute('preferenceKey', $preference);
-		$this->assertObjectHasAttribute('preferenceValue', $preference);
-		$this->assertEquals('foobar', $preference->preferenceKey);
-		$this->assertEquals('1234', $preference->preferenceValue);
+		self::assertObjectHasAttribute('preferenceKey', $preference);
+		self::assertObjectHasAttribute('preferenceValue', $preference);
+		self::assertEquals('foobar', $preference->preferenceKey);
+		self::assertEquals('1234', $preference->preferenceValue);
 	}
 }

@@ -23,6 +23,7 @@ class Project
 	private string $name;
 	#[ORM\ManyToOne(targetEntity: User::class)]
 	private ?User $user;
+	/** @var Collection<ProjectPart> */
 	#[ORM\OneToMany(mappedBy: 'project', targetEntity: ProjectPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
@@ -30,6 +31,7 @@ class Project
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $description;
+	/** @var Collection<ProjectAttachment> */
 	#[ORM\OneToMany(mappedBy: 'project', targetEntity: ProjectAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]

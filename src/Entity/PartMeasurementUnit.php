@@ -42,6 +42,7 @@ class PartMeasurementUnit
 	#[ORM\Column(name: 'is_default', type: Types::BOOLEAN)]
 	#[Groups(['default'])]
 	private bool $default = false;
+	/** @var Collection<Part> */
 	#[ORM\OneToMany(mappedBy: 'partUnit', targetEntity: Part::class)]
 	private Collection $parts;
 

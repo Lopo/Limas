@@ -78,6 +78,7 @@ class OperatingSystem
 	public function getLinuxDistribution(): string
 	{
 		// Try executing lsb_release
+		/* @phpstan-ignore-next-line */
 		$release = @exec('lsb_release -d -s', $void, $retval);
 
 		if ($retval === 0 && $release !== '') {

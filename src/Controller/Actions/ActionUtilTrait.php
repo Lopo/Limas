@@ -23,7 +23,7 @@ trait ActionUtilTrait
 
 	private function getResourceClass(Request $request): string
 	{
-		if (!($resourceClass = $request->attributes->get('_api_resource_class'))) {
+		if (null === ($resourceClass = $request->attributes->get('_api_resource_class'))) {
 			throw new RuntimeException('The API is not properly configured.');
 		}
 		return $resourceClass;
@@ -35,8 +35,8 @@ trait ActionUtilTrait
 	 */
 	private function extractAttributes(Request $request): array
 	{
-		if (!($resourceType = $request->attributes->get('_api_resource_class'))
-			|| !($format = $request->attributes->get('_api_format'))
+		if (null === ($resourceType = $request->attributes->get('_api_resource_class'))
+			|| null === ($format = $request->attributes->get('_api_format'))
 		) {
 			throw new RuntimeException('The API is not properly configured.');
 		}

@@ -40,9 +40,11 @@ class Report
 	#[ORM\Column(type: Types::DATETIME_MUTABLE)]
 	#[Groups(['default'])]
 	private \DateTimeInterface $createDateTime;
+	/** @var Collection<ReportProject> */
 	#[ORM\OneToMany(mappedBy: 'report', targetEntity: ReportProject::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $reportProjects;
+	/** @var Collection<ReportPart> */
 	#[ORM\OneToMany(mappedBy: 'report', targetEntity: ReportPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $reportParts;

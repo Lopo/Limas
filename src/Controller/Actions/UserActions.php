@@ -13,6 +13,7 @@ use Limas\Exceptions\UserProtectedException;
 use Limas\Service\UserPreferenceService;
 use Limas\Service\UserService;
 use Nette\Utils\Json;
+use Nette\Utils\Strings;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,7 +139,9 @@ class UserActions
 		}
 
 		$decoded = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-		if (empty($decoded['oldpassword']) || empty($decoded['newpassword'])) {
+		if (!isset($decoded['oldpassword']) || 0 === Strings::length($decoded['oldpassword'])
+			|| !isset($decoded['newpassword']) || 0 === Strings::length($decoded['newpassword'])
+		) {
 			throw new \Exception('old password and new password need to be specified');
 		}
 

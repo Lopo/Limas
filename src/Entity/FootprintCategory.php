@@ -47,10 +47,12 @@ class FootprintCategory
 	#[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
 	#[ORM\JoinColumn(onDelete: 'CASCADE')]
 	protected mixed $parent = null;
+	/** @var Collection<FootprintCategory> */
 	#[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
 	#[ORM\OrderBy(['lft' => 'ASC'])]
 	#[Groups(['tree'])]
 	protected Collection $children;
+	/** @var Collection<Footprint> */
 	#[ORM\OneToMany(mappedBy: 'category', targetEntity: Footprint::class)]
 	private Collection $footprints;
 	#[ORM\Column(type: Types::TEXT, nullable: true)]

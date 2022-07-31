@@ -110,9 +110,9 @@ class PartTest
 
 		$storage = $fileService->getStorage($partAttachment);
 
-		$this->assertNull($partDistributor->getId());
-		$this->assertNull($partDistributor->getId());
-		$this->assertNull($partAttachment->getId());
-		$this->assertFalse($storage->has($partAttachment->getFullFilename()));
+		self::assertNull($partDistributor->getId());
+		self::assertNull($partDistributor->getId());
+		self::assertNull($partAttachment->getId());
+		self::assertFalse($storage->has($partAttachment->getFullFilename()));
 	}
 }

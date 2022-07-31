@@ -85,12 +85,15 @@ class Part
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?StorageLocation $storageLocation = null;
+	/** @var Collection<PartManufacturer> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartManufacturer::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $manufacturers;
+	/** @var Collection<PartDistributor> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartDistributor::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $distributors;
+	/** @var Collection<PartAttachment> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[UploadedFileCollection]
@@ -106,13 +109,16 @@ class Part
 	private int $minStockLevel = 0;
 	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4)]
 	#[Groups(['readonly'])]
-	private ?string $averagePrice = '0';
+	private string $averagePrice = '0';
+	/** @var Collection<StockEntry> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: StockEntry::class, cascade: ['persist', 'remove'])]
 	#[Groups(['stock'])]
 	private Collection $stockLevels;
+	/** @var Collection<PartParameter> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartParameter::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $parameters;
+	/** @var Collection<MetaPartParameterCriteria> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: MetaPartParameterCriteria::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $metaPartParameterCriterias;
@@ -131,6 +137,7 @@ class Part
 	#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
 	#[Groups(['readonly'])]
 	private ?\DateTimeInterface $createDate = null;
+	/** @var Collection<ProjectPart> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: ProjectPart::class)]
 	private Collection $projectParts;
 	#[ORM\Column(type: Types::STRING, nullable: true)]

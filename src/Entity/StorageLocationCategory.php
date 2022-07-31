@@ -43,10 +43,12 @@ class StorageLocationCategory
 	#[ORM\JoinColumn(referencedColumnName: 'id', onDelete: 'CASCADE')]
 	#[Groups(['default'])]
 	protected mixed $parent = null;
+	/** @var Collection<StorageLocationCategory> */
 	#[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
 	#[ORM\OrderBy(['lft' => 'ASC'])]
 	#[Groups(['tree'])]
 	protected Collection $children;
+	/** @var Collection<StorageLocation> */
 	#[ORM\OneToMany(mappedBy: 'category', targetEntity: StorageLocation::class)]
 	private Collection $storageLocations;
 	#[ORM\Column(type: Types::TEXT, nullable: true)]

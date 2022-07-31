@@ -31,7 +31,7 @@ class FileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('image', $response);
+		self::assertObjectHasAttribute('image', $response);
 
 		$property = '@id';
 
@@ -40,7 +40,7 @@ class FileControllerTest
 			$response->image->$property . '/getMimeTypeIcon'
 		);
 
-		$this->assertEquals('image/svg+xml', $client->getResponse()->headers->get('Content-Type'));
+		self::assertEquals('image/svg+xml', $client->getResponse()->headers->get('Content-Type'));
 	}
 
 	public function testGetFile(): void
@@ -73,7 +73,7 @@ class FileControllerTest
 			$response->image->$property . '/getFile'
 		);
 
-		$this->assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
-		$this->assertStringEqualsFile($file, $client->getResponse()->getContent());
+		self::assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
+		self::assertStringEqualsFile($file, $client->getResponse()->getContent());
 	}
 }

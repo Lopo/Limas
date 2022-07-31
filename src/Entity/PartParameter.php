@@ -18,7 +18,7 @@ class PartParameter
 	final public const VALUE_TYPES = [self::VALUE_TYPE_STRING, self::VALUE_TYPE_NUMERIC];
 
 	#[ORM\ManyToOne(targetEntity: Part::class, inversedBy: 'parameters')]
-	private Part $part;
+	private ?Part $part;
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
 	private string $name;

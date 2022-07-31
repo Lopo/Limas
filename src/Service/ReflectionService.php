@@ -77,7 +77,7 @@ class ReflectionService
 	{
 		$fieldMappings = [];
 		foreach ($cm->getReflectionClass()->getProperties() as $property) {
-			if (count($virts = $property->getAttributes(VirtualField::class))) {
+			if (0 !== count($virts = $property->getAttributes(VirtualField::class))) {
 				$virtual = $virts[0]->newInstance();
 				$fieldMappings[] = [
 					'persist' => true,
@@ -232,7 +232,7 @@ class ReflectionService
 	{
 		$virtualRelationMappings = [];
 		foreach ($cm->getReflectionClass()->getProperties() as $property) {
-			if (count($virtualOneToManyRelation = $property->getAttributes(VirtualOneToMany::class))) {
+			if (0 !== count($virtualOneToManyRelation = $property->getAttributes(VirtualOneToMany::class))) {
 				$virtualRelationMappings[] = [
 					'name' => $property->getName(),
 					'target' => $this->convertPHPToExtJSClassName($virtualOneToManyRelation[0]->newInstance()->target)
@@ -247,7 +247,7 @@ class ReflectionService
 		$class = $cm->getReflectionClass();
 		if ($class->hasProperty($field)) {
 			$atribs = $class->getProperty($field)->getAttributes(Groups::class);
-			if (count($atribs)) {
+			if (0 !== count($atribs)) {
 				return !in_array('readonly', $atribs[0]->newInstance()->getGroups(), true);
 			}
 			return true;
@@ -262,7 +262,7 @@ class ReflectionService
 	{
 		$byReferenceMappings = [];
 		foreach ($cm->getReflectionClass()->getProperties() as $property) {
-			if (count($property->getAttributes(ByReference::class))) {
+			if (0 !== count($property->getAttributes(ByReference::class))) {
 				$byReferenceMappings[] = $property->getName();
 			}
 		}

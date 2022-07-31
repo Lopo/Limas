@@ -79,6 +79,7 @@ class User
 	#[Groups(['default'])]
 	#[ApiProperty(writableLink: true)]
 	private ?UserProvider $provider;
+	/** @var Collection<TipOfTheDayHistory> */
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: TipOfTheDayHistory::class, cascade: ['remove'], orphanRemoval: true)]
 	private Collection $tipHistories;
 	#[VirtualField(type: 'string')]

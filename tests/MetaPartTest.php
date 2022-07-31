@@ -44,16 +44,16 @@ class MetaPartTest
 
 		$matches = $this->getContainer()->get(PartService::class)->getMatchingMetaParts($metaPart1);
 
-		$this->assertContains($metaSourcePart1, $matches);
-		$this->assertContains($metaSourcePart2, $matches);
-		$this->assertNotContains($metaSourcePart3, $matches);
+		self::assertContains($metaSourcePart1, $matches);
+		self::assertContains($metaSourcePart2, $matches);
+		self::assertNotContains($metaSourcePart3, $matches);
 
 		$metaPart2 = $this->fixtures->getReference('metapart.2');
 
 		$matches2 = $this->getContainer()->get(PartService::class)->getMatchingMetaParts($metaPart2);
 
-		$this->assertNotContains($metaSourcePart1, $matches2);
-		$this->assertContains($metaSourcePart2, $matches2);
-		$this->assertNotContains($metaSourcePart3, $matches2);
+		self::assertNotContains($metaSourcePart1, $matches2);
+		self::assertContains($metaSourcePart2, $matches2);
+		self::assertNotContains($metaSourcePart3, $matches2);
 	}
 }

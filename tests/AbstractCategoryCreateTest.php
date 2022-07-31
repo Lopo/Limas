@@ -48,15 +48,15 @@ abstract class AbstractCategoryCreateTest
 
 		$responseObject = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsObject($responseObject);
+		self::assertIsObject($responseObject);
 
-		$this->assertObjectHasAttribute('@id', $responseObject);
-		$this->assertObjectHasAttribute('name', $responseObject);
+		self::assertObjectHasAttribute('@id', $responseObject);
+		self::assertObjectHasAttribute('name', $responseObject);
 
 		$item = $iriConverter->getItemFromIri($responseObject->{'@id'});
 
-		$this->assertNotNull($item->getParent());
-		$this->assertEquals($item->getParent()->getId(), $rootCategory->getId());
+		self::assertNotNull($item->getParent());
+		self::assertEquals($item->getParent()->getId(), $rootCategory->getId());
 	}
 
 	public function testCreateRootCategory(): void
@@ -76,10 +76,10 @@ abstract class AbstractCategoryCreateTest
 
 		$responseObject = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('@type', $responseObject);
-		$this->assertObjectHasAttribute('hydra:description', $responseObject);
+		self::assertObjectHasAttribute('@type', $responseObject);
+		self::assertObjectHasAttribute('hydra:description', $responseObject);
 
-		$this->assertEquals('There may be only one root node', $responseObject->{'hydra:description'});
+		self::assertEquals('There may be only one root node', $responseObject->{'hydra:description'});
 	}
 
 	abstract public function getFixtureLoaderClass(): string;

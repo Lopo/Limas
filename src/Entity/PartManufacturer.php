@@ -16,7 +16,7 @@ class PartManufacturer
 	private ?Part $part;
 	#[ORM\ManyToOne(targetEntity: Manufacturer::class)]
 	#[Groups(['default'])]
-	private Manufacturer $manufacturer;
+	private ?Manufacturer $manufacturer;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $partNumber;

@@ -34,10 +34,10 @@ class SystemNoticeTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertEquals('FOO', $response->type);
-		$this->assertEquals('BAR', $response->title);
-		$this->assertEquals('DING', $response->description);
-		$this->assertEquals(false, $response->acknowledged);
+		self::assertEquals('FOO', $response->type);
+		self::assertEquals('BAR', $response->title);
+		self::assertEquals('DING', $response->description);
+		self::assertEquals(false, $response->acknowledged);
 
 		$client->request(
 			'PUT',
@@ -45,6 +45,6 @@ class SystemNoticeTest
 		);
 
 		$response = Json::decode($client->getResponse()->getContent());
-		$this->assertEquals(true, $response->acknowledged);
+		self::assertEquals(true, $response->acknowledged);
 	}
 }

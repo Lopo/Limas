@@ -44,14 +44,14 @@ class TemporaryFileControllerTest
 			['userfile' => $image]
 		);
 
-		$this->assertEquals(200, $client->getResponse()->getStatusCode());
+		self::assertEquals(200, $client->getResponse()->getStatusCode());
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('success', $response);
-		$this->assertObjectHasAttribute('image', $response);
-		$this->assertObjectHasAttribute('response', $response);
+		self::assertObjectHasAttribute('success', $response);
+		self::assertObjectHasAttribute('image', $response);
+		self::assertObjectHasAttribute('response', $response);
 
-		$this->assertEquals(true, $response->success);
+		self::assertEquals(true, $response->success);
 
 		$propertiesToCheck = [
 			'@context',
@@ -68,29 +68,29 @@ class TemporaryFileControllerTest
 		];
 
 		foreach ($propertiesToCheck as $property) {
-			$this->assertObjectHasAttribute($property, $response->image);
-			$this->assertObjectHasAttribute($property, $response->response);
+			self::assertObjectHasAttribute($property, $response->image);
+			self::assertObjectHasAttribute($property, $response->response);
 		}
 
-		$this->assertEquals(filesize($file), $response->image->size);
-		$this->assertEquals(filesize($file), $response->response->size);
+		self::assertEquals(filesize($file), $response->image->size);
+		self::assertEquals(filesize($file), $response->response->size);
 
-		$this->assertEquals($originalFilename, $response->image->originalFilename);
-		$this->assertEquals($originalFilename, $response->response->originalFilename);
+		self::assertEquals($originalFilename, $response->image->originalFilename);
+		self::assertEquals($originalFilename, $response->response->originalFilename);
 
-		$this->assertEquals($mimeType, $response->image->mimetype);
-		$this->assertEquals($mimeType, $response->response->mimetype);
+		self::assertEquals($mimeType, $response->image->mimetype);
+		self::assertEquals($mimeType, $response->response->mimetype);
 
-		$this->assertEquals($extension, $response->image->extension);
-		$this->assertEquals($extension, $response->response->extension);
+		self::assertEquals($extension, $response->image->extension);
+		self::assertEquals($extension, $response->response->extension);
 
-		$this->assertEquals('tempfile', $response->image->type);
-		$this->assertEquals('tempfile', $response->response->type);
+		self::assertEquals('tempfile', $response->image->type);
+		self::assertEquals('tempfile', $response->response->type);
 
 		$property = '@type';
 
-		$this->assertEquals('TempUploadedFile', $response->image->$property);
-		$this->assertEquals('TempUploadedFile', $response->response->$property);
+		self::assertEquals('TempUploadedFile', $response->image->$property);
+		self::assertEquals('TempUploadedFile', $response->response->$property);
 	}
 
 	public function testURLUploadAction(): void
@@ -105,9 +105,9 @@ class TemporaryFileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertObjectHasAttribute('success', $response);
-		$this->assertObjectHasAttribute('image', $response);
-		$this->assertObjectHasAttribute('response', $response);
+		self::assertObjectHasAttribute('success', $response);
+		self::assertObjectHasAttribute('image', $response);
+		self::assertObjectHasAttribute('response', $response);
 	}
 
 	public function testUploadException(): void
@@ -124,8 +124,8 @@ class TemporaryFileControllerTest
 
 		$attribute = '@type';
 
-		$this->assertObjectHasAttribute($attribute, $response);
-		$this->assertEquals('hydra:Error', $response->$attribute);
+		self::assertObjectHasAttribute($attribute, $response);
+		self::assertEquals('hydra:Error', $response->$attribute);
 	}
 
 	public function testWebcamUploadAction(): void
@@ -161,17 +161,17 @@ class TemporaryFileControllerTest
 		];
 
 		foreach ($propertiesToCheck as $property) {
-			$this->assertObjectHasAttribute($property, $response);
+			self::assertObjectHasAttribute($property, $response);
 		}
 
-		$this->assertEquals(filesize($file), $response->size);
-		$this->assertEquals('image/png', $response->mimetype);
-		$this->assertEquals('webcam.png', $response->originalFilename);
-		$this->assertEquals('png', $response->extension);
-		$this->assertEquals('tempfile', $response->type);
+		self::assertEquals(filesize($file), $response->size);
+		self::assertEquals('image/png', $response->mimetype);
+		self::assertEquals('webcam.png', $response->originalFilename);
+		self::assertEquals('png', $response->extension);
+		self::assertEquals('tempfile', $response->type);
 
 		$property = '@type';
-		$this->assertEquals('TempUploadedFile', $response->$property);
+		self::assertEquals('TempUploadedFile', $response->$property);
 	}
 
 	public function testGetFile(): void

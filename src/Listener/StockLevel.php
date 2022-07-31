@@ -26,13 +26,13 @@ class StockLevel
 		$parts = [];
 
 		foreach ($uow->getScheduledEntityInsertions() as $updated) {
-			if (($updated instanceof StockEntry) && !in_array($updated->getPart(), $parts)) {
+			if (($updated instanceof StockEntry) && !in_array($updated->getPart(), $parts, true)) {
 				$parts[] = $updated->getPart();
 			}
 		}
 
 		foreach ($uow->getScheduledEntityUpdates() as $updated) {
-			if (($updated instanceof StockEntry) && !in_array($updated->getPart(), $parts)) {
+			if (($updated instanceof StockEntry) && !in_array($updated->getPart(), $parts, true)) {
 				$parts[] = $updated->getPart();
 			}
 		}

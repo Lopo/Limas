@@ -28,6 +28,7 @@ class Unit
 	#[Assert\Type(type: 'string')]
 	#[Assert\NotBlank(message: 'unit.symbol.not_blank')]
 	private string $symbol;
+	/** @var Collection<SiPrefix> */
 	#[ORM\ManyToMany(targetEntity: SiPrefix::class)]
 	#[ORM\JoinTable(name: 'UnitSiPrefixes',
 		joinColumns: [new ORM\JoinColumn(name: 'unit_id', referencedColumnName: 'id')],

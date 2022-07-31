@@ -30,12 +30,12 @@ class SystemInformationTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsArray($response);
+		self::assertIsArray($response);
 
-		$this->assertIsObject($response[0]);
-		$this->assertObjectHasAttribute('category', $response[0]);
-		$this->assertObjectHasAttribute('name', $response[0]);
-		$this->assertObjectHasAttribute('value', $response[0]);
+		self::assertIsObject($response[0]);
+		self::assertObjectHasAttribute('category', $response[0]);
+		self::assertObjectHasAttribute('name', $response[0]);
+		self::assertObjectHasAttribute('value', $response[0]);
 	}
 
 	public function testSystemStatus(): void
@@ -49,10 +49,10 @@ class SystemInformationTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$this->assertIsObject($response);
-		$this->assertObjectHasAttribute('inactiveCronjobCount', $response);
-		$this->assertObjectHasAttribute('inactiveCronjobs', $response);
-		$this->assertIsArray($response->inactiveCronjobs);
-		$this->assertObjectHasAttribute('schemaStatus', $response);
+		self::assertIsObject($response);
+		self::assertObjectHasAttribute('inactiveCronjobCount', $response);
+		self::assertObjectHasAttribute('inactiveCronjobs', $response);
+		self::assertIsArray($response->inactiveCronjobs);
+		self::assertObjectHasAttribute('schemaStatus', $response);
 	}
 }

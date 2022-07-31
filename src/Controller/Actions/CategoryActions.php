@@ -30,7 +30,7 @@ class CategoryActions
 	public function GetRootNodeAction(Request $request): AbstractCategory
 	{
 		$roots = $this->entityManager->getRepository($this->getResourceClass($request))->getRootNodes();
-		if (!count($roots)) {
+		if (0 === count($roots)) {
 			throw new RootNodeNotFoundException;
 		}
 		return reset($roots);

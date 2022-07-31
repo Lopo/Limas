@@ -34,6 +34,7 @@ class Footprint
 	#[UploadedFile]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?FootprintImage $image;
+	/** @var Collection<FootprintAttachment> */
 	#[ORM\OneToMany(mappedBy: 'footprint', targetEntity: FootprintAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]
