@@ -1,0 +1,49 @@
+parameters:
+    limas.filesystem.data_directory: '%kernel.project_dir%/data/'
+    limas:
+        maintenance: false
+#            title: ''
+#            message: ''
+        authentication_provider: 'HTTPBasic'
+#        authentication_provider: 'JWT'
+        auth:
+            allow_password_change: true
+            max_users: 'unlimited'
+        frontend:
+            auto_login:
+                enabled: true
+                username: admin
+                password: admin
+            base_url: false
+            motd: ''
+        tip_of_the_day_list: 'https://partkeepr.org/tips.json'
+        tip_of_the_day_uri: 'https://partkeepr.org/tips/%s'
+        image_cache_directory: '%kernel.cache_dir%/imagecache/'
+        directories:
+            mimetype_icons: '%kernel.project_dir%/public/images/mimes/'
+        upload:
+            limit: false
+        octopart:
+            apikey: '%env(OCTOPART_APIKEY)%'
+            limit: '3'
+        patreon:
+            statusuri: 'https://www.partkeepr.org/patreon.json'
+        filesystem:
+            data_directory: '%limas.filesystem.data_directory%'
+            quota: false
+        category:
+            path_separator: ' ➤ '
+        cronjob:
+            check: true
+        required_cronjobs:
+            - 'limas:cron:synctips'
+        parts:
+#            internalpartnumberunique: false
+            internalpartnumberunique: '%env(bool:APP_DEBUG)%'
+            limit: false
+        users:
+            limit: false
+
+when@test:
+    parameters:
+        limas.filesystem.data_directory: '%kernel.project_dir%/data_test/'

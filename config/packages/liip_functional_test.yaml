@@ -1,0 +1,5 @@
+when@test:
+    liip_functional_test:
+        authentication:
+            username: admin
+            password: admin

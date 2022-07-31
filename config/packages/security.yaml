@@ -1,0 +1,82 @@
+security:
+    enable_authenticator_manager: true
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Limas\Entity\User: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        chain_provider:
+            chain:
+                providers: [users_in_memory, app_user_provider]
+        users_in_memory:
+            memory: ~
+        app_user_provider:
+            entity:
+                class: Limas\Entity\User
+                property: username
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        jwt:
+            pattern: ^/api/users/jwt
+            stateless: true
+            json_login:
+                check_path: api_login_jwt
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                provider: chain_provider
+        api_token_refresh:
+            pattern: ^/api/token/refresh
+            stateless: true
+            refresh_jwt: ~
+            provider: chain_provider
+        api:
+            pattern: ^/api/.*
+            stateless: false # Stores authentification within a cookie. This is important to allow file uploads without having to send authentification data.
+            provider: chain_provider
+            jwt: #~ # enables the jwt authenticator
+                provider: chain_provider
+#                authenticator: lexik_jwt_authentication.security.jwt_authenticator # (default jwt authenticator)
+            http_basic:
+                provider: chain_provider
+            entry_point: http_basic
+        main:
+            lazy: true
+            provider: app_user_provider
+#            remember_me:
+#                secret: '%kernel.secret%'
+#                lifetime: 3600
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-firewall
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/users/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/users/jwt, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token_refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is important to generate secure
+            # password hashes. In tests however, secure hashes are not important, waste resources and increase test
+            # times. The following reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: plaintext
+            Limas\Entity\User: plaintext
+        firewalls:
+            api:
+                http_basic: ~

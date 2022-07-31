@@ -1,0 +1,95 @@
+
+.partkeepr-icon {
+    background: url(./partkeepr.png?fe3ca09364fe84c105b8) no-repeat;
+}
+
+.bricks_down {
+    width: 16px;
+    height: 16px;
+    background-position: -0px -0px !important; 
+}
+.bricks_up {
+    width: 16px;
+    height: 16px;
+    background-position: -16px -0px !important; 
+}
+.footprint_add {
+    width: 16px;
+    height: 16px;
+    background-position: -32px -0px !important; 
+}
+.footprint_delete {
+    width: 16px;
+    height: 16px;
+    background-position: -48px -0px !important; 
+}
+.group-collapse {
+    width: 16px;
+    height: 16px;
+    background-position: -64px -0px !important; 
+}
+.group-expand {
+    width: 16px;
+    height: 16px;
+    background-position: -0px -16px !important; 
+}
+.mediawiki_icon {
+    width: 16px;
+    height: 16px;
+    background-position: -16px -16px !important; 
+}
+.octopart {
+    width: 16px;
+    height: 16px;
+    background-position: -32px -16px !important; 
+}
+.stock_any {
+    width: 16px;
+    height: 16px;
+    background-position: -48px -16px !important; 
+}
+.stock_below {
+    width: 16px;
+    height: 16px;
+    background-position: -64px -16px !important; 
+}
+.stock_nonzero {
+    width: 16px;
+    height: 16px;
+    background-position: -0px -32px !important; 
+}
+.stock_zero {
+    width: 16px;
+    height: 16px;
+    background-position: -16px -32px !important; 
+}
+.storagelocation_multiadd {
+    width: 16px;
+    height: 16px;
+    background-position: -32px -32px !important; 
+}
+.tip_next {
+    width: 16px;
+    height: 16px;
+    background-position: -48px -32px !important; 
+}
+.tip_previous {
+    width: 16px;
+    height: 16px;
+    background-position: -64px -32px !important; 
+}
+.unit {
+    width: 16px;
+    height: 16px;
+    background-position: -0px -48px !important; 
+}
+.unit_add {
+    width: 16px;
+    height: 16px;
+    background-position: -16px -48px !important; 
+}
+.unit_delete {
+    width: 16px;
+    height: 16px;
+    background-position: -32px -48px !important; 
+}

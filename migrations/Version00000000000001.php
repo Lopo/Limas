@@ -1,0 +1,227 @@
+<?php declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+
+final class Version00000000000001
+	extends AbstractMigration
+{
+	public function getDescription(): string
+	{
+		return 'Create tables';
+	}
+
+	public function up(Schema $schema): void
+	{
+		$this->addSql('CREATE TABLE BatchJob (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(64) NOT NULL, baseEntity VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_AF3CBF045E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE BatchJobQueryField (id INT AUTO_INCREMENT NOT NULL, property VARCHAR(255) NOT NULL, operator VARCHAR(64) NOT NULL, value LONGTEXT NOT NULL, description LONGTEXT NOT NULL, dynamic TINYINT(1) NOT NULL, batchJob_id INT DEFAULT NULL, INDEX IDX_6118E78CABE62C64 (batchJob_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE BatchJobUpdateField (id INT AUTO_INCREMENT NOT NULL, property VARCHAR(255) NOT NULL, value LONGTEXT NOT NULL, description LONGTEXT NOT NULL, dynamic TINYINT(1) NOT NULL, batchJob_id INT DEFAULT NULL, INDEX IDX_E1ADA7DFABE62C64 (batchJob_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE CachedImage (id INT AUTO_INCREMENT NOT NULL, originalId INT NOT NULL, originalType VARCHAR(255) NOT NULL, cacheFile VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE CronLogger (id INT AUTO_INCREMENT NOT NULL, lastRunDate DATETIME NOT NULL, cronjob VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_B4000D4FA5DA7C8A (cronjob), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Distributor (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, address LONGTEXT DEFAULT NULL, url VARCHAR(255) DEFAULT NULL, phone VARCHAR(255) DEFAULT NULL, fax VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, comment LONGTEXT DEFAULT NULL, skuurl VARCHAR(255) DEFAULT NULL, enabledForReports TINYINT(1) DEFAULT 0 NOT NULL, UNIQUE INDEX UNIQ_2559D8A65E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Footprint (id INT AUTO_INCREMENT NOT NULL, category_id INT DEFAULT NULL, name VARCHAR(64) NOT NULL, description LONGTEXT DEFAULT NULL, UNIQUE INDEX UNIQ_7CF324945E237E06 (name), INDEX IDX_7CF3249412469DE2 (category_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE FootprintAttachment (id INT AUTO_INCREMENT NOT NULL, footprint_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, INDEX IDX_7B7388A151364C98 (footprint_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE FootprintCategory (id INT AUTO_INCREMENT NOT NULL, parent_id INT DEFAULT NULL, lft INT NOT NULL, rgt INT NOT NULL, lvl INT NOT NULL, root INT DEFAULT NULL, name VARCHAR(128) NOT NULL, description LONGTEXT DEFAULT NULL, categoryPath LONGTEXT DEFAULT NULL, INDEX IDX_C026BA6A727ACA70 (parent_id), INDEX IDX_C026BA6ADA439252 (lft), INDEX IDX_C026BA6AD5E02D69 (rgt), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE FootprintImage (id INT AUTO_INCREMENT NOT NULL, footprint_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, UNIQUE INDEX UNIQ_3B22699151364C98 (footprint_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE GridPreset (id INT AUTO_INCREMENT NOT NULL, grid VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, configuration LONGTEXT NOT NULL, gridDefault TINYINT(1) NOT NULL, UNIQUE INDEX name_grid_unique (grid, name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ImportPreset (id INT AUTO_INCREMENT NOT NULL, baseEntity VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, configuration LONGTEXT NOT NULL, UNIQUE INDEX name_entity_unique (baseEntity, name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Manufacturer (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, address LONGTEXT DEFAULT NULL, url VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, comment LONGTEXT DEFAULT NULL, phone VARCHAR(255) DEFAULT NULL, fax VARCHAR(255) DEFAULT NULL, UNIQUE INDEX UNIQ_253B3D245E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ManufacturerICLogo (id INT AUTO_INCREMENT NOT NULL, manufacturer_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, INDEX IDX_3F1EF213A23B42D (manufacturer_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE MetaPartParameterCriteria (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, unit_id INT DEFAULT NULL, partParameterName VARCHAR(255) NOT NULL, operator VARCHAR(255) NOT NULL, value DOUBLE PRECISION DEFAULT NULL, normalizedValue DOUBLE PRECISION DEFAULT NULL, stringValue VARCHAR(255) NOT NULL, valueType VARCHAR(255) NOT NULL, siPrefix_id INT DEFAULT NULL, INDEX IDX_6EE1D3924CE34BEC (part_id), INDEX IDX_6EE1D39219187357 (siPrefix_id), INDEX IDX_6EE1D392F8BD700D (unit_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Part (id INT AUTO_INCREMENT NOT NULL, category_id INT DEFAULT NULL, footprint_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, comment LONGTEXT NOT NULL, stockLevel INT NOT NULL, minStockLevel INT NOT NULL, averagePrice NUMERIC(13, 4) NOT NULL, status VARCHAR(255) DEFAULT NULL, needsReview TINYINT(1) NOT NULL, partCondition VARCHAR(255) DEFAULT NULL, productionRemarks VARCHAR(255) DEFAULT NULL, createDate DATETIME DEFAULT NULL, internalPartNumber VARCHAR(255) DEFAULT NULL, removals TINYINT(1) NOT NULL, lowStock TINYINT(1) NOT NULL, metaPart TINYINT(1) DEFAULT 0 NOT NULL, partUnit_id INT DEFAULT NULL, storageLocation_id INT DEFAULT NULL, INDEX IDX_E93DDFF812469DE2 (category_id), INDEX IDX_E93DDFF851364C98 (footprint_id), INDEX IDX_E93DDFF8F7A36E87 (partUnit_id), INDEX IDX_E93DDFF873CD58AF (storageLocation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartAttachment (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, isImage TINYINT(1) DEFAULT NULL, INDEX IDX_76D73D864CE34BEC (part_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartCategory (id INT AUTO_INCREMENT NOT NULL, parent_id INT DEFAULT NULL, lft INT NOT NULL, rgt INT NOT NULL, lvl INT NOT NULL, root INT DEFAULT NULL, name VARCHAR(128) NOT NULL, description LONGTEXT DEFAULT NULL, categoryPath LONGTEXT DEFAULT NULL, INDEX IDX_131FB619727ACA70 (parent_id), INDEX IDX_131FB619DA439252 (lft), INDEX IDX_131FB619D5E02D69 (rgt), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartDistributor (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, distributor_id INT DEFAULT NULL, orderNumber VARCHAR(255) DEFAULT NULL, packagingUnit INT NOT NULL, price NUMERIC(13, 4) DEFAULT NULL, currency VARCHAR(3) DEFAULT NULL, sku VARCHAR(255) DEFAULT NULL, ignoreForReports TINYINT(1) DEFAULT NULL, INDEX IDX_FBA293844CE34BEC (part_id), INDEX IDX_FBA293842D863A58 (distributor_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartManufacturer (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, manufacturer_id INT DEFAULT NULL, partNumber VARCHAR(255) DEFAULT NULL, INDEX IDX_F085878B4CE34BEC (part_id), INDEX IDX_F085878BA23B42D (manufacturer_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartParameter (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, unit_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) NOT NULL, value DOUBLE PRECISION DEFAULT NULL, normalizedValue DOUBLE PRECISION DEFAULT NULL, maximumValue DOUBLE PRECISION DEFAULT NULL, normalizedMaxValue DOUBLE PRECISION DEFAULT NULL, minimumValue DOUBLE PRECISION DEFAULT NULL, normalizedMinValue DOUBLE PRECISION DEFAULT NULL, stringValue VARCHAR(255) NOT NULL, valueType VARCHAR(255) NOT NULL, siPrefix_id INT DEFAULT NULL, minSiPrefix_id INT DEFAULT NULL, maxSiPrefix_id INT DEFAULT NULL, INDEX IDX_A28A98594CE34BEC (part_id), INDEX IDX_A28A9859F8BD700D (unit_id), INDEX IDX_A28A985919187357 (siPrefix_id), INDEX IDX_A28A9859569AA479 (minSiPrefix_id), INDEX IDX_A28A9859EFBC3F08 (maxSiPrefix_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE PartUnit (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, shortName VARCHAR(255) NOT NULL, is_default TINYINT(1) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Project (id INT AUTO_INCREMENT NOT NULL, user_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, INDEX IDX_E00EE972A76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ProjectAttachment (id INT AUTO_INCREMENT NOT NULL, project_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, INDEX IDX_44010C5B166D1F9C (project_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ProjectPart (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, project_id INT DEFAULT NULL, quantity INT NOT NULL, remarks VARCHAR(255) DEFAULT NULL, overageType VARCHAR(255) DEFAULT \'\' NOT NULL, overage INT DEFAULT 0 NOT NULL, lotNumber LONGTEXT NOT NULL, INDEX IDX_B0B193364CE34BEC (part_id), INDEX IDX_B0B19336166D1F9C (project_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ProjectRun (id INT AUTO_INCREMENT NOT NULL, project_id INT DEFAULT NULL, runDateTime DATETIME NOT NULL, quantity INT NOT NULL, INDEX IDX_574A3B5C166D1F9C (project_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ProjectRunPart (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, quantity INT NOT NULL, lotNumber LONGTEXT NOT NULL, projectRun_id INT DEFAULT NULL, INDEX IDX_BF41064B1A221EF0 (projectRun_id), INDEX IDX_BF41064B4CE34BEC (part_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Report (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) DEFAULT NULL, createDateTime DATETIME NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ReportPart (id INT AUTO_INCREMENT NOT NULL, report_id INT DEFAULT NULL, part_id INT DEFAULT NULL, distributor_id INT DEFAULT NULL, quantity INT NOT NULL, INDEX IDX_1BF0BD554BD2A4C0 (report_id), INDEX IDX_1BF0BD554CE34BEC (part_id), INDEX IDX_1BF0BD552D863A58 (distributor_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE ReportProject (id INT AUTO_INCREMENT NOT NULL, report_id INT DEFAULT NULL, project_id INT DEFAULT NULL, quantity INT NOT NULL, INDEX IDX_83B0909B4BD2A4C0 (report_id), INDEX IDX_83B0909B166D1F9C (project_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE SiPrefix (id INT AUTO_INCREMENT NOT NULL, prefix VARCHAR(255) NOT NULL, symbol VARCHAR(2) NOT NULL, exponent INT NOT NULL, base INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StatisticSnapshot (id INT AUTO_INCREMENT NOT NULL, dateTime DATETIME NOT NULL, parts INT NOT NULL, categories INT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StatisticSnapshotUnit (id INT AUTO_INCREMENT NOT NULL, stockLevel INT NOT NULL, statisticSnapshot_id INT DEFAULT NULL, partUnit_id INT DEFAULT NULL, INDEX IDX_368BD669A16DD05F (statisticSnapshot_id), INDEX IDX_368BD669F7A36E87 (partUnit_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StockEntry (id INT AUTO_INCREMENT NOT NULL, part_id INT DEFAULT NULL, user_id INT DEFAULT NULL, stockLevel INT NOT NULL, price NUMERIC(13, 4) DEFAULT NULL, dateTime DATETIME NOT NULL, correction TINYINT(1) NOT NULL, comment VARCHAR(255) DEFAULT NULL, INDEX IDX_E182997B4CE34BEC (part_id), INDEX IDX_E182997BA76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StorageLocation (id INT AUTO_INCREMENT NOT NULL, category_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_2C59071C5E237E06 (name), INDEX IDX_2C59071C12469DE2 (category_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StorageLocationCategory (id INT AUTO_INCREMENT NOT NULL, parent_id INT DEFAULT NULL, lft INT NOT NULL, rgt INT NOT NULL, lvl INT NOT NULL, root INT DEFAULT NULL, name VARCHAR(128) NOT NULL, description LONGTEXT DEFAULT NULL, categoryPath LONGTEXT DEFAULT NULL, INDEX IDX_3E39FA47727ACA70 (parent_id), INDEX IDX_3E39FA47DA439252 (lft), INDEX IDX_3E39FA47D5E02D69 (rgt), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE StorageLocationImage (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, storageLocation_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_666717F073CD58AF (storageLocation_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE SystemNotice (id INT AUTO_INCREMENT NOT NULL, date DATETIME NOT NULL, title VARCHAR(255) NOT NULL, description LONGTEXT NOT NULL, acknowledged TINYINT(1) NOT NULL, type VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE SystemPreference (preferenceKey VARCHAR(255) NOT NULL, preferenceValue LONGTEXT NOT NULL, PRIMARY KEY(preferenceKey)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE TempImage (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE TempUploadedFile (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, filename VARCHAR(255) NOT NULL, originalname VARCHAR(255) DEFAULT NULL, mimetype VARCHAR(255) NOT NULL, size INT NOT NULL, extension VARCHAR(255) DEFAULT NULL, description LONGTEXT DEFAULT NULL, created DATETIME NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE TipOfTheDay (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE TipOfTheDayHistory (id INT AUTO_INCREMENT NOT NULL, user_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, INDEX IDX_3177BC2A76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE Unit (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, symbol VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE UnitSiPrefixes (unit_id INT NOT NULL, siprefix_id INT NOT NULL, INDEX IDX_72356740F8BD700D (unit_id), INDEX IDX_723567409BE9F1F4 (siprefix_id), PRIMARY KEY(unit_id, siprefix_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE User (id INT AUTO_INCREMENT NOT NULL, provider_id INT DEFAULT NULL, username VARCHAR(50) NOT NULL, password VARCHAR(255) DEFAULT NULL, email VARCHAR(255) DEFAULT NULL, lastSeen DATETIME DEFAULT NULL, active TINYINT(1) NOT NULL, protected TINYINT(1) NOT NULL, roles LONGTEXT NOT NULL COMMENT \'(DC2Type:array)\', INDEX IDX_2DA17977A53A8AA (provider_id), UNIQUE INDEX username_provider (username, provider_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE UserPreference (user_id INT NOT NULL, preferenceKey VARCHAR(255) NOT NULL, preferenceValue LONGTEXT NOT NULL, INDEX IDX_922CE7A2A76ED395 (user_id), PRIMARY KEY(preferenceKey, user_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE UserProvider (id INT AUTO_INCREMENT NOT NULL, type VARCHAR(255) NOT NULL, editable TINYINT(1) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE refresh_tokens (id INT AUTO_INCREMENT NOT NULL, refresh_token VARCHAR(128) NOT NULL, username VARCHAR(255) NOT NULL, valid DATETIME NOT NULL, UNIQUE INDEX UNIQ_9BACE7E1C74F2195 (refresh_token), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL, available_at DATETIME NOT NULL, delivered_at DATETIME DEFAULT NULL, INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+		$this->addSql('ALTER TABLE BatchJobQueryField ADD CONSTRAINT FK_6118E78CABE62C64 FOREIGN KEY (batchJob_id) REFERENCES BatchJob (id)');
+		$this->addSql('ALTER TABLE BatchJobUpdateField ADD CONSTRAINT FK_E1ADA7DFABE62C64 FOREIGN KEY (batchJob_id) REFERENCES BatchJob (id)');
+		$this->addSql('ALTER TABLE Footprint ADD CONSTRAINT FK_7CF3249412469DE2 FOREIGN KEY (category_id) REFERENCES FootprintCategory (id)');
+		$this->addSql('ALTER TABLE FootprintAttachment ADD CONSTRAINT FK_7B7388A151364C98 FOREIGN KEY (footprint_id) REFERENCES Footprint (id)');
+		$this->addSql('ALTER TABLE FootprintCategory ADD CONSTRAINT FK_C026BA6A727ACA70 FOREIGN KEY (parent_id) REFERENCES FootprintCategory (id) ON DELETE CASCADE');
+		$this->addSql('ALTER TABLE FootprintImage ADD CONSTRAINT FK_3B22699151364C98 FOREIGN KEY (footprint_id) REFERENCES Footprint (id)');
+		$this->addSql('ALTER TABLE ManufacturerICLogo ADD CONSTRAINT FK_3F1EF213A23B42D FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer (id)');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria ADD CONSTRAINT FK_6EE1D3924CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria ADD CONSTRAINT FK_6EE1D39219187357 FOREIGN KEY (siPrefix_id) REFERENCES SiPrefix (id)');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria ADD CONSTRAINT FK_6EE1D392F8BD700D FOREIGN KEY (unit_id) REFERENCES Unit (id)');
+		$this->addSql('ALTER TABLE Part ADD CONSTRAINT FK_E93DDFF812469DE2 FOREIGN KEY (category_id) REFERENCES PartCategory (id)');
+		$this->addSql('ALTER TABLE Part ADD CONSTRAINT FK_E93DDFF851364C98 FOREIGN KEY (footprint_id) REFERENCES Footprint (id)');
+		$this->addSql('ALTER TABLE Part ADD CONSTRAINT FK_E93DDFF8F7A36E87 FOREIGN KEY (partUnit_id) REFERENCES PartUnit (id)');
+		$this->addSql('ALTER TABLE Part ADD CONSTRAINT FK_E93DDFF873CD58AF FOREIGN KEY (storageLocation_id) REFERENCES StorageLocation (id)');
+		$this->addSql('ALTER TABLE PartAttachment ADD CONSTRAINT FK_76D73D864CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE PartCategory ADD CONSTRAINT FK_131FB619727ACA70 FOREIGN KEY (parent_id) REFERENCES PartCategory (id) ON DELETE CASCADE');
+		$this->addSql('ALTER TABLE PartDistributor ADD CONSTRAINT FK_FBA293844CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE PartDistributor ADD CONSTRAINT FK_FBA293842D863A58 FOREIGN KEY (distributor_id) REFERENCES Distributor (id)');
+		$this->addSql('ALTER TABLE PartManufacturer ADD CONSTRAINT FK_F085878B4CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE PartManufacturer ADD CONSTRAINT FK_F085878BA23B42D FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer (id)');
+		$this->addSql('ALTER TABLE PartParameter ADD CONSTRAINT FK_A28A98594CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE PartParameter ADD CONSTRAINT FK_A28A9859F8BD700D FOREIGN KEY (unit_id) REFERENCES Unit (id)');
+		$this->addSql('ALTER TABLE PartParameter ADD CONSTRAINT FK_A28A985919187357 FOREIGN KEY (siPrefix_id) REFERENCES SiPrefix (id)');
+		$this->addSql('ALTER TABLE PartParameter ADD CONSTRAINT FK_A28A9859569AA479 FOREIGN KEY (minSiPrefix_id) REFERENCES SiPrefix (id)');
+		$this->addSql('ALTER TABLE PartParameter ADD CONSTRAINT FK_A28A9859EFBC3F08 FOREIGN KEY (maxSiPrefix_id) REFERENCES SiPrefix (id)');
+		$this->addSql('ALTER TABLE Project ADD CONSTRAINT FK_E00EE972A76ED395 FOREIGN KEY (user_id) REFERENCES User (id)');
+		$this->addSql('ALTER TABLE ProjectAttachment ADD CONSTRAINT FK_44010C5B166D1F9C FOREIGN KEY (project_id) REFERENCES Project (id)');
+		$this->addSql('ALTER TABLE ProjectPart ADD CONSTRAINT FK_B0B193364CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE ProjectPart ADD CONSTRAINT FK_B0B19336166D1F9C FOREIGN KEY (project_id) REFERENCES Project (id)');
+		$this->addSql('ALTER TABLE ProjectRun ADD CONSTRAINT FK_574A3B5C166D1F9C FOREIGN KEY (project_id) REFERENCES Project (id)');
+		$this->addSql('ALTER TABLE ProjectRunPart ADD CONSTRAINT FK_BF41064B1A221EF0 FOREIGN KEY (projectRun_id) REFERENCES ProjectRun (id)');
+		$this->addSql('ALTER TABLE ProjectRunPart ADD CONSTRAINT FK_BF41064B4CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE ReportPart ADD CONSTRAINT FK_1BF0BD554BD2A4C0 FOREIGN KEY (report_id) REFERENCES Report (id)');
+		$this->addSql('ALTER TABLE ReportPart ADD CONSTRAINT FK_1BF0BD554CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE ReportPart ADD CONSTRAINT FK_1BF0BD552D863A58 FOREIGN KEY (distributor_id) REFERENCES Distributor (id)');
+		$this->addSql('ALTER TABLE ReportProject ADD CONSTRAINT FK_83B0909B4BD2A4C0 FOREIGN KEY (report_id) REFERENCES Report (id)');
+		$this->addSql('ALTER TABLE ReportProject ADD CONSTRAINT FK_83B0909B166D1F9C FOREIGN KEY (project_id) REFERENCES Project (id)');
+		$this->addSql('ALTER TABLE StatisticSnapshotUnit ADD CONSTRAINT FK_368BD669A16DD05F FOREIGN KEY (statisticSnapshot_id) REFERENCES StatisticSnapshot (id)');
+		$this->addSql('ALTER TABLE StatisticSnapshotUnit ADD CONSTRAINT FK_368BD669F7A36E87 FOREIGN KEY (partUnit_id) REFERENCES PartUnit (id)');
+		$this->addSql('ALTER TABLE StockEntry ADD CONSTRAINT FK_E182997B4CE34BEC FOREIGN KEY (part_id) REFERENCES Part (id)');
+		$this->addSql('ALTER TABLE StockEntry ADD CONSTRAINT FK_E182997BA76ED395 FOREIGN KEY (user_id) REFERENCES User (id)');
+		$this->addSql('ALTER TABLE StorageLocation ADD CONSTRAINT FK_2C59071C12469DE2 FOREIGN KEY (category_id) REFERENCES StorageLocationCategory (id)');
+		$this->addSql('ALTER TABLE StorageLocationCategory ADD CONSTRAINT FK_3E39FA47727ACA70 FOREIGN KEY (parent_id) REFERENCES StorageLocationCategory (id) ON DELETE CASCADE');
+		$this->addSql('ALTER TABLE StorageLocationImage ADD CONSTRAINT FK_666717F073CD58AF FOREIGN KEY (storageLocation_id) REFERENCES StorageLocation (id)');
+		$this->addSql('ALTER TABLE TipOfTheDayHistory ADD CONSTRAINT FK_3177BC2A76ED395 FOREIGN KEY (user_id) REFERENCES User (id)');
+		$this->addSql('ALTER TABLE UnitSiPrefixes ADD CONSTRAINT FK_72356740F8BD700D FOREIGN KEY (unit_id) REFERENCES Unit (id) ON DELETE CASCADE');
+		$this->addSql('ALTER TABLE UnitSiPrefixes ADD CONSTRAINT FK_723567409BE9F1F4 FOREIGN KEY (siprefix_id) REFERENCES SiPrefix (id) ON DELETE CASCADE');
+		$this->addSql('ALTER TABLE User ADD CONSTRAINT FK_2DA17977A53A8AA FOREIGN KEY (provider_id) REFERENCES UserProvider (id)');
+		$this->addSql('ALTER TABLE UserPreference ADD CONSTRAINT FK_922CE7A2A76ED395 FOREIGN KEY (user_id) REFERENCES User (id)');
+	}
+
+	public function down(Schema $schema): void
+	{
+		$this->addSql('ALTER TABLE BatchJobQueryField DROP FOREIGN KEY FK_6118E78CABE62C64');
+		$this->addSql('ALTER TABLE BatchJobUpdateField DROP FOREIGN KEY FK_E1ADA7DFABE62C64');
+		$this->addSql('ALTER TABLE PartDistributor DROP FOREIGN KEY FK_FBA293842D863A58');
+		$this->addSql('ALTER TABLE ReportPart DROP FOREIGN KEY FK_1BF0BD552D863A58');
+		$this->addSql('ALTER TABLE FootprintAttachment DROP FOREIGN KEY FK_7B7388A151364C98');
+		$this->addSql('ALTER TABLE FootprintImage DROP FOREIGN KEY FK_3B22699151364C98');
+		$this->addSql('ALTER TABLE Part DROP FOREIGN KEY FK_E93DDFF851364C98');
+		$this->addSql('ALTER TABLE Footprint DROP FOREIGN KEY FK_7CF3249412469DE2');
+		$this->addSql('ALTER TABLE FootprintCategory DROP FOREIGN KEY FK_C026BA6A727ACA70');
+		$this->addSql('ALTER TABLE ManufacturerICLogo DROP FOREIGN KEY FK_3F1EF213A23B42D');
+		$this->addSql('ALTER TABLE PartManufacturer DROP FOREIGN KEY FK_F085878BA23B42D');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria DROP FOREIGN KEY FK_6EE1D3924CE34BEC');
+		$this->addSql('ALTER TABLE PartAttachment DROP FOREIGN KEY FK_76D73D864CE34BEC');
+		$this->addSql('ALTER TABLE PartDistributor DROP FOREIGN KEY FK_FBA293844CE34BEC');
+		$this->addSql('ALTER TABLE PartManufacturer DROP FOREIGN KEY FK_F085878B4CE34BEC');
+		$this->addSql('ALTER TABLE PartParameter DROP FOREIGN KEY FK_A28A98594CE34BEC');
+		$this->addSql('ALTER TABLE ProjectPart DROP FOREIGN KEY FK_B0B193364CE34BEC');
+		$this->addSql('ALTER TABLE ProjectRunPart DROP FOREIGN KEY FK_BF41064B4CE34BEC');
+		$this->addSql('ALTER TABLE ReportPart DROP FOREIGN KEY FK_1BF0BD554CE34BEC');
+		$this->addSql('ALTER TABLE StockEntry DROP FOREIGN KEY FK_E182997B4CE34BEC');
+		$this->addSql('ALTER TABLE Part DROP FOREIGN KEY FK_E93DDFF812469DE2');
+		$this->addSql('ALTER TABLE PartCategory DROP FOREIGN KEY FK_131FB619727ACA70');
+		$this->addSql('ALTER TABLE Part DROP FOREIGN KEY FK_E93DDFF8F7A36E87');
+		$this->addSql('ALTER TABLE StatisticSnapshotUnit DROP FOREIGN KEY FK_368BD669F7A36E87');
+		$this->addSql('ALTER TABLE ProjectAttachment DROP FOREIGN KEY FK_44010C5B166D1F9C');
+		$this->addSql('ALTER TABLE ProjectPart DROP FOREIGN KEY FK_B0B19336166D1F9C');
+		$this->addSql('ALTER TABLE ProjectRun DROP FOREIGN KEY FK_574A3B5C166D1F9C');
+		$this->addSql('ALTER TABLE ReportProject DROP FOREIGN KEY FK_83B0909B166D1F9C');
+		$this->addSql('ALTER TABLE ProjectRunPart DROP FOREIGN KEY FK_BF41064B1A221EF0');
+		$this->addSql('ALTER TABLE ReportPart DROP FOREIGN KEY FK_1BF0BD554BD2A4C0');
+		$this->addSql('ALTER TABLE ReportProject DROP FOREIGN KEY FK_83B0909B4BD2A4C0');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria DROP FOREIGN KEY FK_6EE1D39219187357');
+		$this->addSql('ALTER TABLE PartParameter DROP FOREIGN KEY FK_A28A985919187357');
+		$this->addSql('ALTER TABLE PartParameter DROP FOREIGN KEY FK_A28A9859569AA479');
+		$this->addSql('ALTER TABLE PartParameter DROP FOREIGN KEY FK_A28A9859EFBC3F08');
+		$this->addSql('ALTER TABLE UnitSiPrefixes DROP FOREIGN KEY FK_723567409BE9F1F4');
+		$this->addSql('ALTER TABLE StatisticSnapshotUnit DROP FOREIGN KEY FK_368BD669A16DD05F');
+		$this->addSql('ALTER TABLE Part DROP FOREIGN KEY FK_E93DDFF873CD58AF');
+		$this->addSql('ALTER TABLE StorageLocationImage DROP FOREIGN KEY FK_666717F073CD58AF');
+		$this->addSql('ALTER TABLE StorageLocation DROP FOREIGN KEY FK_2C59071C12469DE2');
+		$this->addSql('ALTER TABLE StorageLocationCategory DROP FOREIGN KEY FK_3E39FA47727ACA70');
+		$this->addSql('ALTER TABLE MetaPartParameterCriteria DROP FOREIGN KEY FK_6EE1D392F8BD700D');
+		$this->addSql('ALTER TABLE PartParameter DROP FOREIGN KEY FK_A28A9859F8BD700D');
+		$this->addSql('ALTER TABLE UnitSiPrefixes DROP FOREIGN KEY FK_72356740F8BD700D');
+		$this->addSql('ALTER TABLE Project DROP FOREIGN KEY FK_E00EE972A76ED395');
+		$this->addSql('ALTER TABLE StockEntry DROP FOREIGN KEY FK_E182997BA76ED395');
+		$this->addSql('ALTER TABLE TipOfTheDayHistory DROP FOREIGN KEY FK_3177BC2A76ED395');
+		$this->addSql('ALTER TABLE UserPreference DROP FOREIGN KEY FK_922CE7A2A76ED395');
+		$this->addSql('ALTER TABLE User DROP FOREIGN KEY FK_2DA17977A53A8AA');
+		$this->addSql('DROP TABLE BatchJob');
+		$this->addSql('DROP TABLE BatchJobQueryField');
+		$this->addSql('DROP TABLE BatchJobUpdateField');
+		$this->addSql('DROP TABLE CachedImage');
+		$this->addSql('DROP TABLE CronLogger');
+		$this->addSql('DROP TABLE Distributor');
+		$this->addSql('DROP TABLE Footprint');
+		$this->addSql('DROP TABLE FootprintAttachment');
+		$this->addSql('DROP TABLE FootprintCategory');
+		$this->addSql('DROP TABLE FootprintImage');
+		$this->addSql('DROP TABLE GridPreset');
+		$this->addSql('DROP TABLE ImportPreset');
+		$this->addSql('DROP TABLE Manufacturer');
+		$this->addSql('DROP TABLE ManufacturerICLogo');
+		$this->addSql('DROP TABLE MetaPartParameterCriteria');
+		$this->addSql('DROP TABLE Part');
+		$this->addSql('DROP TABLE PartAttachment');
+		$this->addSql('DROP TABLE PartCategory');
+		$this->addSql('DROP TABLE PartDistributor');
+		$this->addSql('DROP TABLE PartManufacturer');
+		$this->addSql('DROP TABLE PartParameter');
+		$this->addSql('DROP TABLE PartUnit');
+		$this->addSql('DROP TABLE Project');
+		$this->addSql('DROP TABLE ProjectAttachment');
+		$this->addSql('DROP TABLE ProjectPart');
+		$this->addSql('DROP TABLE ProjectRun');
+		$this->addSql('DROP TABLE ProjectRunPart');
+		$this->addSql('DROP TABLE Report');
+		$this->addSql('DROP TABLE ReportPart');
+		$this->addSql('DROP TABLE ReportProject');
+		$this->addSql('DROP TABLE SiPrefix');
+		$this->addSql('DROP TABLE StatisticSnapshot');
+		$this->addSql('DROP TABLE StatisticSnapshotUnit');
+		$this->addSql('DROP TABLE StockEntry');
+		$this->addSql('DROP TABLE StorageLocation');
+		$this->addSql('DROP TABLE StorageLocationCategory');
+		$this->addSql('DROP TABLE StorageLocationImage');
+		$this->addSql('DROP TABLE SystemNotice');
+		$this->addSql('DROP TABLE SystemPreference');
+		$this->addSql('DROP TABLE TempImage');
+		$this->addSql('DROP TABLE TempUploadedFile');
+		$this->addSql('DROP TABLE TipOfTheDay');
+		$this->addSql('DROP TABLE TipOfTheDayHistory');
+		$this->addSql('DROP TABLE Unit');
+		$this->addSql('DROP TABLE UnitSiPrefixes');
+		$this->addSql('DROP TABLE User');
+		$this->addSql('DROP TABLE UserPreference');
+		$this->addSql('DROP TABLE UserProvider');
+		$this->addSql('DROP TABLE refresh_tokens');
+		$this->addSql('DROP TABLE messenger_messages');
+	}
+
+	public function isTransactional(): bool
+	{
+		return false;
+	}
+}

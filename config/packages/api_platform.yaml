@@ -1,0 +1,39 @@
+api_platform:
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/merge-patch+json']
+    formats:
+        jsonld: ['application/ld+json']
+        csv: ['text/csv']
+        json: ['application/json']
+#        xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+#    enable_swagger_ui: false
+#    enable_re_doc: false
+    eager_loading:
+        force_eager: false
+        fetch_partial: true
+    swagger:
+        versions: [3]
+        api_keys:
+            apiKey:
+                name: Authorization
+                type: header
+    title: 'Limas'
+    description: 'The Limas REST API'
+    defaults:
+        pagination_client_items_per_page: true
+    openapi:
+        contact:
+            name: Lopo
+            url: 'https://github.com/Lopo'
+            email: 'lopo@losys.eu'
+#        termsOfService: 'https://'
+#        license:
+#            name: ''
+#            url: ''
+    version: '0.0.1'
+    collection:
+        pagination:
+            enabled: true
+            client_enabled: true

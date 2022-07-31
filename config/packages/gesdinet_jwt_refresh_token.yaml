@@ -1,0 +1,10 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: Limas\Entity\RefreshToken
+    cookie:
+        enabled: true
+        same_site: lax # default lax
+        path: / # default /
+        domain: null # default null
+        http_only: true # default true
+        secure: true # default true
+        remove_token_from_body: false # default true

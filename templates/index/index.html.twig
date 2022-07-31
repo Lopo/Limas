@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10, user-scalable=yes">
+
+	<title>{% block title %}Limas{% endblock %}</title>
+	<base href="{{ baseUrl }}"/>
+	<link rel="icon" href="{{ asset('build/images/favicon.png') }}">
+	{% set themes = {"classic": "Classic", "crisp":"Crisp", "crisp-touch": "Crisp Touch", "gray":"Gray", "neptune": "Neptune", "neptune-touch": "Neptune Touch", "triton": "Triton", "aria": "Aria"} %}
+
+	<link id="theme" rel="stylesheet" href="{{ asset('js/packages/extjs/build/classic/theme-classic/resources/theme-classic-all.css') }}"/>
+	<link id="themeUx" rel="stylesheet" href="{{ asset('js/packages/extjs/build/packages/ux/classic/classic/resources/ux-all.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('js/packages/extjs/build/packages/ux/classic/classic/resources/ux-all.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('js/packages/extjs/build/packages/charts/classic/neptune/resources/charts-all.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('build/famfamfam-silk-sprite/silk-icons-sprite.min.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('spritesheets/fugue-16.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('spritesheets/partkeepr.css') }}"/>
+	<link rel="stylesheet" href="{{ asset('css/PartKeepr.css') }}"/>
+
+	<script>
+		var Ext = Ext || {};
+	</script>
+	<script src="{{ asset('js/packages/extjs/build/ext-all.js') }}"></script>
+	<script src="{{ asset('build/limas/extjs.js') }}"></script>
+
+	<script src="{{ asset('build/limas/main.js') }}"></script>
+
+	<script src="{{ asset('entity/User') }}"></script>
+	<script src="{{ asset('entity/UserPreference') }}"></script>
+	<script src="{{ asset('entity/UserProvider') }}"></script>
+	<script src="{{ asset('entity/BatchJob') }}"></script>
+	<script src="{{ asset('entity/BatchJobQueryField') }}"></script>
+	<script src="{{ asset('entity/BatchJobUpdateField') }}"></script>
+	<script src="{{ asset('entity/SystemNotice') }}"></script>
+	<script src="{{ asset('entity/Distributor') }}"></script>
+	<script src="{{ asset('entity/Footprint') }}"></script>
+	<script src="{{ asset('entity/FootprintAttachment') }}"></script>
+	<script src="{{ asset('entity/FootprintCategory') }}"></script>
+	<script src="{{ asset('entity/FootprintImage') }}"></script>
+	<script src="{{ asset('entity/GridPreset') }}"></script>
+	<script src="{{ asset('entity/ImportPreset') }}"></script>
+	<script src="{{ asset('entity/Manufacturer') }}"></script>
+	<script src="{{ asset('entity/ManufacturerICLogo') }}"></script>
+	<script src="{{ asset('entity/MetaPartParameterCriteria') }}"></script>
+	<script src="{{ asset('entity/Part') }}"></script>
+	<script src="{{ asset('entity/PartAttachment') }}"></script>
+	<script src="{{ asset('entity/PartCategory') }}"></script>
+	<script src="{{ asset('entity/PartDistributor') }}"></script>
+	<script src="{{ asset('entity/PartManufacturer') }}"></script>
+	<script src="{{ asset('entity/PartMeasurementUnit') }}"></script>
+	<script src="{{ asset('entity/PartParameter') }}"></script>
+	<script src="{{ asset('entity/Project') }}"></script>
+	<script src="{{ asset('entity/ProjectAttachment') }}"></script>
+	<script src="{{ asset('entity/ProjectPart') }}"></script>
+	<script src="{{ asset('entity/ProjectRun') }}"></script>
+	<script src="{{ asset('entity/Report') }}"></script>
+	<script src="{{ asset('entity/ReportPart') }}"></script>
+	<script src="{{ asset('entity/ReportProject') }}"></script>
+	<script src="{{ asset('entity/SiPrefix') }}"></script>
+	<script src="{{ asset('entity/StockEntry') }}"></script>
+	<script src="{{ asset('entity/StorageLocation') }}"></script>
+	<script src="{{ asset('entity/StorageLocationCategory') }}"></script>
+	<script src="{{ asset('entity/StorageLocationImage') }}"></script>
+	<script src="{{ asset('entity/SystemPreference') }}"></script>
+	<script src="{{ asset('entity/TipOfTheDay') }}"></script>
+	<script src="{{ asset('entity/TipOfTheDayHistory') }}"></script>
+	<script src="{{ asset('entity/Unit') }}"></script>
+	<script src="{{ asset('entity/TempUploadedFile') }}"></script>
+
+	<script src="{{ asset('build/limas/main2.js') }}"></script>
+</head>
+<body>
+<div id="loader-wrapper">
+	<div id="loader-logo"></div>
+	<div id="loader"></div>
+	<div id="loader-message"></div>
+</div>
+<script>
+	window.themes = {};
+	window.theme = 'classic';
+	{% for themeId, themeName in themes %}
+	window.themes['{{ themeId }}'] = {
+		themeUri: '{{ asset('js/packages/extjs/build/classic/theme-'~themeId~'/resources/theme-'~themeId~'-all.css') }}',
+		themeUxUri: '{{ asset('js/packages/extjs/build/packages/ux/classic/'~themeId~'/resources/ux-all.css') }}',
+		themeName: '{{ themeName }}'
+	};
+	{% endfor %}
+</script>
+<script>
+	window.parameters ={{ parameters|json_encode|raw }};
+</script>
+</body>
+</html>

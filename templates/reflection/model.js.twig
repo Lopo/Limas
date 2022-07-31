@@ -1,0 +1,67 @@
+Ext.define('{{ className }}', {
+	extend: 'Limas.data.{{ parentClass }}',
+	alias: 'schema.{{ className }}',
+
+	idProperty: '@id',
+	fields: [
+		{% for field in fields %}
+		{ name: '{{ field.name|raw }}'{% if field.type%}, type: '{{ field.type }}'{% endif %}{% if field.nullable ?? false %}, allowNull: true{% endif %}{% if not field.persist %}, persist: false{% endif %}{% if field.validators ?? false %}, validators: {{ field.validators|raw }}{% endif %}}{% if not loop.last %},{% endif %}
+
+		{% endfor %}
+		{% if associations.MANY_TO_ONE|length > 0 %}
+		,
+		{% for association in associations.MANY_TO_ONE %}
+		{ name: '{{ association.name }}',
+			reference: '{{ association.target }}',
+			allowBlank: {{ association.nullable ? 'true' : 'false' }}{% if association.byReference %},
+			byReference: true{% endif %}
+		}{% if not loop.last %},{% endif %}
+
+		{% endfor %}
+		{% endif %}
+		{% if associations.ONE_TO_ONE|length > 0 %}
+		,
+		{% for association in associations.ONE_TO_ONE %}
+		{ name: '{{ association.name }}',
+			reference: '{{ association.target }}'
+		}{% if not loop.last %},{% endif %}
+
+		{% endfor %}
+		{% endif %}
+	],
+
+	{% if associations.ONE_TO_MANY|length > 0 %}
+	hasMany: [
+		{% for association in associations.ONE_TO_MANY %}
+		{
+			name: '{{ association.name }}',
+			associationKey: '{{ association.name }}',
+			model: '{{ association.target }}'
+		}{% if not loop.last %},{% endif %}
+
+		{% endfor %}
+	],
+	{% endif %}
+
+	{% if associations.MANY_TO_MANY|length > 0 %}
+	manyToMany: {
+{% for association in associations.MANY_TO_MANY %}
+{{ association.name }}: {
+	type: '{{ association.target }}',
+		role: '{{ association.name }}',
+		field: '@id',
+		right: true
+} {% if not loop.last %},{% endif %}
+{% endfor %}
+},
+{% endif %}
+
+proxy: {
+	type: 'Hydra',
+	url: '{% if uri == "" %}undefined:{{ className }}{% else %}{{ uri|raw }}{% endif %}'
+			{% if ignoreIds == true %}
+		, ignoreIds: true
+	{% endif %}
+}
+});
+Limas.Data.Store.ModelStore.addModel('{{ className }}', '');
