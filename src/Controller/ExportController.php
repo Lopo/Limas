@@ -41,7 +41,7 @@ class ExportController
 
 		$exporter->open();
 		foreach ($content as $item) {
-			$exporter->write($item);
+			$exporter->write(array_map(static fn($val) => $val ?? '', $item));
 		}
 		$exporter->close();
 
