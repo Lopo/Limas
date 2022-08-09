@@ -11,14 +11,18 @@ parameters:
 		container_xml_path: var/cache/test/Limas_KernelTestDebugContainer.xml
 		console_application_loader: tests/console-application.php
 	ignoreErrors:
-		- message: '#^Service "[^"]+" is private.$#'
-		  path: %rootDir%/../../../tests/
-		- message: '#^Call to deprecated method makeAuthenticatedClient\(\) of class Liip\\FunctionalTestBundle\\Test\\WebTestCase.$#'
-		  path: %rootDir%/../../../tests/
-		- message: '#^Call to deprecated method makeClientWithCredentials\(\) of class Liip\\FunctionalTestBundle\\Test\\WebTestCase.$#'
-		  path: %rootDir%/../../../tests/
-		- message: '#^Variable property access on mixed.$#'
-		  path: %rootDir%/../../../tests/
+		-
+			message: '#^Service "[^"]+" is private.$#'
+			path: %rootDir%/../../../tests/
+		-
+			message: '#^Call to deprecated method makeAuthenticatedClient\(\) of class Liip\\FunctionalTestBundle\\Test\\WebTestCase.$#'
+			path: %rootDir%/../../../tests/
+		-
+			message: '#^Call to deprecated method makeClientWithCredentials\(\) of class Liip\\FunctionalTestBundle\\Test\\WebTestCase.$#'
+			path: %rootDir%/../../../tests/
+		-
+			message: '#^Variable property access on mixed.$#'
+			path: %rootDir%/../../../tests/
 includes:
     - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
     - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon

@@ -75,12 +75,12 @@ class TemporaryFileDenormalizer
 		}
 	}
 
-	public function supportsNormalization($data, $format = null): bool // mosi ostat inac sa vola pre serialize/normalize a dava nahovno vystupy
+	public function supportsNormalization(mixed $data, $format = null, array $context = []): bool
 	{
 		return false;
 	}
 
-	private function updateObjectToPopulate(array $data, array &$context): void // asik len pri update
+	private function updateObjectToPopulate(array $data, array &$context): void
 	{
 		try {
 			$context[self::OBJECT_TO_POPULATE] = $this->iriConverter->getItemFromIri((string)$data['id'], $context + ['fetch_data' => true]);
@@ -105,7 +105,6 @@ class TemporaryFileDenormalizer
 
 	public function denormalize($data, $class, $format = null, array $context = []): mixed
 	{
-//		\ApiPlatform\Core\Serializer\ItemNormalizer
 		// Avoid issues with proxies if we populated the object
 		if (isset($data['id']) && !isset($context[self::OBJECT_TO_POPULATE])) {
 			if (isset($context['api_allow_update']) && true !== $context['api_allow_update']) {
@@ -120,7 +119,6 @@ class TemporaryFileDenormalizer
 			}
 		}
 
-//		 JsonLD ItemNormalizer
 		// Avoid issues with proxies if we populated the object
 		if (isset($data['@id']) && !isset($context[self::OBJECT_TO_POPULATE])) {
 			if (true !== ($context['api_allow_update'] ?? true)) {
@@ -129,7 +127,7 @@ class TemporaryFileDenormalizer
 
 			$context[self::OBJECT_TO_POPULATE] = $this->iriConverter->getItemFromIri($data['@id'], $context + ['fetch_data' => true]);
 		}
-//// AbstractItem data,class,format,context > data, resourceClass, format, context
+
 		if (null === $objectToPopulate = $this->extractObjectToPopulate($class, $context, static::OBJECT_TO_POPULATE)) {
 			$normalizedData = is_scalar($data) ? [$data] : $this->prepareForDenormalization($data);
 			$class = $this->getClassDiscriminatorResolvedClass($normalizedData, $class);
@@ -141,34 +139,33 @@ class TemporaryFileDenormalizer
 		if (null !== ($inputClass = $this->getInputClass($resourceClass, $context)) && null !== ($dataTransformer = $this->getDataTransformer($data, $resourceClass, $context))) {
 			$dataTransformerContext = $context;
 
-//			unset($context['input']);
-//			unset($context['resource_class']);
+			unset($context['input'], $context['resource_class']);
 
-//			if (!$this->serializer instanceof DenormalizerInterface) {
-//				throw new LogicException('Cannot denormalize the input because the injected serializer is not a denormalizer');
-//			}
+			if (!$this->serializer instanceof DenormalizerInterface) {
+				throw new LogicException('Cannot denormalize the input because the injected serializer is not a denormalizer');
+			}
 
-//			if ($dataTransformer instanceof DataTransformerInitializerInterface) {
-//				$context[AbstractObjectNormalizer::OBJECT_TO_POPULATE] = $dataTransformer->initialize($inputClass, $context);
-//				$context[AbstractObjectNormalizer::DEEP_OBJECT_TO_POPULATE] = true;
-//			}
+			if ($dataTransformer instanceof DataTransformerInitializerInterface) {
+				$context[AbstractObjectNormalizer::OBJECT_TO_POPULATE] = $dataTransformer->initialize($inputClass, $context);
+				$context[AbstractObjectNormalizer::DEEP_OBJECT_TO_POPULATE] = true;
+			}
 
-//			try {
-//				$denormalizedInput = $this->serializer->denormalize($data, $inputClass, $format, $context);
-//			} catch (NotNormalizableValueException $e) {
-//				throw new UnexpectedValueException('The input data is misformatted.', $e->getCode(), $e);
-//			}
+			try {
+				$denormalizedInput = $this->serializer->denormalize($data, $inputClass, $format, $context);
+			} catch (NotNormalizableValueException $e) {
+				throw new UnexpectedValueException('The input data is misformatted.', $e->getCode(), $e);
+			}
 
-//			if (!\is_object($denormalizedInput)) {
-//				throw new UnexpectedValueException('Expected denormalized input to be an object.');
-//			}
+			if (!\is_object($denormalizedInput)) {
+				throw new UnexpectedValueException('Expected denormalized input to be an object.');
+			}
 
-//			return $dataTransformer->transform($denormalizedInput, $resourceClass, $dataTransformerContext);
+			return $dataTransformer->transform($denormalizedInput, $resourceClass, $dataTransformerContext);
 		}
 
 		$supportsPlainIdentifiers = $this->supportsPlainIdentifiers();
 
-		if (\is_string($data)) { // pri update ?
+		if (\is_string($data)) {
 			try {
 				return $this->iriConverter->getItemFromIri($data, $context + ['fetch_data' => true]);
 			} catch (ItemNotFoundException $e) {
@@ -194,7 +191,7 @@ class TemporaryFileDenormalizer
 
 			return $item;
 		}
-////AbstractObject >data, type, format, context
+
 		$type = $resourceClass;
 		if (!isset($context['cache_key'])) {
 			$context['cache_key'] = $this->getCacheKey($format, $context);
@@ -208,7 +205,6 @@ class TemporaryFileDenormalizer
 
 		$reflectionClass = new \ReflectionClass($type);
 		$object = $this->instantiateObject($normalizedData, $type, $context, $reflectionClass, $allowedAttributes, $format);
-////		$resolvedClass = $this->objectClassResolver ? ($this->objectClassResolver)($object) : \get_class($object);
 		$resolvedClass = ($this->getObjectClass(...))($object);
 
 		foreach ($normalizedData as $attribute => $value) {
@@ -249,7 +245,6 @@ class TemporaryFileDenormalizer
 
 			$value = $this->applyCallbacks($value, $resolvedClass, $attribute, $format, $attributeContext);
 
-// $object=result ; $reflectionClass [of result] ;
 			try {
 				if ($this->isTemporaryFile($property = $reflectionClass->getProperty($attribute))) {
 					$oneToMany = $property->getAttributes(OneToMany::class);
@@ -289,7 +284,6 @@ class TemporaryFileDenormalizer
 						}
 					}
 				}
-//$attribute [current name] ; $value [array/serialized ld temp] ; $format [req content-type] ; $attrContext [array]
 				$this->setAttributeValue($object, $attribute, $value, $format, $attributeContext);
 			} catch (\Symfony\Component\PropertyAccess\Exception\InvalidArgumentException $e) {
 				$exception = NotNormalizableValueException::createForUnexpectedDataType(
@@ -316,14 +310,14 @@ class TemporaryFileDenormalizer
 		return $object;
 	}
 
-	public function supportsDenormalization($data, $type, $format = null): bool
+	public function supportsDenormalization(mixed $data, $type, $format = null, array $context = []): bool
 	{
 		return /*self::FORMAT === $format
 			&&*/ parent::supportsDenormalization($data, $type, $format)
 			&& $this->hasTemporaryFileProperty($type);
 	}
 
-	private function hasTemporaryFileProperty($type): bool
+	private function hasTemporaryFileProperty(string $type): bool
 	{
 		$classReflection = new \ReflectionClass($type);
 		foreach ($classReflection->getProperties() as $property) {
@@ -403,8 +397,7 @@ class TemporaryFileDenormalizer
 		foreach ($context[self::EXCLUDE_FROM_CACHE_KEY] ?? $this->defaultContext[self::EXCLUDE_FROM_CACHE_KEY] as $key) {
 			unset($context[$key]);
 		}
-		unset($context[self::EXCLUDE_FROM_CACHE_KEY]);
-		unset($context[self::OBJECT_TO_POPULATE]);
+		unset($context[self::EXCLUDE_FROM_CACHE_KEY], $context[self::OBJECT_TO_POPULATE]);
 		unset($context['cache_key']); // avoid artificially different keys
 
 		try {
@@ -541,7 +534,7 @@ class TemporaryFileDenormalizer
 //	}
 
 	/**
-	 * Sets a value of the object using the PropertyAccess component.
+	 * Sets a value of the object using the PropertyAccess component
 	 *
 	 * @param object $object
 	 * @param mixed $value

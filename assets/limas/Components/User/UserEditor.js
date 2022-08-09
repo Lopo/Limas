@@ -36,8 +36,8 @@ Ext.define('Limas.UserEditor', {
 				name: 'active',
 				hidden: true
 			}, {
-				value: i18n('This is a protected user, which may not be changed'),
 				xtype: 'displayfield',
+				value: i18n('This is a protected user, which may not be changed'),
 				itemId: 'protectedNotice',
 				hidden: true
 			}

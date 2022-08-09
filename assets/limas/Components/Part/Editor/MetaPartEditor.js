@@ -122,7 +122,6 @@ Ext.define('Limas.Components.Part.Editor.MetaPartEditor', {
 		switch (rec.get('valueType')) {
 			case 'string':
 				return rec.get('stringValue');
-				break;
 			case 'numeric':
 				if (rec.getUnit() !== null) {
 					unit = rec.getUnit().get('symbol');
@@ -131,7 +130,6 @@ Ext.define('Limas.Components.Part.Editor.MetaPartEditor', {
 					symbol = rec.getSiPrefix().get('symbol');
 				}
 				return rec.get("value") + symbol + unit;
-				break;
 			default:
 				return '';
 		}
