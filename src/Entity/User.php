@@ -249,7 +249,7 @@ class User
 
 	public function eraseCredentials(): void
 	{
-//		$this->password = null;
+		$this->newPassword = null;
 	}
 
 	public function isEqualTo(UserInterface $user): bool

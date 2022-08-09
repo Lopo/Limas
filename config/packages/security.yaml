@@ -22,11 +22,14 @@ security:
         jwt:
             pattern: ^/api/users/jwt
             stateless: true
-            json_login:
+            limas_json:
                 check_path: api_login_jwt
+                provider: chain_provider
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-                provider: chain_provider
+#                ldap:
+#                    service: Symfony\Component\Ldap\Ldap
+#                    dn_string: 'uid={username},ou=People,dc=partkeepr,dc=org'
         api_token_refresh:
             pattern: ^/api/token/refresh
             stateless: true
@@ -39,12 +42,14 @@ security:
             jwt: #~ # enables the jwt authenticator
                 provider: chain_provider
 #                authenticator: lexik_jwt_authentication.security.jwt_authenticator # (default jwt authenticator)
-            http_basic:
+            limas_httpbasic:
                 provider: chain_provider
-            entry_point: http_basic
+#                ldap:
+#                    service: Symfony\Component\Ldap\Ldap
+#                    dn_string: 'uid={username},ou=People,dc=partkeepr,dc=org'
         main:
             lazy: true
-            provider: app_user_provider
+            provider: chain_provider
 #            remember_me:
 #                secret: '%kernel.secret%'
 #                lifetime: 3600
@@ -80,3 +85,4 @@ when@test:
         firewalls:
             api:
                 http_basic: ~
+                entry_point: http_basic

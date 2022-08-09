@@ -23,4 +23,5 @@ return [
 	Sonata\Exporter\Bridge\Symfony\SonataExporterBundle::class => ['all' => true],
 	Liip\FunctionalTestBundle\LiipFunctionalTestBundle::class => ['test' => true],
 	Liip\TestFixturesBundle\LiipTestFixturesBundle::class => ['test' => true],
+	Limas\Bundle\LimasBundle::class => ['all' => true],
 ];

@@ -906,6 +906,7 @@ class InstallFixtures
 		);
 
 		$manager->persist(new UserProvider(UserService::BUILTIN_PROVIDER, true));
+		$manager->persist(new UserProvider(UserService::LDAP_PROVIDER, false));
 
 		$manager->flush();
 	}

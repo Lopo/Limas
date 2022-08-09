@@ -16,6 +16,7 @@ services:
         bind:
             $limas: '%limas%'
             $liipImagine: '@liip_imagine'
+            $ldapLocator: '@security.ldap_locator'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -40,6 +41,18 @@ services:
     Limas\Filter\AdvancedSearchFilter:
         tags:
             - { name: api_platform.doctrine.orm.query_extension.collection }
+#    Symfony\Component\Ldap\Ldap:
+#        arguments: ['@Symfony\Component\Ldap\Adapter\ExtLdap\Adapter']
+#        tags:
+#            - ldap
+#    Symfony\Component\Ldap\Adapter\ExtLdap\Adapter:
+#        arguments:
+#            -
+#                connection_string: '%env(LDAP_DSN)%'
+#                encryption: none
+#                options:
+#                    protocol_version: 3
+#                    referrals: false
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

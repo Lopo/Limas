@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class UserService
 {
 	public const BUILTIN_PROVIDER = 'Builtin';
+	public const LDAP_PROVIDER = 'LDAP';
 
 
 	public function __construct(

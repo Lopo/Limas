@@ -40,6 +40,7 @@
 		"symfony/framework-bundle": "6.1.*",
 		"symfony/http-client": "6.1.*",
 		"symfony/intl": "6.1.*",
+		"symfony/ldap": "6.1.*",
 		"symfony/mailer": "6.1.*",
 		"symfony/mime": "6.1.*",
 		"symfony/monolog-bundle": "^3.0",
