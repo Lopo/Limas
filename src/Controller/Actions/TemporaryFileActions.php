@@ -46,17 +46,14 @@ class TemporaryFileActions
 		$this->entityManager->persist($uploadedFile);
 		$this->entityManager->flush();
 
-		$serializedData = $serializer->normalize($uploadedFile, 'jsonld', []);
-		return new JsonResponse(new TemporaryImageUploadResponse($serializedData));
+		return new JsonResponse(new TemporaryImageUploadResponse($serializer->normalize($uploadedFile, 'jsonld', [])));
 	}
 
 	public function webcamUploadAction(Request $request): TempUploadedFile
 	{
 		$file = new TempUploadedFile;
-		$data = $request->getContent();
 
-		$base64 = explode(',', $data);
-		$this->uploadedFileService->replaceFromData($file, base64_decode($base64[1], true), 'webcam.png');
+		$this->uploadedFileService->replaceFromData($file, base64_decode(explode(',', $request->getContent())[1], true), 'webcam.png');
 
 		$this->entityManager->persist($file);
 		$this->entityManager->flush();

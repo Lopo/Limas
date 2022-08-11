@@ -27,7 +27,7 @@ class ProjectTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = static::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -57,9 +57,6 @@ class ProjectTest
 		$part = $this->fixtures->getReference('part.1');
 		$part2 = $this->fixtures->getReference('part.2');
 
-		$serializedPart1 = $this->getContainer()->get('serializer')->normalize($part, 'jsonld');
-		$serializedPart2 = $this->getContainer()->get('serializer')->normalize($part2, 'jsonld');
-
 		$client->request(
 			'POST',
 			'/api/projects',
@@ -75,14 +72,14 @@ class ProjectTest
 				'parts' => [
 					[
 						'quantity' => 1,
-						'part' => $this->getContainer()->get('serializer')->normalize($part, 'jsonld'),
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part),
 						'remarks' => 'testremark',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
 					],
 					[
 						'quantity' => 2,
-						'part' => $serializedPart2,
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part2),
 						'remarks' => 'testremark2',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
@@ -149,7 +146,7 @@ class ProjectTest
 
 	public function testProjectAttachmentRemoval(): void
 	{
-		$em=$this->getContainer()->get('doctrine.orm.default_entity_manager');
+		$em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 		$client = static::makeAuthenticatedClient();
 
 		$project = $this->fixtures->getReference('project');
@@ -194,12 +191,10 @@ class ProjectTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$project = $this->fixtures->getReference('project');
-
-		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
-		$iri = $iriConverter->getIriFromItem($project);
-
-		$client->request('GET', $iri);
+		$client->request(
+			'GET',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference('project'))
+		);
 
 		$project = Json::decode($client->getResponse()->getContent());
 

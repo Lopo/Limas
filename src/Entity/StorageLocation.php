@@ -22,11 +22,11 @@ class StorageLocation
 	#[ORM\OneToOne(mappedBy: 'storageLocation', targetEntity: StorageLocationImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[UploadedFile]
-	private ?StorageLocationImage $image;
+	private ?StorageLocationImage $image = null;
 	#[ORM\ManyToOne(targetEntity: StorageLocationCategory::class, inversedBy: 'storageLocations')]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
-	private ?StorageLocationCategory $category;
+	private ?StorageLocationCategory $category = null;
 
 
 	#[Groups(['default'])]
