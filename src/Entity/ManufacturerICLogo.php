@@ -18,7 +18,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'manufacturer_i_c_logos/{id}/getImage',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class ManufacturerICLogo
 	extends Image

@@ -77,14 +77,14 @@ class UserActions
 			->setNewPassword(null);
 		$this->entityManager->flush();
 
-//		$data->eraseCredentials();
+		$data->eraseCredentials();
 		return $data;
 	}
 
-	public function GetProvidersAction()
-	{
-		//@todo
-	}
+//	public function GetProvidersAction()
+//	{
+//		//@todo
+//	}
 
 	public function getAction(User $data): User
 	{

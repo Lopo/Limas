@@ -14,7 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: UnitRepository::class)]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class Unit
 	extends BaseEntity
 {

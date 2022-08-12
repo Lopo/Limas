@@ -30,7 +30,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'method' => 'get',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class PartAttachment
 	extends UploadedFile

@@ -36,7 +36,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'temp_uploaded_files/{id}/getFile',
 			'controller' => TemporaryFileActions::class . '::getFileAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class TempUploadedFile
 	extends UploadedFile

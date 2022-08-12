@@ -25,11 +25,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 		'get',
 		'post' => [
 			'controller' => UserActions::class . '::PostAction'
-		],
-		'GetProviders' => [
-			'path' => 'users/get_user_providers',
-			'method' => 'get',
-			'controller' => UserActions::class . '::GetProvidersAction'
+//		],
+//		'GetProviders' => [
+//			'path' => 'users/get_user_providers',
+//			'method' => 'get',
+//			'controller' => UserActions::class . '::GetProvidersAction'
 		]
 	],
 	itemOperations: [
@@ -54,7 +54,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 			'normalization_context' => ['groups' => 'default'],
 			'denormalization_context' => ['groups' => 'changePassword:write']
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class User
 	extends BaseEntity
@@ -64,10 +66,10 @@ class User
 	#[Groups(['default', 'login:write'])]
 	private string $username;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
-	#[Groups(['login:write', 'default:write'])]
+	#[Groups(['login:write'])]
 	private ?string $password = null;
 	#[VirtualField(type: 'string')]
-	#[Groups(['default:write'])]
+	#[Groups(['default'])]
 	private ?string $newPassword = null;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]

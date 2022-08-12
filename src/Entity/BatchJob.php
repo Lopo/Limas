@@ -23,7 +23,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'method' => 'put',
 			'controller' => BatchJobActions::class . '::BatchJobExecute'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class BatchJob
 	extends BaseEntity

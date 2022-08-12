@@ -24,7 +24,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 			'method' => 'put',
 			'controller' => SetDefaultUnit::class
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class PartMeasurementUnit
 	extends BaseEntity

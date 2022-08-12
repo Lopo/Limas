@@ -14,7 +14,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: ManufacturerRepository::class)]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class Manufacturer
 	extends BaseEntity
 {

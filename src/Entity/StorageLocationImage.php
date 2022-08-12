@@ -17,7 +17,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'method' => 'get',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class StorageLocationImage
 	extends Image

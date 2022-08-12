@@ -11,7 +11,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StockEntryRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class StockEntry
 	extends BaseEntity
 {

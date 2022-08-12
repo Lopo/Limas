@@ -13,7 +13,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: ReportPartRepository::class)]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class ReportPart
 	extends BaseEntity
 {

@@ -17,7 +17,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'method' => 'get',
 			'controller' => GetTipHistoryCollection::class
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class TipOfTheDayHistory
 	extends BaseEntity

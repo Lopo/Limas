@@ -17,7 +17,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'footprint_images/{id}/getImage',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class FootprintImage
 	extends Image

@@ -15,7 +15,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 		new ORM\UniqueConstraint(name: 'type', fields: ['type'])
 	]
 )]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class UserProvider
 	extends BaseEntity
 {

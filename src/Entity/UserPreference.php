@@ -29,7 +29,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'deserialize' => false,
 		]
 	],
-	itemOperations: ['get']
+	itemOperations: ['get'],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class UserPreference
 {

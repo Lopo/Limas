@@ -19,7 +19,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'controller' => SystemNoticeAcknowledge::class,
 			'deserialize' => false
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class SystemNotice
 	extends BaseEntity

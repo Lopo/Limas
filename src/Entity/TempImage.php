@@ -35,7 +35,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'temp_images/{id}/getImage',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class TempImage
 	extends Image

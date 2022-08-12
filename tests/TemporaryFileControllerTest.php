@@ -64,7 +64,7 @@ class TemporaryFileControllerTest
 			'mimetype',
 			'extension',
 //			'description',
-			'legacyExtension',
+//			'legacyExtension'
 		];
 
 		foreach ($propertiesToCheck as $property) {
@@ -157,7 +157,7 @@ class TemporaryFileControllerTest
 			'mimetype',
 			'extension',
 			'description',
-			'legacyExtension',
+//			'legacyExtension'
 		];
 
 		foreach ($propertiesToCheck as $property) {

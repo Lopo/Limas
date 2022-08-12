@@ -27,7 +27,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'controller' => SystemPreferenceActions::class . '::deleteAction'
 		]
 	],
-	itemOperations: []
+	itemOperations: [],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class SystemPreference
 {

@@ -30,7 +30,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'controller' => TipOfTheDayActions::class . '::MarkTipRead',
 			'deserialize' => false
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class TipOfTheDay
 	extends BaseEntity

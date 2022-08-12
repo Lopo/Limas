@@ -21,7 +21,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'controller' => MarkAsDefault::class,
 			'deserialize' => false
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class GridPreset
 	extends BaseEntity

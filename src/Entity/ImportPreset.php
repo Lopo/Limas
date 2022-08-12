@@ -11,7 +11,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ImportPresetRepository::class)]
 #[ORM\UniqueConstraint(name: 'name_entity_unique', fields: ['baseEntity', 'name'])]
-#[ApiResource]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class ImportPreset
 	extends BaseEntity
 {

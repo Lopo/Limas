@@ -29,7 +29,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 			'controller' => ProjectReportActions::class . '::getReportAction'
 		],
 		'put', 'delete'
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class Report
 	extends BaseEntity

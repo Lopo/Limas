@@ -31,7 +31,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'project_attachments/{id}/getImage',
 			'controller' => ImageActions::class . '::getImageAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class ProjectAttachment
 	extends UploadedFile

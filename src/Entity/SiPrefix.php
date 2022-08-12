@@ -13,7 +13,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: SiPrefixRepository::class)]
 #[ApiResource(
 	collectionOperations: ['get'],
-	itemOperations: ['get']
+	itemOperations: ['get'],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class SiPrefix
 	extends BaseEntity

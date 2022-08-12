@@ -22,7 +22,9 @@ use Doctrine\ORM\Mapping as ORM;
 			'path' => 'footprint_attachments/{id}/getFile',
 			'controller' => FileActions::class . '::getFileAction'
 		]
-	]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class FootprintAttachment
 	extends UploadedFile
