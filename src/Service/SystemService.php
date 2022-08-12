@@ -211,9 +211,9 @@ class SystemService
 	public function getBytesFromHumanReadable(string $size_str): int
 	{
 		return match (substr($size_str, -1)) {
-			'M', 'm' => (int)$size_str * 1048576,
-			'K', 'k' => (int)$size_str * 1024,
-			'G', 'g' => (int)$size_str * 1073741824,
+			'K', 'k' => ((int)$size_str) << 10,
+			'M', 'm' => ((int)$size_str) << 20,
+			'G', 'g' => ((int)$size_str) << 30,
 			default => $size_str,
 		};
 	}
