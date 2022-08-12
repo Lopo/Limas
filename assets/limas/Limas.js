@@ -404,6 +404,18 @@ Ext.application({
 	getSiPrefixStore: function () {
 		return this.siPrefixStore;
 	},
+	uploadFileFromURL: function (url, description, callback, scope) {
+		Ext.Ajax.request({
+			url: Limas.getBasePath() + '/api/temp_uploaded_files/upload',
+			method: 'POST',
+			params: {
+				description: description,
+				url: url
+			},
+			callback: callback,
+			scope: scope
+		});
+	},
 	/**
 	 * Converts the Character "micro" (µ, available on german keyboards via AltGr+m) to the Character "Mu" (μ)
 	 * The standard for Si-Prefixes defines that the "Mu"-character should be used instead of the "micro" character
