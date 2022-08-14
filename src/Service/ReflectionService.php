@@ -38,9 +38,7 @@ class ReflectionService
 			$bTree = true;
 		}
 
-		$fieldMappings = [];
-		$fieldMappings = array_merge($fieldMappings, $this->getVirtualFieldMappings($cm));
-		$fieldMappings = array_merge($fieldMappings, $this->getDatabaseFieldMappings($cm));
+		$fieldMappings = array_merge($this->getVirtualFieldMappings($cm), $this->getDatabaseFieldMappings($cm));
 
 		$associationMappings = $this->getDatabaseAssociationMappings($cm, $bTree);
 		$associationMappings['ONE_TO_MANY'] = array_merge(
@@ -94,13 +92,10 @@ class ReflectionService
 	{
 		return match ($type) {
 			'integer' => 'int',
-			'string' => 'string',
 			'text' => 'string',
 			'datetime' => 'date',
-			'boolean' => 'boolean',
 			'float' => 'number',
-			'decimal' => 'number',
-			'array' => 'array',
+			'array', 'boolean', 'decimal', 'string' => $type,
 			default => 'undefined',
 		};
 	}
@@ -126,7 +121,7 @@ class ReflectionService
 				'type' => $this->getExtJSFieldMapping($currentMapping['type']),
 				'nullable' => $currentMapping['nullable'],
 				'validators' => Json::encode($asserts),
-				'persist' => $this->allowPersist($cm, $field),
+				'persist' => $this->allowPersist($cm, $field)
 			];
 		}
 

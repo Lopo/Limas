@@ -10,176 +10,196 @@ use Predis\Client as PredisClient;
 
 class OctoPartService
 {
-
-	private const OCTOPART_ENDPOINT = 'https://octopart.com/api/v4/endpoint';
+	private const OCTOPART_ENDPOINT = 'https://api.nexar.com/graphql/';
 	private const OCTOPART_QUERY = <<<'EOD'
-    query MyPartSearch($q: String!, $filters: Map, $limit: Int!, $start: Int, $country: String = "DE", $currency: String = "EUR") {
-        search(q: $q, filters: $filters, limit: $limit, start: $start, country: $country, currency: $currency) {
-          hits
-      
-          results {
-            part {
-              id
-              mpn
-              slug
-              short_description
-              counts
-              manufacturer {
-                name
-              }
-              best_datasheet {
-                name
-                url
-                credit_string
-                credit_url
-                page_count
-                mime_type
-              }
-              best_image {
-                  url
-              }
-              specs {
-                attribute {
-                  name
-                  group
-                }
-                display_value
-              }
-              document_collections {
-                name
-                documents {
-                  name
-                  url
-                  credit_string
-                  credit_url
-                }
-              }
-              descriptions {
-                credit_string
-                text
-              }
-              cad {
-                add_to_library_url
-              }
-              reference_designs {
-                  name
-                  url
-              }
-              sellers {
-                company {
-                  homepage_url
-                  is_verified
-                  name
-                  slug
-                }
-                is_authorized
-                is_broker
-                is_rfq
-                offers {
-                  click_url
-                  inventory_level
-                  moq
-                  packaging
-                  prices {
-                    conversion_rate
-                    converted_currency
-                    converted_price
-                    currency
-                    price
-                    quantity
-                  }
-                  sku
-                  updated
-                }
-              }
-            }
+    query MyPartSearch(
+  $q: String!
+  $filters: Map
+  $limit: Int!
+  $start: Int
+  $country: String = "DE"
+  $currency: String = "EUR"
+) {
+  supSearch(
+    q: $q
+    filters: $filters
+    limit: $limit
+    start: $start
+    country: $country
+    currency: $currency
+  ) {
+    hits
+
+    results {
+      part {
+        id
+        mpn
+        slug
+        shortDescription
+        counts
+        manufacturer {
+          name
+        }
+        bestDatasheet {
+          name
+          url
+          creditString
+          creditUrl
+          pageCount
+          mimeType
+        }
+        bestImage {
+          url
+        }
+        specs {
+          attribute {
+            name
+            group
+          }
+          displayValue
+        }
+        documentCollections {
+          name
+          documents {
+            name
+            url
+            creditString
+            creditUrl
           }
         }
+        descriptions {
+          creditString
+          text
+        }
+        cad {
+          addToLibraryUrl
+        }
+        referenceDesigns {
+          name
+          url
+        }
+        sellers {
+          company {
+            homepageUrl
+            isVerified
+            name
+            slug
+          }
+          isAuthorized
+          isBroker
+          isRfq
+          offers {
+            clickUrl
+            inventoryLevel
+            moq
+            packaging
+            prices {
+              conversionRate
+              convertedCurrency
+              convertedPrice
+              currency
+              price
+              quantity
+            }
+            sku
+            updated
+          }
+        }
+      }
     }
+  }
+}
 EOD;
 	private const OCTOPART_PARTQUERY = <<<'EOD'
-    query MyPartSearch($id: String!, $country: String = "DE", $currency: String = "EUR") {
-        parts(ids: [$id], country: $country, currency: $currency) {
-                    id
-                    mpn
-                    slug
-                    short_description
-                    counts
-                    manufacturer {
-                      name
-                    }
-                    best_datasheet {
-                      name
-                      url
-                      credit_string
-                      credit_url
-                      page_count
-                      mime_type
-                    }
-                    best_image {
-                        url
-                    }
-                    specs {
-                      attribute {
-                        name
-                        group
-                      }
-                      display_value
-                    }
-                    document_collections {
-                      name
-                      documents {
-                        name
-                        url
-                        credit_string
-                        credit_url
-                      }
-                    }
-                    descriptions {
-                      credit_string
-                      text
-                    }
-                    cad {
-                      add_to_library_url
-                    }
-                    reference_designs {
-                        name
-                        url
-                    }
-                    sellers {
-                      company {
-                        homepage_url
-                        is_verified
-                        name
-                        slug
-                      }
-                      is_authorized
-                      is_broker
-                      is_rfq
-                      offers {
-                        click_url
-                        inventory_level
-                        moq
-                        packaging
-                        prices {
-                          conversion_rate
-                          converted_currency
-                          converted_price
-                          currency
-                          price
-                          quantity
-                        }
-                        sku
-                        updated
-                      }
-                    }
-                }}
+    query MyPartSearch(
+  $id: String!
+  $country: String = "DE"
+  $currency: String = "EUR"
+) {
+  supParts(ids: [$id], country: $country, currency: $currency) {
+    id
+    mpn
+    slug
+    shortDescription
+    counts
+    manufacturer {
+      name
+    }
+    bestDatasheet {
+      name
+      url
+      creditString
+      creditUrl
+      pageCount
+      mimeType
+    }
+    bestImage {
+      url
+    }
+    specs {
+      attribute {
+        name
+        group
+      }
+      displayValue
+    }
+    documentCollections {
+      name
+      documents {
+        name
+        url
+        creditString
+        creditUrl
+      }
+    }
+    descriptions {
+      creditString
+      text
+    }
+    cad {
+      addToLibraryUrl
+    }
+    referenceDesigns {
+      name
+      url
+    }
+    sellers {
+      company {
+        homepageUrl
+        isVerified
+        name
+        slug
+      }
+      isAuthorized
+      isBroker
+      isRfq
+      offers {
+        clickUrl
+        inventoryLevel
+        moq
+        packaging
+        prices {
+          conversionRate
+          convertedCurrency
+          convertedPrice
+          currency
+          price
+          quantity
+        }
+        sku
+        updated
+      }
+    }
+  }
+}
 EOD;
+	private const NEXAR_AUTHORITY = 'https://identity.nexar.com/';
 
 
 	public function __construct(
-		private readonly string $apiKey,
-		private readonly string $limit = '3'
+		private readonly string $clientId,
+		private readonly string $clientSecret,
+		private readonly int    $limit = 3
 	)
 	{
 	}
@@ -190,23 +210,27 @@ EOD;
 			$redisclient = new PredisClient;
 			$redisclient->connect();
 			if (null !== ($part = $redisclient->get($uid))) {
-				return json_decode($part, true, 512, JSON_THROW_ON_ERROR);
+				return Json::decode($part);
 			}
 			$redisclient->disconnect();
 		} catch (\Exception $e) {
 		}
 
-		$body = (new Client)->request('POST', self::OCTOPART_ENDPOINT, [
-			RequestOptions::HEADERS => ['Content-Type' => 'application/json'],
-			RequestOptions::QUERY => ['token' => $this->apiKey],
-			RequestOptions::BODY => Json::encode([
-				'query' => self::OCTOPART_PARTQUERY,
-				'operationName' => 'MyPartSearch',
-				'variables' => [
-					'id' => $uid
+		$body = (new Client)->request(
+			'POST',
+			self::OCTOPART_ENDPOINT,
+			[
+				RequestOptions::HEADERS => [
+					'Authorization' => 'Bearer ' . $this->getToken()
+				],
+				RequestOptions::JSON => [
+					'query' => self::OCTOPART_PARTQUERY,
+					'operationName' => 'MyPartSearch',
+					'variables' => [
+						'id' => $uid
+					]
 				]
-			])
-		])->getBody();
+			])->getBody();
 
 		$data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
 
@@ -215,19 +239,23 @@ EOD;
 
 	public function getPartyByQuery($q, int $startpage = 1): array
 	{
-		$body = (new Client)->request('POST', self::OCTOPART_ENDPOINT, [
-			RequestOptions::HEADERS => ['Content-Type' => 'application/json'],
-			RequestOptions::QUERY => ['token' => $this->apiKey],
-			RequestOptions::BODY => Json::encode([
-				'query' => self::OCTOPART_QUERY,
-				'operationName' => 'MyPartSearch',
-				'variables' => [
-					'q' => $q,
-					'limit' => $this->limit,
-					'start' => ($startpage - 1) * (int)$this->limit // 0-based
+		$body = (new Client)->request(
+			'POST',
+			self::OCTOPART_ENDPOINT,
+			[
+				RequestOptions::HEADERS => [
+					'Authorization' => 'Bearer ' . $this->getToken()
+				],
+				RequestOptions::JSON => [
+					'query' => self::OCTOPART_QUERY,
+					'operationName' => 'MyPartSearch',
+					'variables' => [
+						'q' => $q,
+						'limit' => $this->limit,
+						'start' => ($startpage - 1) * $this->limit // 0-based
+					]
 				]
-			])
-		])->getBody();
+			])->getBody();
 
 		$parts = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
 
@@ -235,15 +263,51 @@ EOD;
 		try {
 			$redisclient = new PredisClient;
 			$redisclient->connect();
-			$results = $parts['data']['search']['results'];
-			foreach ($results as $result) {
-				$id = $result['part']['id'];
-				$redisclient->set($id, Json::encode($result['part']));
+			foreach ($parts['data']['supSearch']['results'] as $result) {
+				$redisclient->set($result['part']['id'], Json::encode($result['part']));
 			}
 			$redisclient->disconnect();
 		} catch (\Exception $e) {
 		}
 
 		return $parts;
+	}
+
+	private function getToken(): string
+	{
+		try {
+			$redisclient = new PredisClient;
+			$redisclient->connect();
+			$token = $redisclient->get('nexarToken');
+			$redisclient->disconnect();
+			if ($token !== null) {
+				return $token;
+			}
+		} catch (\Exception $e) {
+		}
+		$response = (new Client)->request(
+			'POST',
+			self::NEXAR_AUTHORITY . 'connect/token',
+			[
+				RequestOptions::ALLOW_REDIRECTS => false,
+				RequestOptions::FORM_PARAMS => [
+					'grant_type' => 'client_credentials',
+					'client_id' => $this->clientId,
+					'client_secret' => $this->clientSecret
+				]
+			]
+		);
+		if ($response->getStatusCode() !== 200) {
+			throw new \RuntimeException('Octopart/Nexus getToken');
+		}
+		$resp = Json::decode($response->getBody());
+		try {
+			$redisclient = new PredisClient;
+			$redisclient->connect();
+			$redisclient->set('nexarToken', $resp->access_token, 'EX', $resp->expires_in - 60);
+			$redisclient->disconnect();
+		} catch (\Exception $e) {
+		}
+		return $resp->access_token;
 	}
 }

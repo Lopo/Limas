@@ -71,7 +71,7 @@ if (Encore.isDev()) {
 				from: './assets/limas',
 				to: 'limas/[path][name].[ext]', // optional target path, relative to the output dir
 			}
-		])
+		]);
 } else {
 	Encore
 		.addPlugin(new ConcatPlugin({
@@ -96,6 +96,7 @@ if (Encore.isDev()) {
 				'ExtJS/build/packages/charts/classic/charts.js',
 				'@/limas/Data/CallActions.js',
 				'@/limas/Data/field/Array.js',
+				'@/limas/Data/field/Decimal.js',
 				'@/limas/Data/HydraModel.js',
 				'@/limas/Data/HydraField.js',
 				'@/limas/Data/HydraTreeModel.js',
@@ -369,7 +370,7 @@ if (Encore.isDev()) {
 				defer: false
 			},
 			injectType: 'none'
-		}))
+		}));
 }
 
 module.exports = Encore.getWebpackConfig();

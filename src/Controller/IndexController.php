@@ -52,7 +52,7 @@ class IndexController
 			'maxUploadSize' => false !== ($val = $this->getLimasParameterWithDefault('upload.limit', false))
 				? $val
 				: min($this->systemService->getBytesFromHumanReadable(ini_get('post_max_size')), $this->systemService->getBytesFromHumanReadable(ini_get('upload_max_filesize'))),
-			'isOctoPartAvailable' => $this->getLimasParameterWithDefault('octopart.apikey', '') !== '',
+			'isOctoPartAvailable' => ($this->getLimasParameterWithDefault('octopart.nexarId', '') !== '' && $this->getLimasParameterWithDefault('octopart.nexarSecret', '') !== ''),
 			'availableImageFormats' => array_map(static fn(Format $format) => $format->getMimeType(), $this->liipImagine->getDriverInfo()->getSupportedFormats()->getAll()),
 			'max_users' => $this->getLimasParameterWithDefault('auth.max_users', 'unlimited'),
 			'authentication_provider' => $this->limas['authentication_provider'],

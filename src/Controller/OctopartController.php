@@ -17,9 +17,9 @@ class OctopartController
 	}
 
 	#[Route(path: '/api/octopart/get/{id}', name: 'api_octopart_get', defaults: ['_format' => 'json'], methods: ['GET'])]
-	public function indexAction(string $id): object
+	public function indexAction(string $id): JsonResponse
 	{
-		return $this->octoPartService->getPartByUID($id);
+		return new JsonResponse($this->octoPartService->getPartByUID($id));
 	}
 
 	#[Route(path: '/api/octopart/query/', name: 'api_octopart_query', defaults: ['_format' => 'json'], methods: ['GET'])]
@@ -36,9 +36,8 @@ class OctopartController
 
 		$data = $this->octoPartService->getPartyByQuery($query, $start);
 
-		$errors = $data['errors'];
-		$data = $data['data']/*['search']*/
-		;
+		$errors = $data['errors'] ?? null;
+		$data = $data['data']['supSearch'];
 
 		$responseData['hits'] = $data['hits'];
 		$responseData['results'] = [];
@@ -49,11 +48,11 @@ class OctopartController
 				$part = $result['part'];
 				$responseData['results'][] = [
 					'mpn' => $part['mpn'],
-					'title' => $part['short_description'],
+					'title' => $part['shortDescription'],
 					'manufacturer' => $part['manufacturer']['name'],
 					'numOffers' => count($part['sellers']),
 					'numSpecs' => count($part['specs']),
-					'numDatasheets' => count($part['document_collections']),
+					'numDatasheets' => count($part['documentCollections']),
 					'url' => 'https://octopart.com' . $part['slug'],
 					'uid' => $part['id']
 				];

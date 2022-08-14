@@ -36,7 +36,8 @@ services:
             $decorated: '@Limas\Listener\Deserialize.inner'
     Limas\Service\OctoPartService:
         arguments:
-            $apiKey: '%env(OCTOPART_APIKEY)%'
+            $clientId: '%env(NEXAR_ID)%'
+            $clientSecret: '%env(NEXAR_SECRET)%'
             $limit: "@=parameter('limas')['octopart']['limit']"
     Limas\Filter\AdvancedSearchFilter:
         tags:

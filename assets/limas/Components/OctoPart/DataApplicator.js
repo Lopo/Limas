@@ -63,7 +63,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		if (this.import.parameters) {
 			for (i in this.data['specs']) {
 				var q_value, q_unit, q_siPrefix;
-				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].display_value);
+				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].displayValue);
 				[q_value, q_unit2, q_siPrefix] = this.SIUnitPrefix(q_value, q_unit);
 				if (q_unit2 === null && q_unit) {
 					// there is a unit (q_unit), but we do not know about it or the prefix of the unit is disabled
@@ -95,7 +95,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 					this.displayWaitWindow(i18n('Creating Distributor…'), this.data.sellers[i].company.name);
 					distributor = Ext.create('Limas.Entity.Distributor');
 					distributor.set('name', this.data.sellers[i].company.name);
-					distributor.set('url', this.data.sellers[i].company.homepage_url);
+					distributor.set('url', this.data.sellers[i].company.homepageUrl);
 					distributor.save({
 						success: function () {
 							Limas.getApplication().getDistributorStore().load({
@@ -111,9 +111,9 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		}
 
 		if (this.import.bestDatasheet) {
-			if (this.data['best_datasheet']) {
-				file = this.data.best_datasheet;
-				delete this.data.best_datasheet;
+			if (this.data['bestDatasheet']) {
+				file = this.data.bestDatasheet;
+				delete this.data.bestDatasheet;
 				this.displayWaitWindow(i18n('Uploading datasheet…'), file.url);
 
 				if (!this.checkIfAttachmentFilenameExists(file.url)) {
@@ -129,9 +129,9 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 			if (this.data['cad']) {
 				file = this.data.cad;
 				delete this.data.cad;
-				this.displayWaitWindow(i18n('Uploading CAD Model…'), file.add_to_library_url);
-				if (!this.checkIfAttachmentFilenameExists(file.add_to_library_url)) {
-					Limas.getApplication().uploadFileFromURL(file.add_to_library_url, i18n('CAD Model'), this.onFileUploaded, this);
+				this.displayWaitWindow(i18n('Uploading CAD Model…'), file.addToLibraryUrl);
+				if (!this.checkIfAttachmentFilenameExists(file.addToLibraryUrl)) {
+					Limas.getApplication().uploadFileFromURL(file.addToLibraryUrl, i18n('CAD Model'), this.onFileUploaded, this);
 				} else {
 					this.applyData();
 				}
@@ -140,8 +140,8 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		}
 
 		if (this.import.referenceDesigns) {
-			if (this.data.reference_designs.length > 0) {
-				file = this.data.reference_designs.shift();
+			if (this.data.referenceDesigns.length > 0) {
+				file = this.data.referenceDesigns.shift();
 				this.displayWaitWindow(i18n('Uploading Reference Designs…'), file.url);
 				if (!this.checkIfAttachmentFilenameExists(file.url)) {
 					Limas.getApplication().uploadFileFromURL(file.url, i18n('Reference Design'), this.onFileUploaded, this);
@@ -153,9 +153,9 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		}
 
 		if (this.import.images) {
-			if (this.data['best_image']) {
-				image = this.data.best_image;
-				delete this.data.best_image;
+			if (this.data['bestImage']) {
+				image = this.data.bestImage;
+				delete this.data.bestImage;
 
 				this.displayWaitWindow(i18n('Uploading Image…'), image.url);
 				if (!this.checkIfAttachmentFilenameExists(image.url)) {
@@ -210,7 +210,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		}
 
 		this.part.set('name', this.data.mpn);
-		this.part.set('description', this.data.short_description);
+		this.part.set('description', this.data.shortDescription);
 
 		let spec, i, unit, value, siPrefix, distributor, partDistributor, k, o, p, found,
 			manufacturer = Limas.getApplication().getManufacturerStore().findRecord('name', this.data.manufacturer.name),
@@ -274,18 +274,15 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		}
 
 		if (this.import.parameters) {
+			let q_value, q_unit;
 			for (i in this.data['specs']) {
 				spec = Ext.create('Limas.Entity.PartParameter');
 				spec.set('name', this.data.specs[i].attribute.name);
 
-				var q_value, q_unit;
-				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].display_value);
+				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].displayValue);
 
 				// some fields need to be treated as strings
-				if (this.data.specs[i].attribute.name === 'Case/Package'
-					|| this.data.specs[i].attribute.name === 'Case Code (Imperial)'
-					|| this.data.specs[i].attribute.name === 'Case Code (Metric)'
-				) {
+				if (this.data.specs[i].attribute.name === 'Case/Package' || this.data.specs[i].attribute.name === 'Case Code (Imperial)' || this.data.specs[i].attribute.name === 'Case Code (Metric)') {
 					q_value = null; // force string interpretation
 					q_unit = null; // force string interpretation
 				}
@@ -309,7 +306,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 					spec.set('value', q_value);
 				} else {
 					spec.set('valueType', 'string');
-					spec.set('stringValue', this.data.specs[i].display_value);
+					spec.set('stringValue', this.data.specs[i].displayValue);
 				}
 
 				found = null;
@@ -358,7 +355,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 			quantity = quantity.trim();
 			const regex = /[^\d+-.]/g;
 			let idx = quantity.search(regex);
-			if (idx == -1) {
+			if (idx === -1) {
 				// no unit, but maybe value only
 				let value = parseFloat(quantity);
 				if (!isNaN(value)) {

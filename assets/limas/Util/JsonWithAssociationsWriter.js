@@ -10,7 +10,7 @@ Ext.define('Limas.JsonWithAssociations', {
 
 	getRecordData: function (record) {
 		let data = this.callParent(arguments);
-		Ext.apply(data, record.getAssociatedData());
+		Ext.apply(data, record.getAssociatedData(null, {serialize: true}));
 		return data;
 	}
 });
