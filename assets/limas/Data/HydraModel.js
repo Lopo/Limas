@@ -11,17 +11,15 @@ Ext.define('Limas.data.HydraModel', {
 	},
 	isPartiallyEqualTo: function (model, fields) {
 		for (let i = 0; i < fields.length; i++) {
-			if (this.get(fields[i]) != model.get(fields[i])) {
+			if (this.get(fields[i]) !== model.get(fields[i])) {
 				return false;
 			}
 		}
-
 		return true;
 	},
 	get: function (fieldName) {
-		var role, item, openingBracket, closingBracket, subEntity, index, subEntityStore;
-
-		let ret = this.callParent(arguments);
+		let role, item, openingBracket, closingBracket, subEntity, index, subEntityStore,
+			ret = this.callParent(arguments);
 
 		if (ret === undefined) {
 			// The field is undefined, attempt to retrieve data via associations
@@ -49,7 +47,7 @@ Ext.define('Limas.data.HydraModel', {
 
 				if (openingBracket !== -1) {
 					subEntity = parts[0].substring(0, openingBracket);
-					closingBracket = parts[0].indexOf("]", openingBracket);
+					closingBracket = parts[0].indexOf(']', openingBracket);
 					index = parts[0].substring(openingBracket + 1, closingBracket);
 				} else {
 					// No index was passed for retrieving this field, try to return the first array member
@@ -77,7 +75,7 @@ Ext.define('Limas.data.HydraModel', {
 	 * }
 	 */
 	getFieldType: function (fieldName) {
-		var ret = null, tmp, i;
+		let ret = null, tmp, i;
 
 		for (i = 0; i < this.fields.length; i++) {
 			if (this.fields[i].getName() === fieldName) {
@@ -86,11 +84,10 @@ Ext.define('Limas.data.HydraModel', {
 						type: 'onetomany',
 						reference: this.fields[i].reference
 					};
-				} else {
-					ret = {
-						type: 'field'
-					};
 				}
+				ret = {
+					type: 'field'
+				};
 			}
 		}
 
@@ -125,9 +122,8 @@ Ext.define('Limas.data.HydraModel', {
 		return ret;
 	},
 	/**
-	 * Gets all of the data from this Models *loaded* associations. It does this
-	 * recursively. For example if we have a User which hasMany Orders, and each Order
-	 * hasMany OrderItems, it will return an object like this:
+	 * Gets all of the data from this Models *loaded* associations. It does this recursively. For example if we have
+	 * a User which hasMany Orders, and each Order hasMany OrderItems, it will return an object like this:
 	 *
 	 *     {
 	 *         orders: [
@@ -141,28 +137,23 @@ Ext.define('Limas.data.HydraModel', {
 	 *         ]
 	 *     }
 	 *
-	 * @param {Object} [result] The object on to which the associations will be added. If
-	 * no object is passed one is created. This object is then returned.
-	 * @param {Boolean/Object} [options] An object containing options describing the data
-	 * desired.
-	 * @param {Boolean} [options.associated=true] Pass `true` to include associated data from
-	 * other associated records.
-	 * @param {Boolean} [options.changes=false] Pass `true` to only include fields that
-	 * have been modified. Note that field modifications are only tracked for fields that
-	 * are not declared with `persist` set to `false`. In other words, only persistent
-	 * fields have changes tracked so passing `true` for this means `options.persist` is
+	 * @param {Object} [result] The object on to which the associations will be added. If no object is passed one is
+	 * created. This object is then returned.
+	 * @param {Boolean/Object} [options] An object containing options describing the data desired
+	 * @param {Boolean} [options.associated=true] Pass `true` to include associated data from other associated records
+	 * @param {Boolean} [options.changes=false] Pass `true` to only include fields that have been modified. Note that
+	 * field modifications are only tracked for fields that are not declared with `persist` set to `false`. In other
+	 * words, only persistent fields have changes tracked so passing `true` for this means `options.persist` is
 	 * redundant.
 	 * @param {Boolean} [options.critical] Pass `true` to include fields set as `critical`.
-	 * This is only meaningful when `options.changes` is `true` since critical fields may
-	 * not have been modified.
+	 * This is only meaningful when `options.changes` is `true` since critical fields may not have been modified.
 	 * @param {Boolean} [options.persist] Pass `true` to only return persistent fields.
 	 * This is implied when `options.changes` is set to `true`.
-	 * @param {Boolean} [options.serialize=false] Pass `true` to invoke the `serialize`
-	 * method on the returned fields.
-	 * @return {Object} The nested data set for the Model's loaded associations.
+	 * @param {Boolean} [options.serialize=false] Pass `true` to invoke the `serialize` method on the returned fields
+	 * @return {Object} The nested data set for the Model's loaded associations
 	 */
 	getAssociatedData: function (result, options) {
-		var me = this,
+		let me = this,
 			associations = me.associations,
 			deep, i, item, items, itemData, length,
 			record, role, opts, clear, associated;
@@ -247,7 +238,7 @@ Ext.define('Limas.data.HydraModel', {
 	 * @return {Object} An object containing the associations as properties
 	 */
 	getAssociationData: function () {
-		var values = [], role, item, store;
+		let values = [], role, item, store;
 
 		for (let roleName in this.associations) {
 			role = this.associations[roleName];
@@ -274,7 +265,7 @@ Ext.define('Limas.data.HydraModel', {
 	 * @param {Object} data The associations to set. Silently ignores non-existant associations.
 	 */
 	setAssociationData: function (data) {
-		var setterName, getterName, store, idProperty;
+		let setterName, getterName, store, idProperty, i;
 
 		for (let roleName in data) {
 			if (this.associations[roleName]) {
@@ -283,7 +274,7 @@ Ext.define('Limas.data.HydraModel', {
 					getterName = this.associations[roleName].getterName;
 					store = this[getterName]();
 
-					for (var i = 0; i < data[roleName].length; i++) {
+					for (i = 0; i < data[roleName].length; i++) {
 						// Delete existing IDs for duplicated data
 						if (data[roleName][i].isEntity) {
 							idProperty = data[roleName][i].idProperty;

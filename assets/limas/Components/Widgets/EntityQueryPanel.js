@@ -49,10 +49,7 @@ Ext.define('Limas.Widgets.EntityQueryPanel', {
 						maxValue: 99
 					},
 					renderer: function (val, md, record) {
-						if (record.get('data') instanceof Object
-							&& typeof (record.get('data').type) !== 'undefined'
-							&& record.get('data').type !== 'onetomany'
-						) {
+						if (record.get('data') instanceof Object && typeof (record.get('data').type) !== 'undefined' && record.get('data').type !== 'onetomany') {
 							return '';
 						}
 						return record.get('entityIndex');

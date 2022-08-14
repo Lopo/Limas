@@ -13,10 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReflectionController
 	extends AbstractController
 {
-	public function __construct(
-		private readonly EntityManagerInterface $em,
-		private readonly ReflectionService      $reflectionService
-	)
+	public function __construct(private readonly ReflectionService $reflectionService)
 	{
 	}
 
@@ -26,7 +23,7 @@ class ReflectionController
 		if (Strings::match($cls, '/^[A-Z][a-zA-Z]+$/') === null) {
 			throw $this->createNotFoundException();
 		}
-		$entity = 'Limas\Entity\\' . $cls;
+		$entity = 'Limas\\Entity\\' . $cls;
 		if (!class_exists($entity)) {
 			throw $this->createNotFoundException();
 		}

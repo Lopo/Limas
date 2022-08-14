@@ -310,7 +310,6 @@ Ext.define('Limas.PartEditor', {
 
 		this.on('itemSave', this.onItemSave, this);
 		this.down('#idField').on('beforedestroy', this.onBeforeDestroy, this.down('#idField'));
-
 	},
 	/**
 	 * Unregisters the quick tip immediately prior destroying
@@ -475,7 +474,6 @@ Ext.define('Limas.PartEditor', {
 		this.fireEvent('_titleChange', tmpTitle);
 	},
 	isOptional: function (field) {
-		let fields = Limas.getApplication().getSystemPreference('limas.part.requiredFields', []);
-		return !Ext.Array.contains(fields, field);
+		return !Ext.Array.contains(Limas.getApplication().getSystemPreference('limas.part.requiredFields', []), field);
 	}
 });
