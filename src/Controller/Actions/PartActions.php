@@ -17,8 +17,8 @@ use Limas\Service\PartService;
 use Limas\Service\UserService;
 use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -108,8 +108,7 @@ class PartActions
 		$this->entityManager->flush();
 	}
 
-	#[Route(path: '/api/parts/getPartParameterNames', defaults: ['method' => 'GET', '_format' => 'json'])]
-	public function getParameterNamesAction(): Response
+	public function getParameterNamesAction(): JsonResponse
 	{
 		return $this->json(
 			$this->entityManager->createQueryBuilder()
@@ -121,8 +120,7 @@ class PartActions
 		);
 	}
 
-	#[Route(path: '/api/parts/getPartParameterValues', defaults: ['method' => 'GET', '_format' => 'json'])]
-	public function getParameterValuesAction(Request $request): Response
+	public function getParameterValuesAction(Request $request): JsonResponse
 	{
 		if (!$request->query->has('name')) {
 			throw new \InvalidArgumentException("The parameter 'name' must be given");
@@ -194,11 +192,7 @@ class PartActions
 		 * @see https://github.com/partkeepr/PartKeepr/issues/551
 		 */
 		$data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-
-		if (array_key_exists('stockLevels', $data)) {
-			unset($data['stockLevels']);
-		}
-
+		unset($data['stockLevels']);
 		$requestData = Json::encode($data);
 
 		$data = $this->getItem($this->dataProvider, Part::class, $id);

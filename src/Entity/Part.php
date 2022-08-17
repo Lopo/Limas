@@ -27,6 +27,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 		],
 		'post' => [
 			'controller' => PartActions::class . '::PartPostAction'
+		],
+		'parameterNames' => [
+			'method' => 'get',
+			'path' => 'parts/getPartParameterNames',
+			'controller' => PartActions::class . '::getParameterNamesAction',
+			'deserialize' => false
+		],
+		'parameterValues' => [
+			'method' => 'get',
+			'path' => 'parts/getPartParameterValues',
+			'controller' => PartActions::class . '::getParameterValuesAction',
+			'deserialize' => false
 		]
 	],
 	itemOperations: [
