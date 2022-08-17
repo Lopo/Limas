@@ -32,7 +32,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 	itemOperations: [
 		'get',
 		'put' => [
-			'controller' => PartActions::class . '::PartPutAction'
+			'controller' => PartActions::class . '::PartPutAction',
+			'deserialize' => false
 		],
 		'delete',
 		'add_stock' => [
@@ -51,12 +52,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 			'controller' => PartActions::class . '::SetStockAction'
 		]
 	],
-	denormalizationContext: [
-		'groups' => ['default', 'stock']
-	],
-	normalizationContext: [
-		'groups' => ['default', 'readonly']
-	]
+	denormalizationContext: ['groups' => ['default', 'stock']],
+	normalizationContext: ['groups' => ['default', 'readonly']]
 )]
 class Part
 	extends BaseEntity
@@ -117,6 +114,7 @@ class Part
 	/** @var Collection<PartParameter> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartParameter::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	private Collection $parameters;
 	/** @var Collection<MetaPartParameterCriteria> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: MetaPartParameterCriteria::class, cascade: ['persist', 'remove'], orphanRemoval: true)]

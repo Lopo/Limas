@@ -2,6 +2,8 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Exceptions\PackagingUnitOutOfRangeException;
 use Limas\Repository\PartDistributorRepository;
@@ -10,6 +12,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: PartDistributorRepository::class)]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class PartDistributor
 	extends BaseEntity
 {
@@ -17,13 +23,14 @@ class PartDistributor
 	private ?Part $part;
 	#[ORM\ManyToOne(targetEntity: Distributor::class)]
 	#[Groups(['default'])]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?Distributor $distributor;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $orderNumber;
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
-	private int $packagingUnit;
+	private int $packagingUnit = 1;
 	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $price;
@@ -37,11 +44,6 @@ class PartDistributor
 	#[Groups(['default'])]
 	private ?bool $ignoreForReports = false;
 
-
-	public function __construct()
-	{
-		$this->setPackagingUnit(1);
-	}
 
 	public function isIgnoreForReports(): ?bool
 	{
@@ -90,7 +92,7 @@ class PartDistributor
 		return $this;
 	}
 
-	public function getDistributor(): Distributor
+	public function getDistributor(): ?Distributor
 	{
 		return $this->distributor;
 	}

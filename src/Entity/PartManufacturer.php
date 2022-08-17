@@ -2,6 +2,8 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Repository\PartManufacturerRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,6 +11,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: PartManufacturerRepository::class)]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class PartManufacturer
 	extends BaseEntity
 {
@@ -22,7 +28,7 @@ class PartManufacturer
 	private ?string $partNumber;
 
 
-	public function getPart(): Part
+	public function getPart(): ?Part
 	{
 		return $this->part;
 	}
@@ -33,7 +39,7 @@ class PartManufacturer
 		return $this;
 	}
 
-	public function getManufacturer(): Manufacturer
+	public function getManufacturer(): ?Manufacturer
 	{
 		return $this->manufacturer;
 	}

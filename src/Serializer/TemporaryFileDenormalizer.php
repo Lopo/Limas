@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 
 class TemporaryFileDenormalizer
@@ -60,12 +61,12 @@ class TemporaryFileDenormalizer
 		return false;
 	}
 
-	public function supportsDenormalization(mixed $data, $type, $format = null, array $context = []): bool
-	{
-		return /*self::FORMAT === $format
-			&&*/ parent::supportsDenormalization($data, $type, $format)
-			&& $this->hasTemporaryFileProperty($type);
-	}
+//	public function supportsDenormalization(mixed $data, $type, $format = null, array $context = []): bool
+//	{
+//		return /*self::FORMAT === $format
+//			&&*/ parent::supportsDenormalization($data, $type, $format)
+//			&& $this->hasTemporaryFileProperty($type);
+//	}
 
 	/**
 	 * Denormalizes a relation
@@ -91,22 +92,22 @@ class TemporaryFileDenormalizer
 				return $item;
 			}
 			if (is_array($value) && isset($value['@id'])) {
-				return $this->iriConverter->getItemFromIri($value['@id']);
+				$context[AbstractNormalizer::OBJECT_TO_POPULATE] = $this->iriConverter->getItemFromIri($value['@id']);
 			}
 		}
 		return parent::denormalizeRelation($attributeName, $propertyMetadata, $className, $value, $format, $context);
 	}
 
-	private function hasTemporaryFileProperty(string $type): bool
-	{
-		$classReflection = new \ReflectionClass($type);
-		foreach ($classReflection->getProperties() as $property) {
-			if ($this->isTemporaryFile($property)) {
-				return true;
-			}
-		}
-		return false;
-	}
+//	private function hasTemporaryFileProperty(string $type): bool
+//	{
+//		$classReflection = new \ReflectionClass($type);
+//		foreach ($classReflection->getProperties() as $property) {
+//			if ($this->isTemporaryFile($property)) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	private function isTemporaryFile(\ReflectionProperty $property): bool
 	{

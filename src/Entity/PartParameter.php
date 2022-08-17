@@ -2,6 +2,8 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Repository\PartParameterRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -10,6 +12,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PartParameterRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class PartParameter
 	extends BaseEntity
 {
@@ -27,6 +33,7 @@ class PartParameter
 	private string $description = '';
 	#[ORM\ManyToOne(targetEntity: Unit::class)]
 	#[Groups(['default'])]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?Unit $unit;
 	#[ORM\Column(type: Types::FLOAT, nullable: true)]
 	#[Groups(['default'])]
@@ -51,6 +58,7 @@ class PartParameter
 	private string $valueType = self::VALUE_TYPE_STRING;
 	#[ORM\ManyToOne(targetEntity: SiPrefix::class)]
 	#[Groups(['default'])]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?SiPrefix $siPrefix = null;
 	#[ORM\ManyToOne(targetEntity: SiPrefix::class)]
 	#[Groups(['default'])]
