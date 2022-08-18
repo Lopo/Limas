@@ -126,6 +126,13 @@ class InstallCommand
 				'--no-interaction' => true
 			]), new NullOutput);
 
+		$io->note('Generating models.js asset');
+		$this->getApplication()->find('limas:extjs:models')
+			->run(new ArrayInput([
+				'command' => 'limas:extjs:models',
+				'--no-interaction' => true
+			]), new NullOutput);
+
 		$io->success('Limas app installed');
 		return Command::SUCCESS;
 	}

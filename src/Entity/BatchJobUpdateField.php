@@ -2,6 +2,7 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Repository\BatchJobUpdateFieldRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,6 +10,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: BatchJobUpdateFieldRepository::class)]
+#[ApiResource(
+	collectionOperations: [],
+	itemOperations: []
+)]
 class BatchJobUpdateField
 	extends BaseEntity
 {

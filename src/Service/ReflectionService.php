@@ -2,6 +2,7 @@
 
 namespace Limas\Service;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -262,5 +263,17 @@ class ReflectionService
 			}
 		}
 		return $byReferenceMappings;
+	}
+
+	public function getAssetEntities(): array
+	{
+		$entities = [];
+		foreach ($this->em->getMetadataFactory()->getAllMetadata() as $cm) {
+			if (0 === count($cm->getReflectionClass()->getAttributes(ApiResource::class))) {
+				continue;
+			}
+			$entities[] = $this->getEntity($cm->getName());
+		}
+		return $entities;
 	}
 }
