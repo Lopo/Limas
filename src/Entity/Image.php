@@ -3,6 +3,7 @@
 namespace Limas\Entity;
 
 use Doctrine\ORM\Mapping\MappedSuperclass;
+use Limas\Exceptions\InvalidImageTypeException;
 
 
 #[MappedSuperclass]
@@ -22,7 +23,7 @@ abstract class Image
 		parent::__construct();
 	}
 
-	protected function setType($type): self
+	protected function setType(string $type): self
 	{
 		switch ($type) {
 			case self::IMAGE_ICLOGO:
@@ -33,8 +34,7 @@ abstract class Image
 				parent::setType($type);
 				break;
 			default:
-//				throw new InvalidImageTypeException($type);
-				throw new \Exception($type);
+				throw new InvalidImageTypeException($type);
 		}
 		return $this;
 	}
