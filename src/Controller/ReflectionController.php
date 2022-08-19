@@ -32,7 +32,7 @@ class ReflectionController
 		return $response;
 	}
 
-	#[Route('/asset/models.js', name: 'app_asset_entities')]
+	#[Route('/reflection/models.js', name: 'app_reflection_models')]
 	public function assetEntites()
 	{
 		$content = '';
