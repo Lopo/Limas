@@ -17,6 +17,7 @@
 		"gesdinet/jwt-refresh-token-bundle": "^1.1",
 		"gitonomy/gitlib": "^1.3",
 		"guzzlehttp/guzzle": "^7.4",
+		"icons/fugue": "^3.5",
 		"knplabs/knp-gaufrette-bundle": "^0.7.2",
 		"liip/imagine-bundle": "^2.8",
 		"nette/utils": "^3.2",
@@ -119,10 +120,12 @@
 			"require": "6.1.*"
 		},
 		"installer-types": [
-			"jslib-zip"
+			"jslib-zip",
+			"asset-zip"
 		],
 		"installer-paths": {
-			"public/js/packages/{$name}": ["type:jslib-zip"]
+			"public/js/packages/{$name}": ["type:jslib-zip"],
+			"assets/zip/{$name}": ["type:asset-zip"]
 		}
 	},
 	"require-dev": {
@@ -151,6 +154,18 @@
 				"type": "jslib-zip",
 				"dist": {
 					"url": "https://cdn.sencha.com/ext/gpl/ext-7.0.0-gpl.zip",
+					"type": "zip"
+				}
+			}
+		},
+		{
+			"type": "package",
+			"package": {
+				"name": "icons/fugue",
+				"version": "3.5.6",
+				"type": "asset-zip",
+				"dist": {
+					"url": "https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip",
 					"type": "zip"
 				}
 			}

@@ -8,6 +8,7 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
 
 const path = require('path');
 const ConcatPlugin = require('@mcler/webpack-concat-plugin');
+const SpritesmithPlugin = require('webpack-spritesmith');
 
 Encore
 	// directory where compiled assets will be stored
@@ -62,6 +63,38 @@ Encore
 		config.useBuiltIns = 'usage';
 		config.corejs = 3;
 	})
+
+	.addPlugin(new SpritesmithPlugin({
+		src: {
+			cwd: './assets/zip/fugue/icons',
+			glob: '*.png'
+		},
+		target: {
+			image: path.resolve(__dirname, 'public/spritesheets/fugue-16.png'),
+			css: [
+				[path.resolve(__dirname, 'public/spritesheets/fugue-16.css'), {format: 'function_based_template'}]
+			]
+		},
+		apiOptions: {
+			cssImageRef: './fugue-16.png?[hash]'
+		},
+		customTemplates: {
+			function_based_template: (data) => {
+				let shared = '.fugue-icon { background: url(I) no-repeat; }'
+					.replace('I', data.sprites[0].image);
+				let perSprite = data.sprites.map(function (sprite) {
+					return '.N { width: Wpx; height: Hpx; background-position: Xpx Ypx !important; }'
+						.replace('N', sprite.name)
+						.replace('W', sprite.width)
+						.replace('H', sprite.height)
+						.replace('X', sprite.offset_x)
+						.replace('Y', sprite.offset_y);
+				}).join('\n');
+				return shared + '\n\n' + perSprite;
+			}
+		},
+		logCreatedFiles: Encore.isDev()
+	}))
 ;
 
 if (Encore.isDev()) {

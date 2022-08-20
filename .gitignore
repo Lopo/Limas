@@ -35,6 +35,8 @@ yarn-error.log
 
 /public/js/packages/
 /public/js/models.js
+/assets/zip/
+/public/spritesheets/fugue-16.*
 
 /.idea/
 /install.yaml
