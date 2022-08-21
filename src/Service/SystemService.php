@@ -43,6 +43,7 @@ class SystemService
 
 		$aData[] = new SystemInformationRecord('Operating System Type', $os->getPlatform(), 'System');
 		$aData[] = new SystemInformationRecord('Operating System Release', $os->getRelease(), 'System');
+		$aData[] = new SystemInformationRecord('Load Average (1, 5, 15 minutes)', $this->getServerLoadAvg(), 'System');
 
 		$aData[] = new SystemInformationRecord('memory_limit', ini_get('memory_limit'), 'PHP');
 		$aData[] = new SystemInformationRecord('post_max_size', ini_get('post_max_size'), 'PHP');
@@ -230,5 +231,14 @@ class SystemService
 		} catch (\Throwable $e) {
 			return false;
 		}
+	}
+
+	public function getServerLoadAvg(): string
+	{
+		if (false === ($load = sys_getloadavg())) {
+			return '???';
+		}
+
+		return sprintf('%.1f %.1f %.1f', $load[0], $load[1], $load[2]);
 	}
 }
