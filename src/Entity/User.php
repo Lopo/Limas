@@ -51,8 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 			'input_formats' => [
 				'json' => ['application/merge-patch+json'],
 			],
-			'normalization_context' => ['groups' => 'default'],
-			'denormalization_context' => ['groups' => 'changePassword:write']
+			'denormalization_context' => ['groups' => ['changePassword:write']]
 		]
 	],
 	denormalizationContext: ['groups' => ['default']],

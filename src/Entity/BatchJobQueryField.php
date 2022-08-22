@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: BatchJobQueryFieldRepository::class)]
 #[ApiResource(
 	collectionOperations: [],
-	itemOperations: []
+	itemOperations: ['get']
 )]
 class BatchJobQueryField
 	extends BaseEntity
