@@ -23,7 +23,7 @@ class RootCategory
 
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
-		$em = $eventArgs->getEntityManager();
+		$em = $eventArgs->getObjectManager();
 		$uow = $em->getUnitOfWork();
 		foreach ($uow->getScheduledEntityInsertions() as $insertion) {
 			if (is_a($insertion, AbstractCategory::class)) {

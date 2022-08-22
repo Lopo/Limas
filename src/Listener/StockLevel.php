@@ -21,7 +21,7 @@ class StockLevel
 
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
-		$uow = $eventArgs->getEntityManager()->getUnitOfWork();
+		$uow = $eventArgs->getObjectManager()->getUnitOfWork();
 
 		$parts = [];
 
@@ -46,7 +46,7 @@ class StockLevel
 
 	protected function updateStockLevel(Part $part, OnFlushEventArgs $eventArgs): void
 	{
-		$entityManager = $eventArgs->getEntityManager();
+		$entityManager = $eventArgs->getObjectManager();
 
 		$part->recomputeStockLevels();
 

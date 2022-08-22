@@ -24,7 +24,7 @@ class CategoryPath
 
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
-		$uow = $eventArgs->getEntityManager()->getUnitOfWork();
+		$uow = $eventArgs->getObjectManager()->getUnitOfWork();
 
 		foreach ($uow->getScheduledEntityInsertions() as $entity) {
 			if ($entity instanceof AbstractCategory) {
@@ -41,7 +41,7 @@ class CategoryPath
 
 	private function updateCategoryPaths(AbstractCategory $category, OnFlushEventArgs $eventArgs): void
 	{
-		$entityManager = $eventArgs->getEntityManager();
+		$entityManager = $eventArgs->getObjectManager();
 
 		$category->setCategoryPath($category->generateCategoryPath($this->limas['category']['path_separator']));
 

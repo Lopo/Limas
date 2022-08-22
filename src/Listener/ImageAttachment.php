@@ -25,8 +25,8 @@ class ImageAttachment
 
 	public function postLoad(LifecycleEventArgs $args): void
 	{
-		if ($args->getEntity() instanceof PartAttachment) {
-			$entity = $args->getEntity();
+		if ($args->getObject() instanceof PartAttachment) {
+			$entity = $args->getObject();
 			$entity->setIsImage($this->imageService->canHandleMimetype($entity->getMimeType()));
 		}
 	}

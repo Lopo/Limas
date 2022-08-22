@@ -92,7 +92,7 @@ class User
 	#[ORM\Column(type: Types::BOOLEAN)]
 	#[Groups(['default'])]
 	private bool $protected = false;
-	#[ORM\Column(type: Types::ARRAY)]
+	#[ORM\Column(type: Types::JSON)]
 	private array $roles = [];
 
 

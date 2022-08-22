@@ -25,7 +25,7 @@ class FileRemoval
 
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
-		$em = $eventArgs->getEntityManager();
+		$em = $eventArgs->getObjectManager();
 		$uow = $em->getUnitOfWork();
 		foreach ($uow->getScheduledEntityDeletions() as $entity) {
 			if ($entity instanceof UploadedFile) {
