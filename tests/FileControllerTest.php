@@ -2,7 +2,10 @@
 
 namespace Limas\Tests;
 
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -10,6 +13,17 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class FileControllerTest
 	extends WebTestCase
 {
+	protected ReferenceRepository $fixtures;
+
+
+	protected function setUp(): void
+	{
+		parent::setUp();
+		$this->fixtures = static::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+			UserDataLoader::class
+		])->getReferenceRepository();
+	}
+
 	public function testMimeType(): void
 	{
 		$client = static::makeAuthenticatedClient();
