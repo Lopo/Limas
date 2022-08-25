@@ -4,6 +4,7 @@ namespace Limas\Service;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Api\IriConverterInterface;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
@@ -89,14 +90,15 @@ class ReflectionService
 		return $fieldMappings;
 	}
 
-	protected function getExtJSFieldMapping(string $type): string
+	protected function getExtJSFieldMapping(string $type, ?string $rp): string
 	{
 		return match ($type) {
-			'integer' => 'int',
-			'text' => 'string',
-			'datetime' => 'date',
-			'float' => 'number',
-			'array', 'boolean', 'decimal', 'string' => $type,
+			Types::INTEGER => 'int',
+			Types::TEXT => 'string',
+			Types::DATETIME_MUTABLE => 'date',
+			Types::FLOAT => 'number',
+			/*Types::ARRAY, */ Types::BOOLEAN, Types::DECIMAL, Types::STRING => $type,
+			Types::JSON => $rp ?? 'undefined', // array | object
 			default => 'undefined',
 		};
 	}
@@ -119,7 +121,7 @@ class ReflectionService
 
 			$fieldMappings[] = [
 				'name' => $currentMapping['fieldName'],
-				'type' => $this->getExtJSFieldMapping($currentMapping['type']),
+				'type' => $this->getExtJSFieldMapping($currentMapping['type'], $currentMapping['type'] === Types::JSON ? (new \ReflectionClass($cm->getName()))->getProperty($field)?->getType()?->getName() : null),
 				'nullable' => $currentMapping['nullable'],
 				'validators' => Json::encode($asserts),
 				'persist' => $this->allowPersist($cm, $field)
