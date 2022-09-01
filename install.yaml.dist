@@ -1,6 +1,9 @@
 superadmin:
+    username: Lopo
     email: lopo@losys.eu
-    password: heslo
+    password: admin
 
 fixtures:
-    devel: false
+    pre:
+    post:
+        pkdev: true

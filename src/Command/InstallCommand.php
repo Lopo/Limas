@@ -48,6 +48,7 @@ class InstallCommand
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$io = new SymfonyStyle($input, $output);
+		$io->writeln("| o._ _  _. _\n|_|| | |(_|_>");
 
 		if ('' === ($cfg = trim($input->getOption('config')))) {
 			$io->error('Config option missing');
@@ -91,13 +92,13 @@ class InstallCommand
 				'--no-interaction' => true,
 				'--group' => ['install']
 			]), new NullOutput);
-		if (isset($yaml['fixtures'])) {
-			foreach ($yaml['fixtures'] as $name => $load) {
+		if (isset($yaml['fixtures']['pre'])) {
+			foreach ($yaml['fixtures']['pre'] as $name => $load) {
 				$load = (bool)$load;
 				if (!$load || $name === 'install') {
 					continue;
 				}
-				$io->note($name);
+				$io->note("Loading $name fixtures");
 				$this->getApplication()->find('doctrine:fixtures:load')
 					->run(new ArrayInput([
 						'command' => 'doctrine:fixtures:load',
@@ -109,7 +110,7 @@ class InstallCommand
 		}
 
 		$io->note('Creating SuperAdmin account');
-		$admin = (new User('admin'))
+		$admin = (new User($yaml['superadmin']['username']))
 			->setRoles(['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'])
 			->setEmail($yaml['superadmin']['email'])
 			->setProvider($this->manager->find(UserProvider::class, 1));
@@ -132,6 +133,23 @@ class InstallCommand
 				'command' => 'limas:extjs:models',
 				'--no-interaction' => true
 			]), new NullOutput);
+
+		if (isset($yaml['fixtures']['post'])) {
+			foreach ($yaml['fixtures']['post'] as $name => $load) {
+				$load = (bool)$load;
+				if (!$load || $name === 'install') {
+					continue;
+				}
+				$io->note("Loading $name fixtures");
+				$this->getApplication()->find('doctrine:fixtures:load')
+					->run(new ArrayInput([
+						'command' => 'doctrine:fixtures:load',
+						'--append' => true,
+						'--no-interaction' => true,
+						'--group' => [$name]
+					]), new NullOutput);
+			}
+		}
 
 		$io->success('Limas app installed');
 		return Command::SUCCESS;
