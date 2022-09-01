@@ -1,6 +1,23 @@
 {
+	"name": "lopo/limas",
+	"description": "Open Source Inventory Software",
 	"type": "project",
+	"keywords": [
+		"partkeepr",
+		"inventory"
+	],
 	"license": "GPL-3.0-only",
+	"authors": [
+		{
+			"name": "Pavol Hluchý",
+			"email": "lopo@losys.eu",
+			"role": "Project Lead, Developer"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/Lopo/Limas/issues",
+		"source": "https://github.com/Lopo/Limas"
+	},
 	"minimum-stability": "stable",
 	"prefer-stable": true,
 	"require": {
@@ -124,8 +141,12 @@
 			"asset-zip"
 		],
 		"installer-paths": {
-			"public/js/packages/{$name}": ["type:jslib-zip"],
-			"assets/zip/{$name}": ["type:asset-zip"]
+			"public/js/packages/{$name}": [
+				"type:jslib-zip"
+			],
+			"assets/zip/{$name}": [
+				"type:asset-zip"
+			]
 		}
 	},
 	"require-dev": {
