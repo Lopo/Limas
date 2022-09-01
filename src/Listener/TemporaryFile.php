@@ -13,6 +13,7 @@ use Limas\Entity\TempUploadedFile;
 use Limas\Entity\UploadedFile;
 use Limas\Service\ImageService;
 use Limas\Service\UploadedFileService;
+use Nette\Utils\Strings;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -48,12 +49,14 @@ class TemporaryFile
 	public function onKernelView(ViewEvent $event): void
 	{
 		$data = $event->getControllerResult();
-
 		if (!is_object($data)) {
 			return;
 		}
 
 		$classReflection = new \ReflectionClass($data);
+		if (!Strings::startsWith($classReflection->getNamespaceName(), 'Limas\\')) {
+			return;
+		}
 
 		foreach ($classReflection->getProperties() as $property) {
 			$propertyAnnotationCollection = $property->getAttributes(UploadedFileCollection::class);
@@ -64,7 +67,6 @@ class TemporaryFile
 			if (0 !== count($propertyAnnotationCollection) || 0 !== count($propertyAnnotation)) {
 				if (0 !== count($manyToOneAnnotation)) {
 					$collection = $this->propertyAccessor->getValue($data, $property->getName());
-
 					foreach ($collection as $key => $item) {
 						if ($item instanceof TempUploadedFile || $item instanceof TempImage) {
 							$collection[$key] = $this->setReplacementFile($manyToOneAnnotation[0]->newInstance()->target, $item, $data);
@@ -102,7 +104,6 @@ class TemporaryFile
 		$this->replaceFile($newFile, $source);
 
 		$setterName = $this->getReferenceSetter($newFile, $target);
-
 		if ($setterName !== false) {
 			$this->propertyAccessor->setValue($newFile, $setterName, $target);
 		}
@@ -130,9 +131,8 @@ class TemporaryFile
 
 		foreach ($inverseSideReflection->getProperties() as $inverseSideProperty) {
 			$manyToOneAssociation = $inverseSideProperty->getAttributes(ManyToOne::class);
-
 			if (0 !== count($manyToOneAssociation)
-				&& $manyToOneAssociation[0]->newInstance()->target == $owningSideReflection->getName()
+				&& $manyToOneAssociation[0]->newInstance()->target === $owningSideReflection->getName()
 			) {
 				return $inverseSideProperty->getName();
 			}
