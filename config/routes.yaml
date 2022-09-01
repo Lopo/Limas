@@ -8,6 +8,7 @@ kernel:
 
 api_login_jwt:
     path: /api/users/jwt
+    methods: ['POST']
 
 gesdinet_jwt_refresh_token:
     path: /api/token/refresh
