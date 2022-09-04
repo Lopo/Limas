@@ -248,6 +248,11 @@ Ext.application({
 			pageSize: 99999999,
 			autoLoad: true
 		});
+		this.userProviderStore = Ext.create('Ext.data.Store', {
+			model: 'Limas.Entity.UserProvider',
+			pageSize: 99999999,
+			autoLoad: true
+		});
 		this.unitStore = Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Unit',
 			pageSize: 99999999,
@@ -382,6 +387,9 @@ Ext.application({
 	},
 	getPartUnitStore: function () {
 		return this.partUnitStore;
+	},
+	getUserProviderStore: function () {
+		return this.userProviderStore;
 	},
 	getFootprintStore: function () {
 		return this.footprintStore;

@@ -15,8 +15,7 @@ Ext.define('Limas.UserGrid', {
 				return '';
 			},
 			flex: 1
-		},
-		{
+		}, {
 			header: i18n('Active'),
 			xtype: 'booleancolumn',
 			dataIndex: 'active',
@@ -34,7 +33,7 @@ Ext.define('Limas.UserGrid', {
 	initComponent: function () {
 		this.callParent(arguments);
 
-		this.providerStore = Ext.create('Limas.data.store.UserProviderStore');
+		this.providerStore = Limas.getApplication().getUserProviderStore();
 
 		this.providerCombo = Ext.create('Ext.form.field.ComboBox', {
 			store: this.providerStore,

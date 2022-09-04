@@ -6,6 +6,12 @@ Ext.define('Limas.UserEditor', {
 	titleProperty: 'username',
 
 	initComponent: function () {
+		this.userProvider = Ext.create({
+			xtype: 'UserProviderComboBox',
+			fieldLabel: i18n('User Provider'),
+			name: 'provider',
+			itemId: 'provider'
+		});
 		this.items = [
 			{
 				xtype: 'textfield',
@@ -17,13 +23,17 @@ Ext.define('Limas.UserEditor', {
 				xtype: 'textfield',
 				name: 'email',
 				vtype: 'email',
+				itemId: 'email',
 				fieldLabel: i18n('E-Mail')
 			}, {
 				xtype: 'textfield',
 				inputType: 'password',
 				name: 'newPassword',
+				itemId: 'newPassword',
 				fieldLabel: i18n('Password')
-			}, {
+			},
+			this.userProvider,
+			{
 			// 	xtype: 'displayfield',
 			// 	itemId: 'legacyField',
 			// 	fieldLabel: i18n('Legacy User'),
@@ -44,9 +54,15 @@ Ext.define('Limas.UserEditor', {
 		];
 
 		this.on('startEdit', this.onStartEdit, this, {delay: 200});
+		this.userProvider.on('change', this.onProviderChange, this);
 		this.callParent();
 	},
 	onStartEdit: function () {
+		let provider = this.record.getProvider();
+		if (provider === null) {
+			this.record.setProvider(Limas.getApplication().getUserProviderStore().findRecord('type', 'Builtin'));
+			this.down('#provider').setValue(provider);
+		}
 		if (this.record.get('protected') === true) {
 			this.items.each(function (item) {
 				if (item instanceof Ext.form.field.Base && !(item instanceof Ext.form.field.Display)) {
@@ -63,8 +79,7 @@ Ext.define('Limas.UserEditor', {
 			this.saveButton.enable();
 		}
 
-		let isBuiltInProvider = this.record.getProvider() !== null
-				&& this.record.getProvider().get('type') === 'Builtin'
+		let isBuiltInProvider = this.record.getProvider() !== null && this.record.getProvider().get('type') === 'Builtin'
 			// && this.record.get('legacy') === false
 		;
 
@@ -76,5 +91,14 @@ Ext.define('Limas.UserEditor', {
 
 		this.down('#protectedNotice').setVisible(this.record.get('protected') === true);
 		// this.down('#legacyField').setVisible(this.record.get('legacy') === true);
+		this.showHideByProvider(isBuiltInProvider);
+	},
+	onProviderChange: function (ctx, to) {
+		let model = this.down('#provider').getStore().getById(to);
+		this.showHideByProvider(model !== null && model.get('type') === 'Builtin');
+	},
+	showHideByProvider: function (show) {
+		this.down('#email').setVisible(show);
+		this.down('#newPassword').setVisible(show);
 	}
 });
