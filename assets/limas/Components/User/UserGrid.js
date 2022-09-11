@@ -9,10 +9,7 @@ Ext.define('Limas.UserGrid', {
 		}, {
 			header: i18n('Provider'),
 			renderer: function (value, metaData, record) {
-				if (record.getProvider() !== null) {
-					return record.getProvider().get('type');
-				}
-				return '';
+				return record.getProvider() !== null ? record.getProvider().get('type') : '';
 			},
 			flex: 1
 		}, {
@@ -38,10 +35,11 @@ Ext.define('Limas.UserGrid', {
 		this.providerCombo = Ext.create('Ext.form.field.ComboBox', {
 			store: this.providerStore,
 			displayField: 'type',
-			valueField: '@Id',
+			valueField: '@id',
 			editable: false,
 			forceSelection: true,
 			fieldLabel: i18n('Type'),
+			emptyText: i18n('-ANY-'),
 			listeners: {
 				select: 'onProviderSelect',
 				scope: this

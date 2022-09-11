@@ -229,6 +229,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		for (k = 0; k < this.part.manufacturers().count(); k++) {
 			if (this.part.manufacturers().getAt(k).isPartiallyEqualTo(partManufacturer, ['manufacturer.name'])) {
 				found = this.part.manufacturers().getAt(k);
+				break;
 			}
 		}
 

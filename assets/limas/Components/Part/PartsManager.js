@@ -46,7 +46,6 @@ Ext.define('Limas.PartManager', {
 			region: 'west',
 			ddGroup: 'CategoryTree'
 		};
-
 		if (this.compactLayout) {
 			treeConfig.region = 'center';
 		} else {

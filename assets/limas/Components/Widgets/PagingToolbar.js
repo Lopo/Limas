@@ -42,11 +42,11 @@ Ext.define('Limas.PagingToolbar', {
 			xtype: 'button',
 			iconCls: 'fugue-icon funnel--minus',
 			tooltip: i18n('Reset Filter'),
-			hidden: true, handler: function () {
+			hidden: true,
+			handler: function () {
 				this.store.getFilters().removeAll();
 				this.store.currentPage = 1;
 				this.store.load({start: 0});
-
 			},
 			scope: this
 		}));

@@ -116,11 +116,11 @@ Ext.define('Limas.form.field.SearchField', {
 		let me = this,
 			store = me.store,
 			searchValue = me.getValue(),
-			searchTerms = searchValue.split(" "),
+			searchTerms = searchValue.split(' '),
 			splitTerms = true,
 			orSubFilters = [],
-			i, j,
-			subFilters = [];
+			subFilters = [],
+			i, j;
 
 		if (this.splitSearchTermSystemPreference !== null) {
 			splitTerms = Boolean(Limas.getApplication().getSystemPreference(this.splitSearchTermSystemPreference, this.splitSearchTermSystemPreferenceDefaults));
