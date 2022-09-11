@@ -102,20 +102,6 @@ Ext.define('Limas.MenuBar', {
 
 		this.menu.menu.push({text: i18n('Theme'), type: 'themes', menu: this.themesMenu});
 		this.menu.menu.push({xtype: 'tbspacer', width: 50});
-		this.menu.menu.push({
-			xtype: 'button',
-			text: i18n('Patreon Status'),
-			iconCls: 'patreonLogo',
-			handler: this.showPatreonStatusDialog,
-			scope: this
-		});
-		if (Ext.isObject(window.parameters.patreonStatus)) {
-			this.menu.menu.push({
-				xtype: 'progressbar',
-				value: (window.parameters.patreonStatus.pledgeSum / window.parameters.patreonStatus.goal),
-				width: 50
-			});
-		}
 
 		this.menu.menu.push({xtype: 'tbfill'});
 		this.menu.menu.push({xtype: 'button', iconCls: 'partkeeprLogo'});
@@ -124,10 +110,6 @@ Ext.define('Limas.MenuBar', {
 		this.items = this.menu.menu;
 
 		this.callParent();
-	},
-	showPatreonStatusDialog: function () {
-		Ext.create('Limas.Components.PatreonStatusDialog')
-			.show();
 	},
 	selectTheme: function (theme) {
 		let j, menuItem;

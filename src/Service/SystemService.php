@@ -219,20 +219,6 @@ class SystemService
 		};
 	}
 
-	public function getPatreonStatus(): object|false
-	{
-		$statusURI = $this->limas['patreon']['statusuri'];
-		if ($statusURI === false) {
-			return false;
-		}
-
-		try {
-			return json_decode(((new Client)->request('GET', $statusURI, ['timeout' => 3.14]))->getBody(), true, 512, JSON_THROW_ON_ERROR);
-		} catch (\Throwable $e) {
-			return false;
-		}
-	}
-
 	public function getServerLoadAvg(): string
 	{
 		if (false === ($load = sys_getloadavg())) {

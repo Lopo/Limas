@@ -213,17 +213,6 @@ margin-left: -75px;
     background-repeat: no-repeat;
 }
 
-.patreonLogo {
-   background-image: url(../images/patreon.png);
-}
-
-.patreonButton {
-    display: block;
-    height: 51px;
-    width: 217px;
-    background-image: url(../images/become_a_patron_button.png);
-}
-
 .x-panel-notification {
     padding: 2px;
 }

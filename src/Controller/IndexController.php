@@ -58,7 +58,6 @@ class IndexController
 			'authentication_provider' => $this->limas['authentication_provider'],
 			'tip_of_the_day_uri' => $this->limas['tip_of_the_day_uri'],
 			'password_change' => $this->getLimasParameterWithDefault('auth.allow_password_change', true),
-			'patreonStatus' => $this->systemService->getPatreonStatus(),
 			'defaultGridPresets' => Json::encode($this->gridPresetService->getDefaultPresets())
 		];
 		if ($this->getLimasParameterWithDefault('frontend.auto_login.enabled', false) === true) {

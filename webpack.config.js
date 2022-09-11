@@ -416,7 +416,6 @@ if (Encore.isDev()) {
 				'@/limas/Components/OctoPart/SearchPanel.js',
 				'@/limas/Components/OctoPart/SearchWindow.js',
 				'@/limas/Components/OctoPart/DataApplicator.js',
-				'@/limas/Components/PatreonStatusDialog.js',
 				'@/limas/Components/ThemeTester/ThemeTester.js',
 				'@/limas/phpjs.js'
 			],

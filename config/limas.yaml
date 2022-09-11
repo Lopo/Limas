@@ -27,8 +27,6 @@ parameters:
             nexarId: '%env(NEXAR_ID)%'
             nexarSecret: '%env(NEXAR_SECRET)%'
             limit: 3
-        patreon:
-            statusuri: 'https://www.partkeepr.org/patreon.json'
         filesystem:
             data_directory: '%limas.filesystem.data_directory%'
             quota: false
