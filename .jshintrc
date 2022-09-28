@@ -1,5 +1,14 @@
 {
+  "freeze": true,
+  "latedef": true,
+  "noempty": true,
+  "nonbsp": true,
   "undef": true,
   "unused": true,
+  "varstmt": true,
+  "esversion": 6,
+  "sub": true,
+  "browser": true,
+  "devel": true,
   "predef": [ "Limas", "i18n", "Ext" ]
 }
