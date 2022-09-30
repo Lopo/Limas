@@ -43,7 +43,7 @@ Ext.define('Limas.CategoryComboBox', {
 	_oldValue: null,
 
 	initComponent: function () {
-		this.store = Ext.create('Limas.data.store.PartCategoryStore');
+		this.store = Ext.create('Limas.Data.store.PartCategoryStore');
 
 		this.on('keyup', Ext.bind(this.onFieldChange, this));
 		this.on('blur', Ext.bind(this.onBlur, this));

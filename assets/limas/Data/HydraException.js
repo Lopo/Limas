@@ -1,4 +1,4 @@
-Ext.define('Limas.data.HydraException', {
+Ext.define('Limas.Data.HydraException', {
 	config: {
 		/**
 		 * @cfg {String} description

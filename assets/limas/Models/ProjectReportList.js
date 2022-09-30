@@ -1,5 +1,5 @@
 Ext.define('Limas.Entity.ProjectReportList', {
-	extend: 'Limas.data.HydraModel',
+	extend: 'Limas.Data.HydraModel',
 	alias: 'schema.Limas.Entity.ProjectReportList',
 
 	idProperty: '@id',

@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.PartCategoryStore', {
+Ext.define('Limas.Data.store.PartCategoryStore', {
 	extend: 'Ext.data.TreeStore',
 
 	/**

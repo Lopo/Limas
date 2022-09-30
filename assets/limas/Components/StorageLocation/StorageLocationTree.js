@@ -14,7 +14,7 @@ Ext.define('Limas.StorageLocationTree', {
 	categoryModel: 'Limas.Entity.StorageLocationCategory',
 
 	initComponent: function () {
-		this.store = Ext.create('Limas.data.store.StorageLocationCategoryStore');
+		this.store = Ext.create('Limas.Data.store.StorageLocationCategoryStore');
 		this.callParent();
 	},
 	listeners: {

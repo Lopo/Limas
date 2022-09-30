@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.SystemNoticeStore', {
+Ext.define('Limas.Data.store.SystemNoticeStore', {
 	extend: 'Ext.data.Store',
 	storeId: 'SystemNoticeStore',
 	autoLoad: true,

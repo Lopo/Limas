@@ -3,7 +3,7 @@
  *
  * The forum thread can be found at https://www.sencha.com/forum/showthread.php?302635-Ext.data.operation.Operation.doProcess-doesn-t-update-associations&p=1106828
  */
-Ext.define('Limas.data.Model', {
+Ext.define('Limas.Data.Model', {
 	override: 'Ext.data.Model',
 
 	hasField: function (fieldName) {
@@ -78,7 +78,7 @@ Ext.define('Limas.data.Model', {
 	}
 });
 
-Ext.define('Limas.data.operation.Update', {
+Ext.define('Limas.Data.operation.Update', {
 	override: 'Ext.data.operation.Update',
 
 	action: 'update',
@@ -92,7 +92,7 @@ Ext.define('Limas.data.operation.Update', {
 	}
 });
 
-Ext.define('Limas.data.operation.Create', {
+Ext.define('Limas.Data.operation.Create', {
 	override: 'Ext.data.operation.Create',
 
 	action: 'create',
@@ -106,7 +106,7 @@ Ext.define('Limas.data.operation.Create', {
 	}
 });
 
-Ext.define('Limas.data.schema.Role', {
+Ext.define('Limas.Data.schema.Role', {
 	override: 'Ext.data.schema.Role',
 
 	getAssociatedStore: function (inverseRecord, options, scope, records, isComplete) {
@@ -188,7 +188,7 @@ Ext.define('Limas.data.schema.Role', {
 	},
 });
 
-Ext.define('Limas.data.proxy.Proxy', {
+Ext.define('Limas.Data.proxy.Proxy', {
 	override: 'Ext.data.proxy.Proxy',
 
 	batch: function (options, /* deprecated */listeners) {

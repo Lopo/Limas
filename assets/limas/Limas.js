@@ -263,12 +263,12 @@ Ext.application({
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.userPreferenceStore = Ext.create('Limas.data.store.UserPreferenceStore', {
+		this.userPreferenceStore = Ext.create('Limas.Data.store.UserPreferenceStore', {
 			model: 'Limas.Entity.UserPreference',
 			autoLoad: false
 		});
 		this.barcodeScannerManager = Ext.create('Limas.BarcodeScanner.Manager');
-		this.systemPreferenceStore = Ext.create('Limas.data.store.SystemPreferenceStore', {
+		this.systemPreferenceStore = Ext.create('Limas.Data.store.SystemPreferenceStore', {
 			model: 'Limas.Entity.SystemPreference',
 			autoLoad: true,
 			listeners: {
@@ -279,9 +279,9 @@ Ext.application({
 			}
 		});
 
-		this.tipOfTheDayStore = Ext.create('Limas.data.store.TipOfTheDayStore');
-		this.tipOfTheDayHistoryStore = Ext.create('Limas.data.store.TipOfTheDayHistoryStore');
-		this.systemNoticeStore = Ext.create('Limas.data.store.SystemNoticeStore');
+		this.tipOfTheDayStore = Ext.create('Limas.Data.store.TipOfTheDayStore');
+		this.tipOfTheDayHistoryStore = Ext.create('Limas.Data.store.TipOfTheDayHistoryStore');
+		this.systemNoticeStore = Ext.create('Limas.Data.store.SystemNoticeStore');
 	},
 	getBarcodeScannerManager: function () {
 		return this.barcodeScannerManager;

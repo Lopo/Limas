@@ -41,7 +41,7 @@ Ext.define('Limas.CategoryEditorTree', {
 			droppedOn = this.getView().getRecord(node);
 
 		for (let draggedRecord in draggedRecords) {
-			if (!(draggedRecord instanceof Limas.data.HydraTreeModel)) {
+			if (!(draggedRecord instanceof Limas.Data.HydraTreeModel)) {
 				// Workaround for EXTJS-13725 where dropping of non-tree-models cause issues
 				dropHandlers.cancelDrop();
 			}
@@ -61,7 +61,7 @@ Ext.define('Limas.CategoryEditorTree', {
 		this.toolbarDeleteButton.enable();
 
 		let record = selected.getSelection()[0];
-		if (!(record instanceof Limas.data.HydraTreeModel)) {
+		if (!(record instanceof Limas.Data.HydraTreeModel)) {
 			return;
 		}
 		if (record.parentNode !== null && record.parentNode.isRoot()) {
@@ -74,7 +74,7 @@ Ext.define('Limas.CategoryEditorTree', {
 	onCategoryDrop: function (node, data, overModel, dropPosition) {
 		let draggedRecord = data.records[0];
 
-		if (draggedRecord instanceof Limas.data.HydraTreeModel) {
+		if (draggedRecord instanceof Limas.Data.HydraTreeModel) {
 			let targetRecord = (dropPosition === 'after' || dropPosition === 'before')
 				? overModel.parentNode
 				: overModel

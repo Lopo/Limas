@@ -1,4 +1,4 @@
-Ext.define('Limas.data.TreeReader', {
+Ext.define('Limas.Data.TreeReader', {
 	extend: 'Ext.data.reader.Json',
 	alias: 'reader.tree',
 

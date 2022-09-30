@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.StorageLocationCategoryStore', {
+Ext.define('Limas.Data.store.StorageLocationCategoryStore', {
 	extend: 'Ext.data.TreeStore',
 
 	storeId: 'StorageLocationCategoryStore',

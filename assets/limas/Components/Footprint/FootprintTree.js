@@ -14,7 +14,7 @@ Ext.define('Limas.FootprintTree', {
 	categoryModel: 'Limas.Entity.FootprintCategory',
 
 	initComponent: function () {
-		this.store = Ext.create('Limas.data.store.FootprintCategoryStore');
+		this.store = Ext.create('Limas.Data.store.FootprintCategoryStore');
 		this.callParent();
 	},
 

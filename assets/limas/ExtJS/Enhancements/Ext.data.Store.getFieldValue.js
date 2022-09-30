@@ -1,4 +1,4 @@
-Ext.define('Limas.data.Store', {
+Ext.define('Limas.Data.Store', {
 	override: 'Ext.data.Store',
 
 	/**

@@ -144,7 +144,7 @@ Ext.define('Limas.ExceptionWindow', {
 	 *
 	 * @see showException
 	 *
-	 * @param {Limas.data.HydraException} exception The exception data
+	 * @param {Limas.Data.HydraException} exception The exception data
 	 * @param {Object} response The response data
 	 */
 	_showException: function (exception, response) {
@@ -261,7 +261,7 @@ Ext.define('Limas.ExceptionWindow', {
 		/**
 		 * Displays the exception window
 		 *
-		 * @param {Limas.data.HydraException} exception The exception object
+		 * @param {Limas.Data.HydraException} exception The exception object
 		 * @param {Object} response The response object
 		 */
 		showException: function (response) {
@@ -271,10 +271,10 @@ Ext.define('Limas.ExceptionWindow', {
 
 			try {
 				let data = Ext.decode(response.responseText),
-					exception = Ext.create('Limas.data.HydraException', data);
+					exception = Ext.create('Limas.Data.HydraException', data);
 				Limas.ExceptionWindow.activeInstance._showException(exception, response);
 			} catch (ex) {
-				let exception = Ext.create('Limas.data.HydraException', {
+				let exception = Ext.create('Limas.Data.HydraException', {
 					title: i18n('Critical Error'),
 					description: i18n('The server returned a response which we were not able to interpret.')
 				});

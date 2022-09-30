@@ -1,6 +1,6 @@
-Ext.define('Limas.data.HydraModel', {
+Ext.define('Limas.Data.HydraModel', {
 	extend: 'Ext.data.Model',
-	mixins: ['Limas.data.CallActions'],
+	mixins: ['Limas.Data.CallActions'],
 
 	getData: function () {
 		let data = this.callParent(arguments);

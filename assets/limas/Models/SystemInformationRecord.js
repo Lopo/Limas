@@ -1,5 +1,5 @@
 Ext.define('Limas.SystemInformationRecord', {
-	extend: 'Limas.data.HydraModel',
+	extend: 'Limas.Data.HydraModel',
 	alias: 'schema.Limas.SystemInformationRecord',
 
 	fields: [

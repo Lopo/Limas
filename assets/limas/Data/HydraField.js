@@ -3,7 +3,7 @@
  *
  * byReference tells the system not to serialize the whole item but only its reference.
  */
-Ext.define('Limas.data.HydraField', {
+Ext.define('Limas.Data.HydraField', {
 	override: 'Ext.data.field.Field',
 
 	byReference: false,

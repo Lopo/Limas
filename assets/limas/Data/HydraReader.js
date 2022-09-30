@@ -3,7 +3,7 @@
  *
  * Supports in-line references
  */
-Ext.define('Limas.data.HydraReader', {
+Ext.define('Limas.Data.HydraReader', {
 	extend: 'Ext.data.reader.Json',
 	alias: 'reader.hydra',
 

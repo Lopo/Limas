@@ -1,4 +1,4 @@
-Ext.define('Limas.data.field.Array', {
+Ext.define('Limas.Data.field.Array', {
 	extend: 'Ext.data.field.Field',
 
 	alias: [

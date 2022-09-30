@@ -1,4 +1,4 @@
-Ext.define('Limas.data.HydraProxy', {
+Ext.define('Limas.Data.HydraProxy', {
 	extend: 'Ext.data.proxy.Rest',
 	alias: 'proxy.Hydra',
 

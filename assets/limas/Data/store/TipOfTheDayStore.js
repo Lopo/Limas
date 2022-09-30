@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.TipOfTheDayStore', {
+Ext.define('Limas.Data.store.TipOfTheDayStore', {
 	extend: 'Ext.data.Store',
 
 	storeId: 'TipOfTheDayStore',

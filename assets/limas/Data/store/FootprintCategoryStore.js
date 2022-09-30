@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.FootprintCategoryStore', {
+Ext.define('Limas.Data.store.FootprintCategoryStore', {
 	extend: 'Ext.data.TreeStore',
 
 	storeId: 'FootprintCategoryStore',

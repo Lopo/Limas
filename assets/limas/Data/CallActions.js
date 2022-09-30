@@ -1,4 +1,4 @@
-Ext.define('Limas.data.CallActions', {
+Ext.define('Limas.Data.CallActions', {
 	/**
 	 * Calls an action relative to the entity
 	 *

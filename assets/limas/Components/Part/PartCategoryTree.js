@@ -13,7 +13,7 @@ Ext.define('Limas.PartCategoryTree', {
 	rootVisible: false,
 
 	initComponent: function () {
-		this.store = Ext.create('Limas.data.store.PartCategoryStore');
+		this.store = Ext.create('Limas.Data.store.PartCategoryStore');
 
 		this.callParent();
 

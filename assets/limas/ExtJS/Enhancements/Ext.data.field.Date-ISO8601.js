@@ -1,7 +1,7 @@
 /**
  * Overrides the Date field to return the date in ISO 8601 format by default
  */
-Ext.define('Limas.data.field.Date', {
+Ext.define('Limas.Data.field.Date', {
 	override: 'Ext.data.field.Date',
 
 	serialize: function (value) {

@@ -1,4 +1,4 @@
-Ext.define('Limas.data.field.Decimal', {
+Ext.define('Limas.Data.field.Decimal', {
 	extend: 'Ext.data.field.Number',
 
 	alias: [

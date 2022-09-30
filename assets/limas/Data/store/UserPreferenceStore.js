@@ -1,4 +1,4 @@
-Ext.define('Limas.data.store.UserPreferenceStore', {
+Ext.define('Limas.Data.store.UserPreferenceStore', {
 	extend: 'Ext.data.Store',
 
 	storeId: 'UserPreferenceStore',
