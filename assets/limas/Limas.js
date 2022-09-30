@@ -616,9 +616,9 @@ Limas.bytesToSize = function (bytes) {
 	if (bytes === 0) {
 		return '0 Bytes';
 	}
-	let sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'],
-		i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-	return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+	let sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB'],
+		i = Math.floor(Math.log(bytes) / Math.log(1024));
+	return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
 };
 
 Limas.setAvailableImageFormats = function (formats) {
