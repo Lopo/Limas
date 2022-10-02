@@ -73,14 +73,15 @@ Ext.define('Limas.ServiceCall', {
 	onSuccess: function (responseObj, options) {
 		Limas.getApplication().getStatusbar().endLoad();
 
+		let response;
 		try {
-			var response = Ext.decode(responseObj.responseText);
+			response = Ext.decode(responseObj.responseText);
 		} catch (ex) {
 			Limas.ExceptionWindow.showException(responseObj);
 			return;
 		}
 
-		if (response.status == 'error') {
+		if (response.status === 'error') {
 			this.displayError(response.exception);
 			Limas.getApplication().getStatusbar().setStatus({
 				text: this.getErrorMessage(response.exception),
@@ -93,7 +94,7 @@ Ext.define('Limas.ServiceCall', {
 			return;
 		}
 
-		if (response.status == 'systemerror') {
+		if (response.status === 'systemerror') {
 			this.displaySystemError(response);
 			Limas.getApplication().getStatusbar().setStatus({
 				text: this.getErrorMessage(response),
@@ -124,14 +125,10 @@ Ext.define('Limas.ServiceCall', {
 		});
 	},
 	getErrorMessage: function (obj) {
-		return obj.message === ''
-			? obj.exception
-			: obj.message;
+		return obj.message === '' ? obj.exception : obj.message;
 	},
 	displaySystemError: function (obj) {
-		let errorMsg = 'Error Message: ' + obj.message + '<br/>'
-			+ 'Exception:' + obj.exception + '<br/>'
-			+ 'Backtrace:<br/>' + str_replace('\n', '<br/>', obj.backtrace);
+		let errorMsg = 'Error Message: ' + obj.message + '<br/>' + 'Exception:' + obj.exception + '<br/>' + 'Backtrace:<br/>' + str_replace('\n', '<br/>', obj.backtrace);
 
 		Ext.Msg.maxWidth = 800;
 

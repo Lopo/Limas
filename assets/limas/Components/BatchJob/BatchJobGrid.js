@@ -29,7 +29,7 @@ Ext.define('Limas.BatchJobGrid', {
 		this.callParent(arguments);
 
 		/* Right now, we support delete on a single record only */
-		if (this.getSelectionModel().getCount() == 1) {
+		if (this.getSelectionModel().getCount() === 1) {
 			this.executeBatchJob.enable();
 		} else {
 			this.executeBatchJob.disable();

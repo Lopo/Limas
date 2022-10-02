@@ -205,9 +205,8 @@ Ext.define('Ext.ux.menu.StoreMenu', {
 		this.storeMenus = [];
 
 		if (loadedState) {
-			// If offset is specified, it means we have to put the
-			// dynamic menus after the static menus. We put a separator
-			// to separate both
+			// If offset is specified, it means we have to put the dynamic menus after the static menus. We put
+			// a separator to separate both
 			let count = 0;
 			if (this.offset) {
 				this.storeMenus.push(this.insert(this.offset, {xtype: 'menuseparator'}));
@@ -244,7 +243,7 @@ Ext.define('Ext.ux.menu.StoreMenu', {
 								id: menuitem[this.idField],
 								text: menuitem[this.nameField],
 								iconCls: menuitem[this.iconField],
-								url: menuItem[this.url],
+								url: menuitem[this.url],
 								handler: this.smHandlers[menuitem.smHandler]
 							});
 						}
@@ -253,7 +252,7 @@ Ext.define('Ext.ux.menu.StoreMenu', {
 
 				this.storeMenus.push(this.insert(this.offset + count, menuSettings));
 				count++;
-			}, this)
+			}, this);
 		} else {
 			this.storeMenus.push(this.insert(this.offset, '<span class="loading-indicator">' + this.loadingText + '</span>'));
 		}

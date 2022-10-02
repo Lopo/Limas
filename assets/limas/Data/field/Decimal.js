@@ -15,7 +15,6 @@ Ext.define('Limas.Data.field.Decimal', {
 		return null;
 	},
 	convert: function (v) {
-		let t=typeof v;
 		return this.callParent(arguments);
 	}
 });

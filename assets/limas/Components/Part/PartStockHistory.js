@@ -9,7 +9,7 @@ Ext.define('Limas.PartStockHistory', {
 		this.on('activate', this.onActivate, this);
 	},
 	onActivate: function () {
-		var filter = Ext.create('Limas.util.Filter', {
+		let filter = Ext.create('Limas.util.Filter', {
 			property: 'part',
 			operator: '=',
 			value: this.part

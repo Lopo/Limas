@@ -58,11 +58,7 @@ Ext.define('Limas.WebcamPanel', {
 		this.video = this.down('#video').getEl().dom;
 		this.canvas = this.down('#canvas').getEl().dom;
 
-		navigator.getUserMedia = navigator.getUserMedia
-			|| navigator.webkitGetUserMedia
-			|| navigator.mozGetUserMedia
-			|| navigator.msGetUserMedia;
-
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 		if (navigator.getUserMedia) {
 			navigator.getUserMedia({video: true}, Ext.bind(this.handleVideo, this), Ext.bind(this.videoError, this));
 		}

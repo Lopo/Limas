@@ -506,7 +506,7 @@ Ext.define('Limas.PartManager', {
 	},
 	statics: {
 		formatParameter: function (partParameter) {
-			var minSiPrefix = '', siPrefix = '', maxSiPrefix = '', unit = '', minValue = '', maxValue = '', value = '',
+			let minSiPrefix = '', siPrefix = '', maxSiPrefix = '', unit = '', minValue = '', maxValue = '', value = '',
 				minMaxCombined = '';
 
 			if (partParameter.get('valueType') === 'string') {

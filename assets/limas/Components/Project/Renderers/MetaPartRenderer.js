@@ -4,10 +4,9 @@ Ext.define('Limas.Components.ProjectReport.Renderers.MetaPartRenderer', {
 	alias: 'columnRenderer.projectReportMetaPart',
 
 	renderer: function (val, q, rec) {
-		let part = rec.getPart(), icon;
+		let part = rec.getPart();
 		if (part !== null) {
-			return '<span class="web-icon brick' + (part.get('metaPart') ? 's' : '') + '"></span> '
-				+ Ext.util.Format.htmlEncode(part.get('name'));
+			return '<span class="web-icon brick' + (part.get('metaPart') ? 's' : '') + '"></span> ' + Ext.util.Format.htmlEncode(part.get('name'));
 		}
 	},
 	statics: {

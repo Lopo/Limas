@@ -134,21 +134,14 @@ Ext.define('Limas.PresetCombobox', {
 	 * Event handler to handle a preset selection. Fires the "selectPreset" event.
 	 */
 	onPresetSelect: function () {
-		let configuration = this.serializeConfiguration
-			// @todo check if the json string is correct and if it is not, display an error
-			? Ext.decode(this.getSelection().get(this.configurationField), true)
-			: this.getSelection().get(this.configurationField);
-		this.fireEvent('selectPreset', configuration);
+		// @todo check if the json string is correct and if it is not, display an error
+		this.fireEvent('selectPreset', this.serializeConfiguration ? Ext.decode(this.getSelection().get(this.configurationField), true) : this.getSelection().get(this.configurationField));
 	},
 	/**
 	 * Event handler to ask the user for the preset name, then calls onPresetNameEntered
 	 */
 	onSavePreset: function () {
-		let presetName = this.getSelectedRecord() !== null
-			? this.getSelectedRecord().get(this.nameField)
-			: 'New Preset';
-
-		Ext.Msg.prompt(i18n('Save Preset'), i18n('Preset Name'), this.onPresetNameEntered, this, false, presetName);
+		Ext.Msg.prompt(i18n('Save Preset'), i18n('Preset Name'), this.onPresetNameEntered, this, false, this.getSelectedRecord() !== null ? this.getSelectedRecord().get(this.nameField) : 'New Preset');
 	},
 	/**
 	 * Event handler to save the preset. Checks if a valid name was given, then calls savePreset on success.

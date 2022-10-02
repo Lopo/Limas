@@ -176,7 +176,7 @@ Ext.define('Limas.Components.BatchJob.BatchJobExecutionWindow', {
 
 		let batchJobUpdateFields = this.batchJob.batchJobUpdateFields();
 		for (i = 0; i < batchJobUpdateFields.getCount(); i++) {
-			if (batchJobUpdateFields.getAt(i).get("value") == "") {
+			if (batchJobUpdateFields.getAt(i).get('value') == '') {
 				valid = false;
 			}
 		}

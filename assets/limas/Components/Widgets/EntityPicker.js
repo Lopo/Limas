@@ -4,7 +4,7 @@ Ext.define('Limas.Widgets.EntityPicker', {
 	initComponent: function () {
 		this.callParent(arguments);
 
-		var bottomToolbar = Ext.create('Ext.toolbar.Paging', {
+		let bottomToolbar = Ext.create('Ext.toolbar.Paging', {
 			store: this.down('#grid').store,
 			enableOverflow: true,
 			dock: 'bottom',

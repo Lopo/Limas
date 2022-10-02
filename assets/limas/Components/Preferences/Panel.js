@@ -5,7 +5,7 @@ Ext.define('Limas.Components.Preferences.Panel', {
 	getSettingClasses: function () {
 	},
 	initComponent: function () {
-		var settings = this.getSettingClasses(),
+		let settings = this.getSettingClasses(),
 			settingItems = [], item;
 
 		settingItems.push(Ext.create('Ext.panel.Panel', {
@@ -49,7 +49,7 @@ Ext.define('Limas.Components.Preferences.Panel', {
 		this.callParent();
 	},
 	openSettingsItem: function (target) {
-		var targetClass = Ext.ClassManager.get(target),
+		let targetClass = Ext.ClassManager.get(target),
 			config = {
 				title: targetClass.title,
 				closable: targetClass.closable,

@@ -44,7 +44,7 @@ Ext.define('Limas.Components.Preferences.Tree', {
 
 		let foundItem = false;
 
-		for (var i = 0; i < root.children.length; i++) {
+		for (let i = 0; i < root.children.length; i++) {
 			if (root.children[i].text === item.text) {
 				Ext.applyIf(root.children[i], item);
 				foundItem = i;

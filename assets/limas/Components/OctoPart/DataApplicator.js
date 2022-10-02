@@ -62,7 +62,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 
 		if (this.import.parameters) {
 			for (i in this.data['specs']) {
-				var q_value, q_unit, q_siPrefix;
+				let q_value, q_unit, q_unit2, q_siPrefix;
 				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].displayValue);
 				[q_value, q_unit2, q_siPrefix] = this.SIUnitPrefix(q_value, q_unit);
 				if (q_unit2 === null && q_unit) {

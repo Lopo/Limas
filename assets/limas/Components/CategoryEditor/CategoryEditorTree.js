@@ -75,10 +75,7 @@ Ext.define('Limas.CategoryEditorTree', {
 		let draggedRecord = data.records[0];
 
 		if (draggedRecord instanceof Limas.Data.HydraTreeModel) {
-			let targetRecord = (dropPosition === 'after' || dropPosition === 'before')
-				? overModel.parentNode
-				: overModel
-			;
+			let targetRecord = (dropPosition === 'after' || dropPosition === 'before') ? overModel.parentNode : overModel;
 
 			draggedRecord.callPutAction('move', {
 				'parent': targetRecord.getId()

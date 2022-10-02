@@ -179,7 +179,7 @@ Ext.define('Limas.EditorGrid', {
 			ui: 'notification'
 		});
 
-		this.dockedItems = new Array();
+		this.dockedItems = [];
 		this.dockedItems.push(this.bottomToolbar);
 		this.dockedItems.push(this.appliedFiltersToolbar);
 

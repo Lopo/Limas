@@ -182,14 +182,13 @@ function str_replace(search, replace, subject) {
 		if (s[i]) {
 			while (s[i] = (s[i] + '').split(f[j]).join(ra ? r[j] || "" : r[0]), ++j in f) {
 			}
-			;
 		}
 	}
 	return sa ? s : s[0];
 }
 
 function strlen(string) { // 676
-	var str = string + '',
+	let str = string + '',
 		i = 0, chr = '', lgth = 0;
 	let getWholeChar = function (str, i) {
 		let code = str.charCodeAt(i),

@@ -159,8 +159,7 @@ Ext.define('Limas.StorageLocationMultiAddDialog', {
 	 * @returns int The minimum length possible
 	 */
 	getMinLength: function () {
-		return strlen(this.storageLocationPrefix.getValue())
-			+ strlen((this.storageLocationEnd.getValue()).toString());
+		return strlen(this.storageLocationPrefix.getValue()) + strlen((this.storageLocationEnd.getValue()).toString());
 	},
 	/**
 	 * Updates the sample field
@@ -180,9 +179,7 @@ Ext.define('Limas.StorageLocationMultiAddDialog', {
 				// No padding wanted
 				j.push(this.storageLocationPrefix.getValue() + i);
 			} else {
-				let padLength = this.storageLocationOverallLength.getValue()
-					- (strlen(this.storageLocationPrefix.getValue()) + strlen(i));
-
+				let padLength = this.storageLocationOverallLength.getValue() - (strlen(this.storageLocationPrefix.getValue()) + strlen(i));
 				j.push(this.storageLocationPrefix.getValue() + str_repeat('0', padLength) + i);
 			}
 		}

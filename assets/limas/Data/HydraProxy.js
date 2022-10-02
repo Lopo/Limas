@@ -128,7 +128,7 @@ Ext.define('Limas.Data.HydraProxy', {
 	 * @return {String} The encoded filters
 	 */
 	encodeFilters: function (filters) {
-		var out = [],
+		let out = [],
 			length = filters.length,
 			filter;
 

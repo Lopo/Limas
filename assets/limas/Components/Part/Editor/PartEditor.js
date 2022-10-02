@@ -463,9 +463,7 @@ Ext.define('Limas.PartEditor', {
 		this.callParent(arguments);
 	},
 	setTitle: function (title) {
-		let tmpTitle = this.record.phantom
-			? i18n('Add Part')
-			: i18n('Edit Part');
+		let tmpTitle = this.record.phantom ? i18n('Add Part') : i18n('Edit Part');
 
 		if (title !== '') {
 			tmpTitle += ': ' + title;

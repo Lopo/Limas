@@ -67,11 +67,12 @@ Ext.define('Limas.StorageLocationPicker', {
 	 * Escape: Removes the search and clears the field contents
 	 */
 	keyHandler: function (field, e) {
-		let grid = this.getPicker().getGrid();
+		let grid = this.getPicker().getGrid(),
+			currentSelection;
 
 		switch (e.getKey()) {
 			case e.DOWN:
-				var currentSelection = grid.getSelectionModel().getSelection();
+				currentSelection = grid.getSelectionModel().getSelection();
 				if (currentSelection.length === 0) {
 					grid.getSelectionModel().select(0);
 				} else {
@@ -83,7 +84,7 @@ Ext.define('Limas.StorageLocationPicker', {
 				}
 				break;
 			case e.UP:
-				var currentSelection = grid.getSelectionModel().getSelection();
+				currentSelection = grid.getSelectionModel().getSelection();
 				if (currentSelection.length === 0) {
 					grid.getSelectionModel().select(grid.getStore().count());
 				} else {
@@ -169,29 +170,27 @@ Ext.define('Limas.StorageLocationPicker', {
 	 * Creates and returns the tree panel to be used as this field's picker
 	 */
 	createPicker: function () {
-		let me = this,
-			picker = new Limas.StorageLocationNavigation({
-				store: me.store,
-				floating: true,
-				minHeight: me.minPickerHeight,
-				maxHeight: me.maxPickerHeight,
-				manageHeight: false,
-				shadow: false,
-				height: 250,
-				verticalLayout: true,
-				dragAndDrop: false,
-				categoryEditActions: false,
-				itemEditActions: false,
-				editItemAsObject: true,
-				listeners: {
-					itemEdit: function (v) {
-						this.setValue(v);
-						this.collapse();
-					},
-					scope: this
-				}
-			});
-
-		return picker;
+		let me = this;
+		return new Limas.StorageLocationNavigation({
+			store: me.store,
+			floating: true,
+			minHeight: me.minPickerHeight,
+			maxHeight: me.maxPickerHeight,
+			manageHeight: false,
+			shadow: false,
+			height: 250,
+			verticalLayout: true,
+			dragAndDrop: false,
+			categoryEditActions: false,
+			itemEditActions: false,
+			editItemAsObject: true,
+			listeners: {
+				itemEdit: function (v) {
+					this.setValue(v);
+					this.collapse();
+				},
+				scope: this
+			}
+		});
 	}
 });

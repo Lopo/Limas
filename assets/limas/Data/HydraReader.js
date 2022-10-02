@@ -63,7 +63,7 @@ Ext.define('Limas.Data.HydraReader', {
 	 * @private
 	 */
 	readAssociated: function (record, data, readOptions) {
-		var roles = record.associations,
+		let roles = record.associations,
 			role;
 
 		for (let key in roles) {
@@ -94,7 +94,7 @@ Ext.define('Limas.Data.HydraReader', {
 	 * @returns {Array}
 	 */
 	extractData: function (root, readOptions) {
-		var me = this,
+		let me = this,
 			entityType = readOptions && readOptions.model ? Ext.data.schema.Schema.lookupEntity(readOptions.model) : me.getModel(),
 			schema = entityType.schema,
 			includes = schema.hasAssociations(entityType) && me.getImplicitIncludes(),

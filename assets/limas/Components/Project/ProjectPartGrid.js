@@ -72,8 +72,7 @@ Ext.define('Limas.ProjectPartGrid', {
 				if (part === null) {
 					return;
 				}
-				return '<span class="web-icon brick' + (part.get('metaPart') ? 's' : '') + '"></span> '
-					+ Ext.util.Format.htmlEncode(part.get('name'));
+				return '<span class="web-icon brick' + (part.get('metaPart') ? 's' : '') + '"></span> ' + Ext.util.Format.htmlEncode(part.get('name'));
 			}
 		}, {
 			header: i18n('Remarks'),

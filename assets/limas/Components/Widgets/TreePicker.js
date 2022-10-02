@@ -5,7 +5,7 @@ Ext.define('Limas.Widgets.TreePicker', {
 	 * Creates and returns the tree panel to be used as this field's picker.
 	 */
 	createPicker: function () {
-		var me = this,
+		let me = this,
 			picker = new Ext.tree.Panel({
 				baseCls: Ext.baseCSSPrefix + 'boundlist',
 				shrinkWrapDock: 2,

@@ -32,7 +32,6 @@ Ext.define('Limas.StorageLocationGrid', {
 			this.topToolbar.insert(2, {xtype: 'tbseparator'});
 			this.topToolbar.insert(3, this.multiCreateButton);
 		}
-		this.topToolbar.addButton
 	},
 	/**
 	 * Creates a new storage location multi-create window

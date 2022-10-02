@@ -130,9 +130,7 @@ Ext.define('Limas.StorageLocationEditor', {
 		}
 	},
 	onEditPart: function (part) {
-		let editorWindow = part.get('metaPart') === true
-			? Ext.create('Limas.Components.Part.Editor.MetaPartEditorWindow')
-			: Ext.create('Limas.PartEditorWindow');
+		let editorWindow = part.get('metaPart') === true ? Ext.create('Limas.Components.Part.Editor.MetaPartEditorWindow') : Ext.create('Limas.PartEditorWindow');
 		editorWindow.on('partSaved', this.onPartSaved, this);
 		editorWindow.editor.editItem(part);
 		editorWindow.show();

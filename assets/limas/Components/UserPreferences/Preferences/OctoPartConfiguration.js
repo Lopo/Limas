@@ -80,7 +80,7 @@ Ext.define('Limas.Components.UserPreferences.Preferences.OctoPartConfiguration',
 
 		for (let i = 0; i < items.length; i++) {
 			item = items[i];
-			if (!item instanceof Ext.Component) {
+			if (!(item instanceof Ext.Component)) {
 				continue;
 			}
 

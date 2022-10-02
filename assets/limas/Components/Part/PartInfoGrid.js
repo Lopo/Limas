@@ -91,9 +91,7 @@ Ext.define('Limas.Components.Part.PartInfoGrid', {
 	mode: 'full',
 
 	initComponent: function () {
-		this.sourceConfig = this.mode === "full"
-			? this.fieldConfigs
-			: this.shortFieldConfigs;
+		this.sourceConfig = this.mode === 'full' ? this.fieldConfigs : this.shortFieldConfigs;
 		this.callParent(arguments);
 	},
 	applyFromPart: function (record) {
@@ -101,9 +99,7 @@ Ext.define('Limas.Components.Part.PartInfoGrid', {
 
 		for (let i in this.sourceConfig) {
 			value = record.get(i);
-			values[i] = value !== undefined
-				? value
-				: i18n('none');
+			values[i] = value !== undefined ? value : i18n('none');
 		}
 
 		this.setSource(values);

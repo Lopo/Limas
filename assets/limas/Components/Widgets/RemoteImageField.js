@@ -57,10 +57,7 @@ Ext.define('Limas.RemoteImageField', {
 	setValue: function (value) {
 		this.value = value;
 
-		this.image.setSrc(value !== null
-			? value.getId() + '/getImage?maxWidth=' + this.maxWidth + '&maxHeight=' + this.maxHeight + '&ts=' + new Date().getTime()
-			: ''
-		);
+		this.image.setSrc(value !== null ? value.getId() + '/getImage?maxWidth=' + this.maxWidth + '&maxHeight=' + this.maxHeight + '&ts=' + new Date().getTime() : '');
 
 		return this;
 	}

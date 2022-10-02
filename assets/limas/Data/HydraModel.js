@@ -247,7 +247,7 @@ Ext.define('Limas.Data.HydraModel', {
 				continue;
 			}
 
-			var getterName = this.associations[roleName].getterName;
+			let getterName = this.associations[roleName].getterName;
 
 			if (item.isStore) {
 				store = this[getterName]();

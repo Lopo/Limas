@@ -99,9 +99,9 @@ Ext.define('Limas.Data.CallActions', {
 	 * @param {Object} data The associations to set. Silently ignores non-existant associations.
 	 */
 	setAssociationData: function (data) {
-		var setterName, getterName, roleName, store;
+		let setterName, getterName, store;
 
-		for (roleName in data) {
+		for (let roleName in data) {
 			if (this.associations[roleName]) {
 
 				if (this.associations[roleName].isMany === true) {

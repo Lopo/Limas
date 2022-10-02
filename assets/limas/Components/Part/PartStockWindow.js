@@ -152,9 +152,7 @@ Ext.define('Limas.PartStockWindow', {
 	 */
 	onOKClick: function () {
 		if (this.form.getForm().isValid()) {
-			let price = this.priceCheckbox.getValue()
-				? this.priceField.getValue()
-				: this.priceField.getValue() / this.quantityField.getValue();
+			let price = this.priceCheckbox.getValue() ? this.priceField.getValue() : this.priceField.getValue() / this.quantityField.getValue();
 
 			Ext.callback(this.callbackFn,
 				this.callbackScope,

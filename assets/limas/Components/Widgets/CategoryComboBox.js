@@ -78,9 +78,7 @@ Ext.define('Limas.CategoryComboBox', {
 		this.typeAheadTask.delay(this.typeAheadDelay, false, false, [newValue]);
 	},
 	setValue: function (value) {
-		this.textValue = value !== null
-			? value.get('name')
-			: '';
+		this.textValue = value !== null ? value.get('name') : '';
 		this.callParent(arguments);
 		this.validate();
 	},

@@ -115,7 +115,7 @@ Ext.define('Limas.Components.Widgets.PartParameterSearch', {
 			operator = this.down('#operator').getValue().get('operator');
 		}
 
-		var j = Ext.create('Limas.Entity.MetaPartParameterCriteria');
+		let j = Ext.create('Limas.Entity.MetaPartParameterCriteria');
 		j.set('partParameterName', this.down('#parameter').getValue());
 		j.set('valueType', this.valueType);
 		j.setSiPrefix(this.down('#siPrefix').getValue());

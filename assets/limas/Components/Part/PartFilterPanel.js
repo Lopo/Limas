@@ -266,10 +266,7 @@ Ext.define('Limas.PartFilterPanel', {
 					Ext.create('Limas.Util.FilterPlugin', {
 						getFilterFn: function () {
 							if (this.partManager !== null) {
-								if (this.categoryFilter.getValue().category === 'all'
-									&& this.partManager.getSelectedCategory() !== null
-									&& !this.partManager.getSelectedCategory().isRoot()
-								) {
+								if (this.categoryFilter.getValue().category === 'all' && this.partManager.getSelectedCategory() !== null && !this.partManager.getSelectedCategory().isRoot()) {
 									return {
 										id: 'categoryFilter',
 										property: 'category',

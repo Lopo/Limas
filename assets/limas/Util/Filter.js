@@ -60,9 +60,9 @@ Ext.define('Limas.util.Filter', {
 			// so we need hasOwnProperty to filter out our class values.
 			if (name === 'subfilters') {
 				if (config[name] instanceof Array) {
-					var tempConfigs = new Array();
+					let tempConfigs = [];
 
-					for (var i = 0; i < config[name].length; i++) {
+					for (let i = 0; i < config[name].length; i++) {
 						tempConfigs.push(config[name][i].getState());
 					}
 

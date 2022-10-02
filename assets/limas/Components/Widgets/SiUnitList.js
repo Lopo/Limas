@@ -12,6 +12,5 @@ Ext.define('Limas.SiUnitList', {
 		if (record !== null) {
 			this.pickerField.collapse();
 		}
-		return;
 	},
 });
