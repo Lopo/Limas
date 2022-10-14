@@ -3,11 +3,10 @@
 namespace Limas\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\CronLoggerRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: CronLoggerRepository::class)]
+#[ORM\Entity]
 class CronLogger
 	extends BaseEntity
 {

@@ -9,12 +9,11 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\PartManufacturerRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: PartManufacturerRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

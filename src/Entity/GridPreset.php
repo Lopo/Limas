@@ -10,12 +10,11 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\MarkAsDefault;
-use Limas\Repository\GridPresetRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: GridPresetRepository::class)]
+#[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'name_grid_unique', fields: ['grid', 'name'])]
 #[ApiResource(
 	operations: [

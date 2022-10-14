@@ -8,11 +8,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use Limas\Controller\Actions\FileGetFile;
 use Limas\Controller\Actions\FileGetMimeTypeIcon;
-use Limas\Repository\FootprintAttachmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: FootprintAttachmentRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

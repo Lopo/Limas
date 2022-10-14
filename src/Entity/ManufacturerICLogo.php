@@ -8,11 +8,10 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use Limas\Controller\Actions\ImageGetImage;
-use Limas\Repository\ManufacturerICLogoRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: ManufacturerICLogoRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

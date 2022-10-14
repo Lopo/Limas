@@ -11,12 +11,11 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use Doctrine\DBAL\Types\Types;
 use Limas\Annotation\UploadedFile;
-use Limas\Repository\StorageLocationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: StorageLocationRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

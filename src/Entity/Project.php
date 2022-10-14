@@ -13,12 +13,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Limas\Annotation\UploadedFileCollection;
-use Limas\Repository\ProjectRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: ProjectRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

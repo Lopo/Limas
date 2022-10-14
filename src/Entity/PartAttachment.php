@@ -10,12 +10,11 @@ use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\FileGetFile;
 use Limas\Controller\Actions\FileGetMimeTypeIcon;
 use Limas\Controller\Actions\ImageGetImage;
-use Limas\Repository\PartAttachmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: PartAttachmentRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),

@@ -9,12 +9,11 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\GetTipHistoryCollection;
-use Limas\Repository\TipOfTheDayHistoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: TipOfTheDayHistoryRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(controller: GetTipHistoryCollection::class),

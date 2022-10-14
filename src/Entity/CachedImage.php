@@ -3,11 +3,10 @@
 namespace Limas\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\CachedImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: CachedImageRepository::class)]
+#[ORM\Entity]
 class CachedImage
 	extends BaseEntity
 {

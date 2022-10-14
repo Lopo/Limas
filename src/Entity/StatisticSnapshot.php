@@ -5,11 +5,10 @@ namespace Limas\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\StatisticSnapshotRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: StatisticSnapshotRepository::class)]
+#[ORM\Entity]
 class StatisticSnapshot
 {
 	#[ORM\Id]

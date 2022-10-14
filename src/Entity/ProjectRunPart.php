@@ -3,12 +3,11 @@
 namespace Limas\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\ProjectRunPartRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: ProjectRunPartRepository::class)]
+#[ORM\Entity]
 class ProjectRunPart
 	extends BaseEntity
 {

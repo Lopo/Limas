@@ -18,12 +18,11 @@ use Limas\Controller\Actions\Part as Actions;
 use Limas\Exceptions\CategoryNotAssignedException;
 use Limas\Exceptions\MinStockLevelOutOfRangeException;
 use Limas\Exceptions\StorageLocationNotAssignedException;
-use Limas\Repository\PartRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-#[ORM\Entity(repositoryClass: PartRepository::class)]
+#[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
 	operations: [

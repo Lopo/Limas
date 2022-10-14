@@ -3,11 +3,10 @@
 namespace Limas\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\StatisticSnapshotUnitRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: StatisticSnapshotUnitRepository::class)]
+#[ORM\Entity]
 class StatisticSnapshotUnit
 {
 	#[ORM\Id]

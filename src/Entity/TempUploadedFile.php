@@ -11,11 +11,10 @@ use Limas\Controller\Actions\FileGetFile;
 use Limas\Controller\Actions\FileGetMimeTypeIcon;
 use Limas\Controller\Actions\TempUploadedFileUpload;
 use Limas\Controller\Actions\TempUploadedFileWebcamUpload;
-use Limas\Repository\TempUploadedFileRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: TempUploadedFileRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(controller: NotFoundAction::class, output: false, read: false),

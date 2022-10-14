@@ -10,11 +10,10 @@ use ApiPlatform\Metadata\Post;
 use Limas\Controller\Actions\ImageGetImage;
 use Limas\Controller\Actions\TempImageUpload;
 use Limas\Controller\Actions\TempImageWebcamUpload;
-use Limas\Repository\TempImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: TempImageRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(controller: NotFoundAction::class, output: false, read: false),

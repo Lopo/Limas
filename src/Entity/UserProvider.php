@@ -9,12 +9,11 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\DBAL\Types\Types;
-use Limas\Repository\UserProviderRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: UserProviderRepository::class)]
+#[ORM\Entity]
 #[ORM\Table(name: 'UserProvider',
 	uniqueConstraints: [
 		new ORM\UniqueConstraint(name: 'type', fields: ['type'])

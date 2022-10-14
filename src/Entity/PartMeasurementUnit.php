@@ -12,12 +12,11 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\SetDefaultUnit;
-use Limas\Repository\PartMeasurementUnitRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-#[ORM\Entity(repositoryClass: PartMeasurementUnitRepository::class)]
+#[ORM\Entity]
 #[ORM\Table(name: 'PartUnit')]
 #[ApiResource(
 	operations: [

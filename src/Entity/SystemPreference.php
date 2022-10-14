@@ -11,11 +11,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\IgnoreIds;
 use Limas\Controller\Actions\SystemPreference as Actions;
-use Limas\Repository\SystemPreferenceRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: SystemPreferenceRepository::class)]
+#[ORM\Entity]
 #[IgnoreIds]
 #[ApiResource(
 	operations: [

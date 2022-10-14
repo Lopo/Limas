@@ -2,7 +2,8 @@
 
 namespace Limas\Command;
 
-use Limas\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Limas\Entity\User;
 use Limas\Service\UserService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,8 +21,8 @@ class UnprotectUserCommand
 	extends Command
 {
 	public function __construct(
-		private readonly UserService    $userService,
-		private readonly UserRepository $userRepository
+		private readonly UserService            $userService,
+		private readonly EntityManagerInterface $entityManager
 	)
 	{
 		parent::__construct();
@@ -39,7 +40,7 @@ class UnprotectUserCommand
 
 		$username = $input->getArgument('username');
 
-		if (null === $this->userRepository->findOneBy(['username' => $username])) {
+		if (null === $this->entityManager->getRepository(User::class)->findOneBy(['username' => $username])) {
 			$io->error(sprintf('User %s not found', $username));
 			return Command::FAILURE;
 		}

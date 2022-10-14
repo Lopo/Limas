@@ -9,11 +9,10 @@ use ApiPlatform\Metadata\ApiResource;
 use Limas\Controller\Actions\FileGetFile;
 use Limas\Controller\Actions\FileGetMimeTypeIcon;
 use Limas\Controller\Actions\ImageGetImage;
-use Limas\Repository\ProjectAttachmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity(repositoryClass: ProjectAttachmentRepository::class)]
+#[ORM\Entity]
 #[ApiResource(
 	operations: [
 		new GetCollection(),
