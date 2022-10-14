@@ -124,6 +124,7 @@ class InstallCommand
 		$this->getApplication()->find('lexik:jwt:generate-keypair')
 			->run(new ArrayInput([
 				'command' => 'lexik:jwt:generate-keypair',
+				'--skip-if-exists' => true,
 				'--no-interaction' => true
 			]), new NullOutput);
 
