@@ -3,7 +3,7 @@
 namespace Limas\Configuration;
 
 use ApiPlatform\Api\IriConverterInterface;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Limas\Filter\AdvancedSearchFilter;
 use Limas\Service\ReflectionService;
@@ -17,12 +17,12 @@ abstract class BaseConfiguration
 
 
 	public function __construct(
-		protected ClassMetadata         $classMetadata,
-		protected string                $baseEntity,
-		protected ReflectionService     $reflectionService,
-		protected EntityManager         $em,
-		protected AdvancedSearchFilter  $advancedSearchFilter,
-		protected IriConverterInterface $iriConverter
+		protected ClassMetadata          $classMetadata,
+		protected string                 $baseEntity,
+		protected ReflectionService      $reflectionService,
+		protected EntityManagerInterface $em,
+		protected AdvancedSearchFilter   $advancedSearchFilter,
+		protected IriConverterInterface  $iriConverter
 	)
 	{
 	}
