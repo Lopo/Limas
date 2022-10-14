@@ -2,7 +2,6 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\GridPreset;
 use Limas\Service\GridPresetService;
@@ -19,16 +18,15 @@ class MarkAsDefault
 
 
 	public function __construct(
-		private readonly GridPresetService         $gridPresetService,
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly GridPresetService      $gridPresetService,
+		private readonly EntityManagerInterface $entityManager
 	)
 	{
 	}
 
 	public function __invoke(Request $request, int $id, GridPreset $data): GridPreset
 	{
-		$gp = $this->getItem($this->dataProvider, GridPreset::class, $id);
+		$gp = $this->getItem($this->entityManager, GridPreset::class, $id);
 		$this->gridPresetService->markGridPresetAsDefault($gp);
 		return $gp;
 	}

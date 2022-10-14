@@ -2,9 +2,9 @@
 
 namespace Limas\OpenApi;
 
-use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
-use ApiPlatform\Core\OpenApi\OpenApi;
-use ApiPlatform\Core\OpenApi\Model;
+use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\OpenApi\OpenApi;
+use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 
@@ -37,13 +37,20 @@ final class JwtDecorator
 			'properties' => [
 				'username' => [
 					'type' => 'string',
-					'example' => 'admin',
+					'example' => 'admin'
 				],
 				'password' => [
 					'type' => 'string',
-					'example' => 'admin',
+					'example' => 'admin'
 				]
 			]
+		]);
+
+		$schemas = $openApi->getComponents()->getSecuritySchemes() ?? [];
+		$schemas['JWT'] = new \ArrayObject([
+			'type' => 'http',
+			'scheme' => 'bearer',
+			'bearerFormat' => 'JWT'
 		]);
 
 		$pathItem = new Model\PathItem(
@@ -73,7 +80,8 @@ final class JwtDecorator
 							]
 						]
 					])
-				)
+				),
+				security: []
 			)
 		);
 		$openApi->getPaths()->addPath($this->urlGenerator->generate('api_login_jwt'), $pathItem);

@@ -2,14 +2,19 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
-use Doctrine\ORM\Mapping as ORM;
-use Limas\Controller\Actions\CategoryActions;
+use Limas\Controller\Actions\Category as Actions;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
@@ -17,23 +22,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Gedmo\Tree(type: 'nested')]
 #[ORM\Index(fields: ['lft']), ORM\Index(fields: ['rgt'])]
 #[ApiResource(
-	collectionOperations: [
-		'get', 'post',
-		'get_root_node' => [
-			'method' => 'get',
-			'path' => 'storage_location_categories/getExtJSRootNode',
-			'controller' => CategoryActions::class . '::GetRootNodeAction'
-		],
+	operations: [
+		new GetCollection(),
+		new Post(),
+		new GetCollection(uriTemplate: '/storage_location_categories/getExtJSRootNode', controller: Actions\GetRootNode::class),
+
+		new Get(),
+		new Put(),
+		new Delete(),
+		new Put(uriTemplate: '/storage_location_categories/{id}/move', controller: Actions\Move::class)
 	],
-	itemOperations: ['get', 'put', 'delete',
-		'move' => [
-			'method' => 'put',
-			'path' => 'storage_location_categories/{id}/move',
-			'controller' => CategoryActions::class . '::MoveAction'
-		]
-	],
-	denormalizationContext: ['groups' => ['default', 'tree']],
-	normalizationContext: ['groups' => ['default', 'tree']]
+	normalizationContext: ['groups' => ['default', 'tree']],
+	denormalizationContext: ['groups' => ['default', 'tree']]
 )]
 class StorageLocationCategory
 	extends AbstractCategory

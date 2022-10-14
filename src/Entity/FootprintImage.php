@@ -2,24 +2,26 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Limas\Controller\Actions\ImageActions;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use Limas\Controller\Actions\ImageGetImage;
 use Limas\Repository\FootprintImageRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: FootprintImageRepository::class)]
 #[ApiResource(
-	itemOperations: [
-		'get',
-		'FootprintImageGetImage' => [
-			'method' => 'get',
-			'path' => 'footprint_images/{id}/getImage',
-			'controller' => ImageActions::class . '::getImageAction'
-		]
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Get(uriTemplate: '/footprint_images/{id}/getImage', controller: ImageGetImage::class)
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class FootprintImage
 	extends Image

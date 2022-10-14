@@ -1,10 +1,9 @@
 <?php
 
-namespace Limas\Controller\Actions;
+namespace Limas\Controller\Actions\ProjectReport;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Limas\Entity\ProjectPart;
+use Limas\Controller\Actions\ActionUtilTrait;
 use Limas\Entity\Report;
 use Limas\Service\PartService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +14,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 
 #[AsController]
-class ProjectReportActions
+class Get
 	extends AbstractController
 {
 	use ActionUtilTrait;
@@ -24,34 +23,14 @@ class ProjectReportActions
 	public function __construct(
 		private readonly SerializerInterface       $serializer,
 		private readonly EntityManagerInterface    $entityManager,
-		private readonly PartService               $partService,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly PartService               $partService
 	)
 	{
 	}
 
-	public function createReportAction(Report $data): JsonResponse
+	public function __invoke($id): JsonResponse
 	{
-		foreach ($data->getReportProjects() as $reportProject) {
-			foreach ($reportProject->getProject()->getParts() as $projectPart) {
-				$overage = $projectPart->getOverageType() === ProjectPart::OVERAGE_TYPE_PERCENT
-					? $reportProject->getQuantity() * $projectPart->getQuantity() * ($projectPart->getOverage() / 100)
-					: $projectPart->getOverage();
-
-				$quantity = $reportProject->getQuantity() * $projectPart->getQuantity() + $overage;
-				$data->addPartQuantity($projectPart->getPart(), $projectPart, $quantity);
-			}
-		}
-
-		$this->entityManager->persist($data);
-		$this->entityManager->flush();
-
-		return new JsonResponse($this->serializer->serialize($data, 'jsonld'), Response::HTTP_OK, ['Content-Type' => 'text/json'], true);
-	}
-
-	public function getReportAction($id): JsonResponse
-	{
-		$report = $this->getItem($this->dataProvider, Report::class, $id);
+		$report = $this->getItem($this->entityManager, Report::class, $id);
 		$this->calculateMissingParts($report);
 		$this->prepareMetaPartInformation($report);
 

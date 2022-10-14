@@ -2,8 +2,8 @@
 
 namespace Limas\Filter;
 
-use ApiPlatform\Core\Api\FilterInterface;
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\FilterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Doctrine\ORM\Query\Expr\Composite;
 use Doctrine\ORM\Query\Expr\Func;
@@ -67,7 +67,7 @@ class AdvancedSearchFilter
 			$items = [];
 			foreach ($value as $iri) {
 				try {
-					if ($item = $this->iriConverter->getItemFromIri($iri)) {
+					if ($item = $this->iriConverter->getResourceFromIri($iri)) {
 						$items[] = $this->propertyAccessor->getValue($item, 'id');
 					} else {
 						$items[] = $iri;
@@ -80,7 +80,7 @@ class AdvancedSearchFilter
 		}
 
 		try {
-			if ($item = $this->iriConverter->getItemFromIri($value)) {
+			if ($item = $this->iriConverter->getResourceFromIri($value)) {
 				return $this->propertyAccessor->getValue($item, 'id');
 			}
 		} catch (\InvalidArgumentException $e) {

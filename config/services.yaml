@@ -62,4 +62,6 @@ when@dev:
     services:
         Limas\OpenApi\JwtDecorator:
             decorates: 'api_platform.openapi.factory'
-            arguments: [ '@.inner' , '@router' ]
+            arguments:
+                $decorated: '@.inner'
+                $urlGenerator: '@router'

@@ -2,7 +2,11 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -16,17 +20,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: PartMeasurementUnitRepository::class)]
 #[ORM\Table(name: 'PartUnit')]
 #[ApiResource(
-	itemOperations: [
-		'get',
-		'put',
-		'setDefault' => [
-			'path' => 'part_measurement_units/{id}/setDefault',
-			'method' => 'put',
-			'controller' => SetDefaultUnit::class
-		]
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Put(),
+		new Put(uriTemplate: '/part_measurement_units/{id}/setDefault', controller: SetDefaultUnit::class)
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class PartMeasurementUnit
 	extends BaseEntity

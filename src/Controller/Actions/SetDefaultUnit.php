@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\PartMeasurementUnit;
 use Limas\Service\PartMeasurementUnitService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,13 +17,13 @@ class SetDefaultUnit
 	use ActionUtilTrait;
 
 
-	public function __construct(private readonly ItemDataProviderInterface $dataProvider)
+	public function __construct(private readonly EntityManagerInterface $entityManager)
 	{
 	}
 
 	public function __invoke(Request $request, int $id, PartMeasurementUnitService $partMeasurementUnitService): PartMeasurementUnit
 	{
-		$partMeasurementUnit = $this->getItem($this->dataProvider, PartMeasurementUnit::class, $id);
+		$partMeasurementUnit = $this->getItem($this->entityManager, PartMeasurementUnit::class, $id);
 		$partMeasurementUnitService->setDefault($partMeasurementUnit);
 		return $partMeasurementUnit;
 	}

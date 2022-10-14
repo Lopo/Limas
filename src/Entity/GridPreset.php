@@ -2,7 +2,12 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\MarkAsDefault;
 use Limas\Repository\GridPresetRepository;
@@ -13,17 +18,17 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: GridPresetRepository::class)]
 #[ORM\UniqueConstraint(name: 'name_grid_unique', fields: ['grid', 'name'])]
 #[ApiResource(
-	itemOperations: [
-		'get',
-		'mark_as_default' => [
-			'method' => 'put',
-			'path' => 'grid_presets/{id}/markAsDefault',
-			'controller' => MarkAsDefault::class,
-			'deserialize' => false
-		]
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Put(),
+		new Delete(),
+		new Put(uriTemplate: '/grid_presets/{id}/markAsDefault', controller: MarkAsDefault::class, deserialize: false)
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class GridPreset
 	extends BaseEntity

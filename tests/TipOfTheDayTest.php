@@ -33,7 +33,7 @@ class TipOfTheDayTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($tip) . '/markTipRead'
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($tip) . '/markTipRead'
 		);
 
 		$response = Json::decode($client->getResponse()->getContent());

@@ -2,6 +2,8 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Api\UrlGeneratorInterface;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
@@ -52,14 +54,14 @@ class DistributorAndManufacturerSearchTest
 		$filters = [[
 			'property' => 'manufacturers.manufacturer',
 			'operator' => '=',
-			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($manufacturer),
+			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($manufacturer),
 		]];
 
 		$client = static::makeAuthenticatedClient();
 
 		$client->request(
 			'GET',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass(Part::class),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource(Part::class, UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass(Part::class)),
 			['filter' => Json::encode($filters)]
 		);
 
@@ -84,12 +86,12 @@ class DistributorAndManufacturerSearchTest
 		$filters = [[
 			'property' => 'distributors.distributor',
 			'operator' => '=',
-			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($distributor),
+			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($distributor),
 		]];
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass(Part::class);
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource(Part::class, UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass(Part::class));
 
 		$client->request('GET', $iri, ['filter' => Json::encode($filters)]);
 

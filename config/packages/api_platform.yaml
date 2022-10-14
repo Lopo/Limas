@@ -13,10 +13,7 @@ api_platform:
         fetch_partial: true
     defaults:
         pagination_client_items_per_page: true
-    collection:
-        pagination:
-            enabled: true
-            client_enabled: true
+        pagination_client_enabled: true
 
 when@dev:
     api_platform:
@@ -34,6 +31,8 @@ when@dev:
 #            license:
 #                name: ''
 #                url: 'https://'
+            swagger_ui_extra_configuration:
+                filter: true
         swagger:
             api_keys:
                 apiKey:

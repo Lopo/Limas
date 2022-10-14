@@ -2,6 +2,8 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Api\UrlGeneratorInterface;
+use ApiPlatform\Metadata\Get;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
@@ -31,8 +33,8 @@ abstract class AbstractMoveCategoryTest
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
 
 		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
-		$iri = $iriConverter->getIriFromItem($secondCategory) . '/move';
-		$targetIri = $iriConverter->getIriFromItem($rootCategory);
+		$iri = $iriConverter->getIriFromResource($secondCategory) . '/move';
+		$targetIri = $iriConverter->getIriFromResource($rootCategory, UrlGeneratorInterface::ABS_PATH, (new Get)->withClass($rootCategory::class));
 
 		$client->request(
 			'PUT',

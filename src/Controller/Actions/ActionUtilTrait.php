@@ -2,8 +2,8 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
-use ApiPlatform\Core\Exception\RuntimeException;
+use ApiPlatform\Exception\RuntimeException;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -12,10 +12,17 @@ trait ActionUtilTrait
 {
 	/**
 	 * Gets an item using the data provider. Throws a 404 error if not found.
+	 * @psalm-param class-string<T> $resourceType
+	 * @psalm-return ?T
+	 * @template T
 	 */
-	private function getItem(ItemDataProviderInterface $dataProvider, string $resourceType, array|int|object|string $id): object
+	private function getItem(EntityManagerInterface $entityManager, string $resourceType, array|int|object|string $id): object
 	{
-		if (null === ($data = $dataProvider->getItem($resourceType, $id))) {
+		try {
+			if (null === ($data = $entityManager->find($resourceType, $id))) {
+				throw new NotFoundHttpException('Not found');
+			}
+		} catch (\Throwable $e) {
 			throw new NotFoundHttpException('Not found');
 		}
 		return $data;
@@ -27,19 +34,5 @@ trait ActionUtilTrait
 			throw new RuntimeException('The API is not properly configured.');
 		}
 		return $resourceClass;
-	}
-
-	/**
-	 * Extract resource type and format request attributes. Throws an exception if the request does not contain required
-	 * attributes.
-	 */
-	private function extractAttributes(Request $request): array
-	{
-		if (null === ($resourceType = $request->attributes->get('_api_resource_class'))
-			|| null === ($format = $request->attributes->get('_api_format'))
-		) {
-			throw new RuntimeException('The API is not properly configured.');
-		}
-		return [$resourceType, $format];
 	}
 }

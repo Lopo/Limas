@@ -2,7 +2,6 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\SystemNotice;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,15 +17,14 @@ class SystemNoticeAcknowledge
 
 
 	public function __construct(
-		private readonly ItemDataProviderInterface $dataProvider,
-		private readonly EntityManagerInterface    $entityManager
+		private readonly EntityManagerInterface $entityManager
 	)
 	{
 	}
 
 	public function __invoke(Request $request, int $id): SystemNotice
 	{
-		$systemNotice = $this->getItem($this->dataProvider, SystemNotice::class, $id)
+		$systemNotice = $this->getItem($this->entityManager, SystemNotice::class, $id)
 			->setAcknowledged();
 		$this->entityManager->flush();
 		return $systemNotice;

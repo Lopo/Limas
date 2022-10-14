@@ -24,7 +24,7 @@ class SystemNoticeTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
 		$ackIri = $iri . '/acknowledge';
 
 		$client->request(

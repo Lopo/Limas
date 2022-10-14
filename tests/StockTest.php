@@ -53,7 +53,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part) . '/addStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/addStock',
 			['quantity' => 5],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],
@@ -78,7 +78,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part) . '/removeStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/removeStock',
 			['quantity' => 7],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],
@@ -102,7 +102,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part) . '/setStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/setStock',
 			['quantity' => 33],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],

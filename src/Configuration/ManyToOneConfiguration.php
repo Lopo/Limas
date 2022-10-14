@@ -120,7 +120,7 @@ class ManyToOneConfiguration
 		$descriptions = [];
 		switch ($this->importBehaviour) {
 			case self::IMPORTBEHAVIOUR_ALWAYSSETTO:
-				$targetEntity = $this->iriConverter->getItemFromIri($this->setToEntity);
+				$targetEntity = $this->iriConverter->getResourceFromIri($this->setToEntity);
 				$this->log(sprintf('Set %s to %s#%s', $this->associationName, $this->baseEntity, $targetEntity->getId()));
 				return $targetEntity;
 			case self::IMPORTBEHAVIOUR_MATCHDATA:
@@ -162,7 +162,7 @@ class ManyToOneConfiguration
 						$this->log(sprintf('Stop import as the match %s for association %s was not found', implode(',', $descriptions), $this->getAssociationName()));
 						break;
 					case self::NOTFOUNDBEHAVIOUR_SETTOENTITY:
-						$targetEntity = $this->iriConverter->getItemFromIri($this->notFoundSetToEntity);
+						$targetEntity = $this->iriConverter->getResourceFromIri($this->notFoundSetToEntity);
 						$this->log(sprintf('Set the association %s to %s, since the match %s for association %s was not found', $this->getAssociationName(), $this->notFoundSetToEntity, implode(',', $descriptions)));
 						return $targetEntity;
 					case self::NOTFOUNDBEHAVIOUR_CREATEENTITY:

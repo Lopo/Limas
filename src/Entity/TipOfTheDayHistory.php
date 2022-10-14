@@ -2,7 +2,11 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\GetTipHistoryCollection;
 use Limas\Repository\TipOfTheDayHistoryRepository;
@@ -12,14 +16,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TipOfTheDayHistoryRepository::class)]
 #[ApiResource(
-	collectionOperations: [
-		'TipHistoriesGet' => [
-			'method' => 'get',
-			'controller' => GetTipHistoryCollection::class
-		]
+	operations: [
+		new GetCollection(controller: GetTipHistoryCollection::class),
+
+		new Get(),
+		new Put(),
+		new Delete()
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class TipOfTheDayHistory
 	extends BaseEntity

@@ -2,8 +2,13 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
 use Doctrine\DBAL\Types\Types;
 use Limas\Annotation\UploadedFile;
 use Limas\Repository\StorageLocationRepository;
@@ -13,8 +18,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StorageLocationRepository::class)]
 #[ApiResource(
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Put(),
+		new Delete()
+	],
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class StorageLocation
 	extends BaseEntity

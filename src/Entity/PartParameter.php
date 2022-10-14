@@ -2,8 +2,13 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
 use Doctrine\DBAL\Types\Types;
 use Limas\Repository\PartParameterRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,15 +18,26 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: PartParameterRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Put(),
+		new Delete()
+	],
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class PartParameter
 	extends BaseEntity
 {
 	final public const VALUE_TYPE_STRING = 'string';
 	final public const VALUE_TYPE_NUMERIC = 'numeric';
-	final public const VALUE_TYPES = [self::VALUE_TYPE_STRING, self::VALUE_TYPE_NUMERIC];
+	final public const VALUE_TYPES = [
+		self::VALUE_TYPE_STRING,
+		self::VALUE_TYPE_NUMERIC
+	];
 
 	#[ORM\ManyToOne(targetEntity: Part::class, inversedBy: 'parameters')]
 	private ?Part $part;

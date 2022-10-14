@@ -2,43 +2,32 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Limas\Controller\Actions\TemporaryFileActions;
+use ApiPlatform\Action\NotFoundAction;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use Limas\Controller\Actions\FileGetFile;
+use Limas\Controller\Actions\FileGetMimeTypeIcon;
+use Limas\Controller\Actions\TempUploadedFileUpload;
+use Limas\Controller\Actions\TempUploadedFileWebcamUpload;
 use Limas\Repository\TempUploadedFileRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: TempUploadedFileRepository::class)]
 #[ApiResource(
-	collectionOperations: [
-		'upload' => [
-			'method' => 'post',
-			'path' => 'temp_uploaded_files/upload',
-			'controller' => TemporaryFileActions::class . '::uploadAction',
-			'deserialize' => false
-		],
-		'webcamUpload' => [
-			'method' => 'post',
-			'path' => 'temp_uploaded_files/webcamUpload',
-			'controller' => TemporaryFileActions::class . '::webcamUploadAction',
-			'deserialize' => false
-		]
+	operations: [
+		new GetCollection(controller: NotFoundAction::class, output: false, read: false),
+		new Post(uriTemplate: '/temp_uploaded_files/upload', controller: TempUploadedFileUpload::class, deserialize: false),
+		new Post(uriTemplate: '/temp_uploaded_files/webcamUpload', controller: TempUploadedFileWebcamUpload::class, deserialize: false),
+
+		new Get(),
+		new Get(uriTemplate: '/temp_uploaded_files/{id}/getFile', controller: FileGetFile::class),
+		new Get(uriTemplate: '/temp_uploaded_files/{id}/getMimeTypeIcon', controller: FileGetMimeTypeIcon::class)
 	],
-	itemOperations: [
-		'get',
-		'TemporaryFileGetMimeTypeIcon' => [
-			'method' => 'get',
-			'path' => 'temp_uploaded_files/{id}/getMimeTypeIcon',
-			'controller' => TemporaryFileActions::class . '::getMimeTypeIconAction'
-		],
-		'get_file' => [
-			'method' => 'get',
-			'path' => 'temp_uploaded_files/{id}/getFile',
-			'controller' => TemporaryFileActions::class . '::getFileAction'
-		]
-	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class TempUploadedFile
 	extends UploadedFile

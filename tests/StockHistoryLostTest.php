@@ -51,7 +51,7 @@ class StockHistoryLostTest
 		);
 		$em->flush();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part1);
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part1);
 
 		$client->request('GET', $iri);
 

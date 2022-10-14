@@ -2,38 +2,30 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Limas\Controller\Actions\FileActions;
-use Limas\Controller\Actions\ImageActions;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use Limas\Controller\Actions\FileGetFile;
+use Limas\Controller\Actions\FileGetMimeTypeIcon;
+use Limas\Controller\Actions\ImageGetImage;
 use Limas\Repository\ProjectAttachmentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: ProjectAttachmentRepository::class)]
 #[ApiResource(
-	collectionOperations: [
-		'get', 'post'
+	operations: [
+		new GetCollection(),
+		new Post(),
+
+		new Get(),
+		new Get(uriTemplate: '/project_attachments/{id}/getFile', controller: FileGetFile::class),
+		new Get(uriTemplate: '/project_attachments/{id}/getMimeTypeIcon', controller: FileGetMimeTypeIcon::class),
+		new Get(uriTemplate: '/project_attachments/{id}/getImage', controller: ImageGetImage::class)
 	],
-	itemOperations: [
-		'get',
-		'ProjectAttachmentGet' => [
-			'method' => 'get',
-			'path' => 'project_attachments/{id}/getFile',
-			'controller' => FileActions::class . '::getFileAction'
-		],
-		'ProjectAttachmentMimeTypeIcon' => [
-			'method' => 'get',
-			'path' => 'project_attachments/{id}/getMimeTypeIcon',
-			'controller' => FileActions::class . '::getMimeTypeIconAction'
-		],
-		'ProjectAttachmentGetImage' => [
-			'method' => 'get',
-			'path' => 'project_attachments/{id}/getImage',
-			'controller' => ImageActions::class . '::getImageAction'
-		]
-	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class ProjectAttachment
 	extends UploadedFile

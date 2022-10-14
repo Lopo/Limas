@@ -2,7 +2,7 @@
 
 namespace Limas\Service;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Configuration\EntityConfiguration;
 use Limas\Filter\AdvancedSearchFilter;
