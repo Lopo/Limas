@@ -33,6 +33,7 @@ class SystemService
 	public function getSystemInformation(): array
 	{
 		$aData = [
+			new SystemInformationRecord('API Platform', InstalledVersions::getVersion('api-platform/core'), 'Libraries'),
 			new SystemInformationRecord('Doctrine ORM', InstalledVersions::getVersion('doctrine/orm'), 'Libraries'),
 			new SystemInformationRecord('Doctrine DBAL', InstalledVersions::getVersion('doctrine/dbal'), 'Libraries'),
 
