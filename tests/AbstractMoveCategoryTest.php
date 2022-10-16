@@ -2,6 +2,7 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Api\IriConverterInterface;
 use ApiPlatform\Api\UrlGeneratorInterface;
 use ApiPlatform\Metadata\Get;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
@@ -32,7 +33,7 @@ abstract class AbstractMoveCategoryTest
 		$secondCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.second');
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
 
-		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+		$iriConverter = $this->getContainer()->get(IriConverterInterface::class);
 		$iri = $iriConverter->getIriFromResource($secondCategory) . '/move';
 		$targetIri = $iriConverter->getIriFromResource($rootCategory, UrlGeneratorInterface::ABS_PATH, (new Get)->withClass($rootCategory::class));
 

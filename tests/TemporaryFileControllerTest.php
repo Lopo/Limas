@@ -114,11 +114,7 @@ class TemporaryFileControllerTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$client->request(
-			'POST',
-			'/api/temp_uploaded_files/upload',
-			[]
-		);
+		$client->request('POST', '/api/temp_uploaded_files/upload', []);
 
 		$response = Json::decode($client->getResponse()->getContent());
 

@@ -5,7 +5,6 @@ namespace Limas\Tests;
 use ApiPlatform\Api\IriConverterInterface;
 use ApiPlatform\Api\UrlGeneratorInterface;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
@@ -34,8 +33,7 @@ abstract class AbstractCategoryCreateTest
 
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
 
-		/** @var IriConverterInterface $iriConverter */
-		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+		$iriConverter = $this->getContainer()->get(IriConverterInterface::class);
 
 		$client->request(
 			'POST',
@@ -68,7 +66,7 @@ abstract class AbstractCategoryCreateTest
 
 		$client->request(
 			'POST',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->getResourceClass(), UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass($this->getResourceClass())),
+			$this->getContainer()->get(IriConverterInterface::class)->getIriFromResource($this->getResourceClass(), UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass($this->getResourceClass())),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
