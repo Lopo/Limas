@@ -50,7 +50,7 @@ Ext.define('Limas.ServiceCall', {
 		/* Update the status bar to indicate that the call is in progress. */
 		Limas.getApplication().getStatusbar().startLoad(this.loadMessage);
 
-		this.parameters._format = "json";
+		this.parameters._format = 'json';
 
 		let headers = {
 			call: this.call,

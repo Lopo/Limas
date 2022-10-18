@@ -80,8 +80,8 @@ Ext.application({
 	onLogin: function () {
 		this.createGlobalStores();
 
-		let reader = this.getUserPreferenceStore().getProxy().getReader();
-		this.getUserPreferenceStore().loadRecords(reader.read(Ext.decode(this.getLoginManager().getUser().get('initialUserPreferences')), {
+		let reader = Ext.data.StoreManager.lookup('UserPreferenceStore').getProxy().getReader();
+		Ext.data.StoreManager.lookup('UserPreferenceStore').loadRecords(reader.read(Ext.decode(this.getLoginManager().getUser().get('initialUserPreferences')), {
 			recordCreator: reader.defaultRecordCreatorFromServer // force server version (fantom=false)
 		}).records);
 
@@ -154,12 +154,7 @@ Ext.application({
 	 * This method checks if the user has disabled tips, and if so, this method avoids showing the window.
 	 */
 	displayTipOfTheDayWindow: function () {
-		if (!Ext.data.StoreManager.lookup('TipOfTheDayStore')
-			|| !Ext.data.StoreManager.lookup('TipOfTheDayStore').isLoaded()
-			|| !Ext.data.StoreManager.lookup('TipOfTheDayHistoryStore')
-			|| !Ext.data.StoreManager.lookup('TipOfTheDayHistoryStore').isLoaded()
-			|| !this.getUserPreferenceStore().isLoaded()
-		) {
+		if (!Ext.data.StoreManager.lookup('TipOfTheDayStore') || !Ext.data.StoreManager.lookup('TipOfTheDayStore').isLoaded() || !Ext.data.StoreManager.lookup('TipOfTheDayHistoryStore') || !Ext.data.StoreManager.lookup('TipOfTheDayHistoryStore').isLoaded() || !Ext.data.StoreManager.lookup('UserPreferenceStore').isLoaded()) {
 			this.displayTipWindowTask.delay(100);
 			return;
 		}
@@ -203,7 +198,7 @@ Ext.application({
 	 * Checks if a session is active; otherwise, nothing will happen
 	 */
 	doUnacknowledgedNoticesCheck: function () {
-		this.systemNoticeStore.load({
+		Ext.data.StoreManager.lookup('SystemNoticeStore').load({
 			scope: this,
 			callback: this.onUnacknowledgedNoticesCheck
 		});
@@ -213,62 +208,68 @@ Ext.application({
 	 * @param data The data returned from the server
 	 */
 	onUnacknowledgedNoticesCheck: function () {
-		if (this.systemNoticeStore.count() > 0) {
+		if (Ext.data.StoreManager.lookup('SystemNoticeStore').count() > 0) {
 			this.statusBar.systemNoticeButton.show();
 		} else {
 			this.statusBar.systemNoticeButton.hide();
 		}
 	},
 	createGlobalStores: function () {
-		this.footprintStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Footprint',
+			storeId: 'FootprintStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.siPrefixStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.SiPrefix',
+			storeId: 'SiPrefixStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.currencyStore = Ext.create('Limas.Data.Store.CurrencyStore', {
-			autoLoad: true
-		});
-		this.distributorStore = Ext.create('Ext.data.Store', {
+		Ext.create('Limas.Data.Store.CurrencyStore');
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Distributor',
+			storeId: 'DistributorStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.manufacturerStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Manufacturer',
+			storeId: 'ManufacturerStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.partUnitStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.PartMeasurementUnit',
+			storeId: 'PartMeasurementUnitStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.userProviderStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.UserProvider',
+			storeId: 'UserProviderStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.unitStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Unit',
+			storeId: 'UnitStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.userStore = Ext.create('Ext.data.Store', {
+		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.User',
+			storeId: 'UserStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		this.userPreferenceStore = Ext.create('Limas.Data.store.UserPreferenceStore', {
+		Ext.create('Limas.Data.store.UserPreferenceStore', {
 			model: 'Limas.Entity.UserPreference',
 			autoLoad: false
 		});
 		this.barcodeScannerManager = Ext.create('Limas.BarcodeScanner.Manager');
-		this.systemPreferenceStore = Ext.create('Limas.Data.store.SystemPreferenceStore', {
+		Ext.create('Limas.Data.store.SystemPreferenceStore', {
 			model: 'Limas.Entity.SystemPreference',
 			autoLoad: true,
 			listeners: {
@@ -279,18 +280,15 @@ Ext.application({
 			}
 		});
 
-		this.tipOfTheDayStore = Ext.create('Limas.Data.store.TipOfTheDayStore');
-		this.tipOfTheDayHistoryStore = Ext.create('Limas.Data.store.TipOfTheDayHistoryStore');
-		this.systemNoticeStore = Ext.create('Limas.Data.store.SystemNoticeStore');
+		Ext.create('Limas.Data.store.TipOfTheDayStore');
+		Ext.create('Limas.Data.store.TipOfTheDayHistoryStore');
+		Ext.create('Limas.Data.store.SystemNoticeStore');
 	},
 	getBarcodeScannerManager: function () {
 		return this.barcodeScannerManager;
 	},
 	storeLoaded: function (store) {
 		store._loaded = true;
-	},
-	getSystemPreferenceStore: function () {
-		return this.systemPreferenceStore;
 	},
 	/**
 	 * Queries for a specific system preference. Returns either the value or a default value if
@@ -300,10 +298,11 @@ Ext.application({
 	 * @returns the key value, or defaultValue if preference key was not found
 	 */
 	getSystemPreference: function (key, defaultValue) {
-		if (this.systemPreferenceStore === undefined) {
+		let spStore = Ext.data.StoreManager.lookup('SystemPreferenceStore');
+		if (spStore === undefined) {
 			return defaultValue;
 		}
-		let record = this.systemPreferenceStore.findRecord('preferenceKey', key);
+		let record = spStore.findRecord('preferenceKey', key);
 
 		if (record) {
 			let value = record.get('preferenceValue'),
@@ -322,7 +321,8 @@ Ext.application({
 	 * @param value The value to set
 	 */
 	setSystemPreference: function (key, value) {
-		let record = this.systemPreferenceStore.findRecord('preferenceKey', key);
+		let spStore = Ext.data.StoreManager.lookup('SystemPreferenceStore'),
+			record = spStore.findRecord('preferenceKey', key);
 		value = Ext.encode(value);
 
 		if (record) {
@@ -335,7 +335,7 @@ Ext.application({
 			j.set('preferenceKey', key);
 			j.set('preferenceValue', value);
 			j.save();
-			this.systemPreferenceStore.add(j);
+			spStore.add(j);
 		}
 	},
 	/**
@@ -345,7 +345,7 @@ Ext.application({
 	 * @returns the key value, or defaultValue if preference key was not found
 	 */
 	getUserPreference: function (key, defaultValue) {
-		let record = this.userPreferenceStore.findRecord('preferenceKey', key);
+		let record = Ext.data.StoreManager.lookup('UserPreferenceStore').findRecord('preferenceKey', key);
 		if (record) {
 			let value = record.get('preferenceValue');
 			let decodedValue = Ext.decode(value, true);
@@ -363,7 +363,7 @@ Ext.application({
 	 * @param value The value to set
 	 */
 	setUserPreference: function (key, value) {
-		let record = this.userPreferenceStore.findRecord('preferenceKey', key);
+		let record = Ext.data.StoreManager.lookup('UserPreferenceStore').findRecord('preferenceKey', key);
 		value = Ext.encode(value);
 
 		if (record) {
@@ -376,41 +376,11 @@ Ext.application({
 			j.set('preferenceKey', key);
 			j.set('preferenceValue', value);
 			j.save();
-			this.userPreferenceStore.add(j);
+			Ext.data.StoreManager.lookup('UserPreferenceStore').add(j);
 		}
 	},
-	getUserPreferenceStore: function () {
-		return this.userPreferenceStore;
-	},
-	getUnitStore: function () {
-		return this.unitStore;
-	},
-	getPartUnitStore: function () {
-		return this.partUnitStore;
-	},
-	getUserProviderStore: function () {
-		return this.userProviderStore;
-	},
-	getFootprintStore: function () {
-		return this.footprintStore;
-	},
-	getManufacturerStore: function () {
-		return this.manufacturerStore;
-	},
-	getDistributorStore: function () {
-		return this.distributorStore;
-	},
-	getCurrencyStore: function () {
-		return this.currencyStore;
-	},
 	getDefaultPartUnit: function () {
-		return this.partUnitStore.findRecord('default', true);
-	},
-	getUserStore: function () {
-		return this.userStore;
-	},
-	getSiPrefixStore: function () {
-		return this.siPrefixStore;
+		return Ext.data.StoreManager.lookup('PartMeasurementUnitStore').findRecord('default', true);
 	},
 	uploadFileFromURL: function (url, description, callback, scope) {
 		Ext.Ajax.request({
@@ -531,7 +501,7 @@ Ext.application({
 		format.currencySign = Limas.getApplication().getUserPreference('limas.formatting.currency.symbol', '€');
 
 		if (code !== null) {
-			let currency = Limas.getApplication().getCurrencyStore().findRecord('code', code, 0, false, false, true);
+			let currency = Ext.data.StoreManager.lookup('CurrencyStore').findRecord('code', code, 0, false, false, true);
 			if (currency !== null) {
 				format.currencySign = currency.get('symbol');
 			}

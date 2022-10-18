@@ -142,8 +142,7 @@ Ext.define('Limas.Components.Widgets.PartParameterSearch', {
 
 		this.down('#siPrefix').getStore().removeFilter(this.unitFilter);
 
-		let unitStore = Limas.getApplication().getUnitStore(),
-			unit = unitStore.findRecord('name', value.get('unitName'), 0, false, true, true);
+		let unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('name', value.get('unitName'), 0, false, true, true);
 		if (unit instanceof Limas.Entity.Unit) {
 			this.unit = unit;
 			prefixes = unit.prefixes().getData();

@@ -5,7 +5,7 @@ Ext.define('Limas.UnitComboBox', {
 	allowBlank: true,
 	emptyText: i18n('Unit'),
 	initComponent: function () {
-		this.store = Limas.getApplication().getUnitStore();
+		this.store = Ext.data.StoreManager.lookup('UnitStore');
 		this.callParent();
 	}
 });

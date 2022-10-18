@@ -1,6 +1,5 @@
 Ext.define('Limas.Data.Store.ModelStore', {
 	extend: 'Ext.data.Store',
-
 	storeId: 'ModelStore',
 
 	fields: [

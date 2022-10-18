@@ -17,7 +17,7 @@ Ext.define('Limas.ExceptionWindow', {
 
 	initComponent: function () {
 		this.iconComponent = Ext.create('Ext.Component', {
-			baseCls: Ext.baseCSSPrefix + 'message-box-icon' + " " + Ext.baseCSSPrefix + 'message-box-error'
+			baseCls: Ext.baseCSSPrefix + 'message-box-icon ' + Ext.baseCSSPrefix + 'message-box-error'
 		});
 
 		this.messageDiv = Ext.create('Ext.Component', {

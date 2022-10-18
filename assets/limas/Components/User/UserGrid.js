@@ -30,7 +30,7 @@ Ext.define('Limas.UserGrid', {
 	initComponent: function () {
 		this.callParent(arguments);
 
-		this.providerStore = Limas.getApplication().getUserProviderStore();
+		this.providerStore = Ext.data.StoreManager.lookup('UserProviderStore');
 
 		this.providerCombo = Ext.create('Ext.form.field.ComboBox', {
 			store: this.providerStore,

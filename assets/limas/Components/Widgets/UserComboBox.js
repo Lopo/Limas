@@ -4,7 +4,7 @@ Ext.define('Limas.UserComboBox', {
 	displayField: 'username',
 
 	initComponent: function () {
-		this.store = Limas.getApplication().getUserStore();
+		this.store = Ext.data.StoreManager.lookup('UserStore');
 		this.callParent();
 	}
 });

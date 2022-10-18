@@ -60,7 +60,7 @@ Ext.define('Limas.UserEditor', {
 	onStartEdit: function () {
 		let provider = this.record.getProvider();
 		if (provider === null) {
-			this.record.setProvider(Limas.getApplication().getUserProviderStore().findRecord('type', 'Builtin'));
+			this.record.setProvider(Ext.data.StoreManager.lookup('UserProviderStore').findRecord('type', 'Builtin'));
 			this.down('#provider').setValue(provider);
 		}
 		if (this.record.get('protected') === true) {

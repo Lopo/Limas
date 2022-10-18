@@ -4,7 +4,7 @@ Ext.define('Limas.UserProviderComboBox', {
 	forceSelection: true,
 	displayField: 'type',
 	initComponent: function () {
-		this.store = Limas.getApplication().getUserProviderStore();
+		this.store = Ext.data.StoreManager.lookup('UserProviderStore');
 		this.callParent();
 	}
 });

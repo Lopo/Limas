@@ -3,7 +3,7 @@ Ext.define('Limas.DistributorComboBox', {
 	alias: 'widget.DistributorComboBox',
 	ignoreQuery: false,
 	initComponent: function () {
-		this.store = Limas.getApplication().getDistributorStore();
+		this.store = Ext.data.StoreManager.lookup('DistributorStore');
 		this.callParent();
 	},
 	onTriggerClick: function () {

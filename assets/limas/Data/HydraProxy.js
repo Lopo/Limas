@@ -59,7 +59,7 @@ Ext.define('Limas.Data.HydraProxy', {
 
 		if (request.getAction() === 'update') {
 			if (request.getRecords().length !== 1) {
-				throw "The amount of records updating must be exactly one";
+				throw 'The amount of records updating must be exactly one';
 			}
 
 			if (!this.ignoreIds) {
@@ -142,7 +142,7 @@ Ext.define('Limas.Data.HydraProxy', {
 					}
 				}
 			} else {
-				if (typeof filter.value === "object" && filter.value !== null) {
+				if (typeof filter.value === 'object' && filter.value !== null) {
 					if (filter.value.isModel && filter.value.isModel === true) {
 						filter.value = filter.value.getId();
 					}

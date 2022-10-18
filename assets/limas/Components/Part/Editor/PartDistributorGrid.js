@@ -98,7 +98,7 @@ Ext.define('Limas.PartDistributorGrid', {
 					xtype: 'combobox',
 					displayField: 'code',
 					valueField: 'code',
-					store: Limas.getApplication().getCurrencyStore(),
+					store: Ext.data.StoreManager.lookup('CurrencyStore'),
 					forceSelection: true,
 					queryMode: 'local'
 				}

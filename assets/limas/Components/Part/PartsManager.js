@@ -381,7 +381,7 @@ Ext.define('Limas.PartManager', {
 	onAddMetaPart: function () {
 		let defaults = {},
 			j = Ext.create('Limas.Components.Part.Editor.MetaPartEditorWindow', {}),
-			defaultPartUnit = Limas.getApplication().getPartUnitStore().findRecord('default', true);
+			defaultPartUnit = Ext.data.StoreManager.lookup('PartMeasurementUnitStore').findRecord('default', true);
 
 		Ext.apply(defaults, {metaPart: true});
 
@@ -435,7 +435,7 @@ Ext.define('Limas.PartManager', {
 		let j = Ext.create('Limas.PartEditorWindow', {
 				partMode: 'create'
 			}),
-			defaultPartUnit = Limas.getApplication().getPartUnitStore().findRecord('default', true);
+			defaultPartUnit = Ext.data.StoreManager.lookup('PartMeasurementUnitStore').findRecord('default', true);
 
 		Ext.apply(defaults, {});
 

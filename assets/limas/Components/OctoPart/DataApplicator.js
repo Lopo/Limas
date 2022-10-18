@@ -43,14 +43,14 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 	},
 	checkRequirements: function () {
 		let i, unit, file, image, distributor,
-			manufacturer = Limas.getApplication().getManufacturerStore().findRecord('name', this.data.manufacturer.name);
+			manufacturer = Ext.data.StoreManager.lookup('ManufacturerStore').findRecord('name', this.data.manufacturer.name);
 		if (manufacturer === null) {
 			this.displayWaitWindow(i18n('Creating Manufacturer…'), this.data.manufacturer.name);
 			manufacturer = Ext.create('Limas.Entity.Manufacturer');
 			manufacturer.set('name', this.data.manufacturer.name);
 			manufacturer.save({
 				success: function () {
-					Limas.getApplication().getManufacturerStore().load({
+					Ext.data.StoreManager.lookup('ManufacturerStore').load({
 						callback: this.applyData,
 						scope: this
 					});
@@ -67,7 +67,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 				[q_value, q_unit2, q_siPrefix] = this.SIUnitPrefix(q_value, q_unit);
 				if (q_unit2 === null && q_unit) {
 					// there is a unit (q_unit), but we do not know about it or the prefix of the unit is disabled
-					unit = Limas.getApplication().getUnitStore().findRecord('symbol', q_unit, 0, false, true, true);
+					unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit, 0, false, true, true);
 					if (unit === null) {
 						this.displayWaitWindow(i18n('Creating Unit…'), q_unit);
 						unit = Ext.create('Limas.Entity.Unit');
@@ -75,7 +75,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 						unit.set('symbol', q_unit);
 						unit.save({
 							success: function () {
-								Limas.getApplication().getUnitStore().load({
+								Ext.data.StoreManager.lookup('UnitStore').load({
 									callback: this.applyData,
 									scope: this
 								});
@@ -90,7 +90,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 
 		if (this.import.distributors) {
 			for (i in this.data['sellers']) {
-				distributor = Limas.getApplication().getDistributorStore().findRecord('name', this.data.sellers[i].company.name, 0, false, true, true);
+				distributor = Ext.data.StoreManager.lookup('DistributorStore').findRecord('name', this.data.sellers[i].company.name, 0, false, true, true);
 				if (distributor === null) {
 					this.displayWaitWindow(i18n('Creating Distributor…'), this.data.sellers[i].company.name);
 					distributor = Ext.create('Limas.Entity.Distributor');
@@ -98,7 +98,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 					distributor.set('url', this.data.sellers[i].company.homepageUrl);
 					distributor.save({
 						success: function () {
-							Limas.getApplication().getDistributorStore().load({
+							Ext.data.StoreManager.lookup('DistributorStore').load({
 								callback: this.applyData,
 								scope: this
 							});
@@ -213,7 +213,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		this.part.set('description', this.data.shortDescription);
 
 		let spec, i, unit, value, siPrefix, distributor, partDistributor, k, o, p, found,
-			manufacturer = Limas.getApplication().getManufacturerStore().findRecord('name', this.data.manufacturer.name),
+			manufacturer = Ext.data.StoreManager.lookup('ManufacturerStore').findRecord('name', this.data.manufacturer.name),
 			partManufacturer;
 
 		if (manufacturer === null) {
@@ -241,7 +241,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 
 		if (this.import.distributors) {
 			for (i in this.data['sellers']) {
-				distributor = Limas.getApplication().getDistributorStore().findRecord('name', this.data.sellers[i].company.name, 0, false, true, true);
+				distributor = Ext.data.StoreManager.lookup('DistributorStore').findRecord('name', this.data.sellers[i].company.name, 0, false, true, true);
 				if (distributor === null) {
 					// @todo put out error message
 					continue;
@@ -295,7 +295,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 						spec.set('value', value);
 						spec.setSiPrefix(siPrefix);
 					} else {
-						unit = Limas.getApplication().getUnitStore().findRecord('symbol', q_unit, 0, false, true, true);
+						unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit, 0, false, true, true);
 						spec.setUnit(unit);
 						siPrefix = this.findSiPrefixForValueAndUnit(q_value, unit);
 						spec.set('value', this.applySiPrefix(q_value, siPrefix));
@@ -330,9 +330,8 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		return Ext.util.Format.round(value / Math.pow(siPrefix.get('base'), siPrefix.get('exponent')), 3);
 	},
 	findSiPrefixForValueAndUnit: function (value, unit) {
-		let i, prefixedValue, siPrefix;
-
-		siPrefix = Limas.getApplication().getSiPrefixStore().findRecord('exponent', 0, 0, false, false, true);
+		let i, prefixedValue,
+			siPrefix = Ext.data.StoreManager.lookup('SiPrefixStore').findRecord('exponent', 0, 0, false, false, true);
 
 		if (!(unit instanceof Limas.Entity.Unit)) {
 			return siPrefix;
@@ -378,14 +377,14 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		// try to recognize SI-unit and SI-prefix
 
 		// check if the unit as a whole is already known
-		let unit = Limas.getApplication().getUnitStore().findRecord('symbol', q_unit, 0, false, true, true);
+		let unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit, 0, false, true, true);
 		if (unit) {
-			return [q_value, unit, Limas.getApplication().getSiPrefixStore().findRecord('exponent', 0, 0, false, false, true)];
+			return [q_value, unit, Ext.data.StoreManager.lookup('SiPrefixStore').findRecord('exponent', 0, 0, false, false, true)];
 		}
 
 		// assume the first character is an SI-prefix
 		if (q_unit && q_unit.length >= 2) {
-			unit = Limas.getApplication().getUnitStore().findRecord('symbol', q_unit.substring(1), 0, false, true, true);
+			unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit.substring(1), 0, false, true, true);
 			if (unit) {
 				// now check that the first character is a valid SI-prefix
 				// console.log(unit);

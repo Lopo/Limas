@@ -8,7 +8,7 @@ Ext.define('Limas.UnitEditor', {
 		});
 
 		this.gridPanel = Ext.create('Limas.BaseGrid', {
-			store: Limas.getApplication().getSiPrefixStore(),
+			store: Ext.data.StoreManager.lookup('SiPrefixStore'),
 			selModel: sm,
 			columnLines: true,
 			columns: [
@@ -47,7 +47,7 @@ Ext.define('Limas.UnitEditor', {
 	onStartEdit: function () {
 		let records = this.record.prefixes().getRange(),
 			toSelect = [],
-			pfxStore = Limas.getApplication().getSiPrefixStore();
+			pfxStore = Ext.data.StoreManager.lookup('SiPrefixStore');
 
 		for (let i = 0; i < records.length; i++) {
 			toSelect.push(pfxStore.getById(records[i].getId()));
