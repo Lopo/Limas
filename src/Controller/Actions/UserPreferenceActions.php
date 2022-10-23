@@ -1,27 +1,39 @@
 <?php
 
-namespace Limas\Controller\Actions\UserPreference;
+namespace Limas\Controller\Actions;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\UserPreference;
+use Limas\Service\UserPreferenceService;
+use Limas\Service\UserService;
 use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 
-#[AsController]
-class Set
+class UserPreferenceActions
 	extends AbstractController
 {
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager
+		private readonly EntityManagerInterface $entityManager,
+		private readonly UserPreferenceService  $userPreferenceService,
+		private readonly SerializerInterface    $serializer
 	)
 	{
 	}
 
-	public function __invoke(Request $request): JsonResponse
+	public function getPreferencesAction(): JsonResponse
+	{
+		$user = $this->getUser();
+		$preferences = $this->userPreferenceService->getPreferences($user);
+		return new JsonResponse($this->serializer->normalize($preferences, 'json'));
+	}
+
+	#[Route(path: '/api/user_preferences', methods: ['POST', 'PUT'])]
+	public function setPreferenceAction(Request $request): JsonResponse
 	{
 		$user = $this->getUser();
 		$data = Json::decode($request->getContent());
@@ -42,5 +54,16 @@ class Set
 			'preferenceKey' => $preference->getPreferenceKey(),
 			'preferenceValue' => $preference->getPreferenceValue()
 		]);
+	}
+
+	public function deletePreferenceAction(Request $request): void
+	{
+		$user = $this->getUser();
+
+		if ($request->request->has('preferenceKey')) {
+			$this->userPreferenceService->deletePreference($user, $request->request->get('preferenceKey'));
+		} else {
+			throw new \Exception('Invalid format');
+		}
 	}
 }

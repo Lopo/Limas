@@ -2,31 +2,36 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\UserPreferenceActions;
 use Limas\Annotation\IgnoreIds;
-use Limas\Controller\Actions\UserPreference as Actions;
 use Limas\Repository\UserPreferenceRepository;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: UserPreferenceRepository::class)]
 #[IgnoreIds]
 #[ApiResource(
-	operations: [
-		new GetCollection(controller: Actions\GetPreferences::class, deserialize: false),
-		new Post(uriTemplate: '/user_preferences', controller: Actions\Set::class, read: false, deserialize: false),
-
-		new Put(uriTemplate: '/user_preferences', controller: Actions\Set::class, read: false, deserialize: false),
-		new Delete(uriTemplate: '/user_preferences', controller: Actions\Delete::class, read: false, deserialize: false)
+	collectionOperations: [
+		'get' => [
+			'controller' => UserPreferenceActions::class . '::getPreferencesAction',
+			'deserialize' => false,
+			'normalization_context' => [
+				'groups' => ['default']
+			]
+		],
+		'UserPreferenceDelete' => [
+			'method' => 'delete',
+			'path' => 'user_preferences',
+			'controller' => UserPreferenceActions::class . '::deletePreferenceAction',
+			'deserialize' => false,
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	itemOperations: ['get'],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class UserPreference
 {

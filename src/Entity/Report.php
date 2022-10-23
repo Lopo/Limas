@@ -2,32 +2,35 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Limas\Controller\Actions\ProjectReport as Actions;
+use Limas\Controller\Actions\ProjectReportActions;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(uriTemplate: '/reports', controller: Actions\Create::class),
-
-		new Get(uriTemplate: '/reports/{id}', controller: Actions\Get::class),
-		new Put(),
-		new Delete()
+	collectionOperations: [
+		'get',
+		'ProjectReportPost' => [
+			'method' => 'POST',
+			'path' => 'reports',
+			'controller' => ProjectReportActions::class . '::createReportAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	itemOperations: [
+		'ProjectReportGet' => [
+			'method' => 'get',
+			'path' => 'reports/{id}',
+			'controller' => ProjectReportActions::class . '::getReportAction'
+		],
+		'put', 'delete'
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class Report
 	extends BaseEntity

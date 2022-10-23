@@ -2,10 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
-use ApiPlatform\Api\UrlGeneratorInterface;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
@@ -39,12 +36,12 @@ abstract class AbstractCategoryCreateTest
 
 		$client->request(
 			'POST',
-			$iriConverter->getIriFromResource($this->getResourceClass(), UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass($this->getResourceClass())),
+			$iriConverter->getIriFromResourceClass($this->getResourceClass()),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
 			Json::encode([
-				'parent' => $iriConverter->getIriFromResource($rootCategory),
+				'parent' => $iriConverter->getIriFromItem($rootCategory),
 				'name' => 'test',
 			])
 		);
@@ -56,7 +53,7 @@ abstract class AbstractCategoryCreateTest
 		self::assertObjectHasAttribute('@id', $responseObject);
 		self::assertObjectHasAttribute('name', $responseObject);
 
-		$item = $iriConverter->getResourceFromIri($responseObject->{'@id'});
+		$item = $iriConverter->getItemFromIri($responseObject->{'@id'});
 
 		self::assertNotNull($item->getParent());
 		self::assertEquals($item->getParent()->getId(), $rootCategory->getId());
@@ -68,7 +65,7 @@ abstract class AbstractCategoryCreateTest
 
 		$client->request(
 			'POST',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->getResourceClass(), UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass($this->getResourceClass())),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass($this->getResourceClass()),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],

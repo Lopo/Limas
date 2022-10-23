@@ -72,14 +72,14 @@ class ProjectTest
 				'parts' => [
 					[
 						'quantity' => 1,
-						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part),
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part),
 						'remarks' => 'testremark',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
 					],
 					[
 						'quantity' => 2,
-						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part2),
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($part2),
 						'remarks' => 'testremark2',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
@@ -126,7 +126,7 @@ class ProjectTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($project),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($project),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
@@ -163,7 +163,7 @@ class ProjectTest
 
 		$client->request(
 			'PUT',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($project),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($project),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
@@ -193,7 +193,7 @@ class ProjectTest
 
 		$client->request(
 			'GET',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('project'))
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference('project'))
 		);
 
 		$project = Json::decode($client->getResponse()->getContent());

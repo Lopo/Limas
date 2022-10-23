@@ -7,16 +7,14 @@ use Limas\Response\TemporaryImageUploadResponse;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 
-#[AsController]
-class TempUploadedFileUpload
+class TemporaryFileActions
 	extends FileActions
 {
-	public function __invoke(Request $request, TranslatorInterface $translator, SerializerInterface $serializer): JsonResponse
+	public function uploadAction(Request $request, TranslatorInterface $translator, SerializerInterface $serializer, array $limas): JsonResponse
 	{
 		$uploadedFile = new TempUploadedFile;
 		if (null !== ($file = $request->files->get('userfile'))) {
@@ -27,9 +25,9 @@ class TempUploadedFileUpload
 				};
 				throw new \Exception($error);
 			}
-			if (isset($this->limas['upload']['limit'])
-				&& $this->limas['upload']['limit'] !== false
-				&& $file->getSize() > (int)$this->limas['upload']['limit']
+			if (isset($limas['upload']['limit'])
+				&& $limas['upload']['limit'] !== false
+				&& $file->getSize() > (int)$limas['upload']['limit']
 			) {
 				throw new \Exception($translator->trans('The uploaded file is too large.'));
 			}
@@ -49,6 +47,18 @@ class TempUploadedFileUpload
 		$this->entityManager->flush();
 
 		return new JsonResponse(new TemporaryImageUploadResponse($serializer->normalize($uploadedFile, 'jsonld', [])));
+	}
+
+	public function webcamUploadAction(Request $request): TempUploadedFile
+	{
+		$file = new TempUploadedFile;
+
+		$this->uploadedFileService->replaceFromData($file, base64_decode(explode(',', $request->getContent())[1], true), 'webcam.png');
+
+		$this->entityManager->persist($file);
+		$this->entityManager->flush();
+
+		return $file;
 	}
 
 	protected function getEntityClass(Request $request): string

@@ -2,15 +2,41 @@
 
 namespace Limas\Controller\Actions;
 
+use Gaufrette\Exception\FileNotFound;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Limas\Entity\CachedImage;
 use Limas\Entity\UploadedFile;
+use Limas\Response\ImageResponse;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 
-abstract class ImageActions
+class ImageActions
 	extends FileActions
 {
+	public function getImageAction(Request $request, int $id, LoggerInterface $logger): ImageResponse|Response
+	{
+		$image = $this->entityManager->find($this->getEntityClass($request), $id);
+		$width = $request->get('maxWidth', 200);
+		$height = $request->get('maxHeight', 200);
+		if ($image === null) {
+			return new ImageResponse($width, $height, Response::HTTP_NOT_FOUND, '404 not found');
+		}
+		try {
+			$file = $this->fitWithin($image, $width, $height);
+		} catch (FileNotFound $e) {
+			$logger->error($e->getMessage());
+			return new ImageResponse($width, $height, Response::HTTP_NOT_FOUND, '404 not found');
+		} catch (\Exception $e) {
+			$logger->error($e->getMessage());
+			return new ImageResponse($width, $height, Response::HTTP_INTERNAL_SERVER_ERROR, '500 Server Error');
+		}
+
+		return new Response(file_get_contents($file), Response::HTTP_OK, ['Content-Type' => 'image/png']);
+	}
+
 	protected function getImageCacheDirectory(): string
 	{
 		return $this->limas['image_cache_directory'];

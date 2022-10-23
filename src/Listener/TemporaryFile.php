@@ -2,7 +2,7 @@
 
 namespace Limas\Listener;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
@@ -83,7 +83,7 @@ class TemporaryFile
 					} else {
 						$item = $this->propertyAccessor->getValue($data, $property->getName());
 						if ($item !== null && $item->getReplacement() !== null) {
-							$this->replaceFile($item, $this->iriConverter->getResourceFromIri($item->getReplacement()));
+							$this->replaceFile($item, $this->iriConverter->getItemFromIri($item->getReplacement()));
 						}
 					}
 				}

@@ -2,11 +2,7 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
 use Limas\Controller\Actions\SystemNoticeAcknowledge;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,15 +11,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Put(uriTemplate: 'system_notices/{id}/acknowledge', controller: SystemNoticeAcknowledge::class, deserialize: false)
+	itemOperations: ['get',
+		'acknowledge' => [
+			'method' => 'PUT',
+			'path' => 'system_notices/{id}/acknowledge',
+			'controller' => SystemNoticeAcknowledge::class,
+			'deserialize' => false
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class SystemNotice
 	extends BaseEntity

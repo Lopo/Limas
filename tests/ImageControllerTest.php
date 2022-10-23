@@ -55,7 +55,7 @@ class ImageControllerTest
 		self::assertEquals(51, $imageSize[0]);
 		self::assertEquals(23, $imageSize[1]);
 
-		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get('api_platform.iri_converter')->getResourceFromIri($imageId));
+		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get('api_platform.iri_converter')->getItemFromIri($imageId));
 
 		$client->request(
 			'GET',

@@ -2,27 +2,28 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use Limas\Controller\Actions\FileGetFile;
-use Limas\Controller\Actions\FileGetMimeTypeIcon;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Limas\Controller\Actions\FileActions;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Get(uriTemplate: '/footprint_attachments/{id}/getMimeTypeIcon', controller: FileGetMimeTypeIcon::class),
-		new Get(uriTemplate: '/footprint_attachments/{id}/getFile', controller: FileGetFile::class)
+	itemOperations: [
+		'get',
+		'FootprintAttachmentMimeTypeIcon' => [
+			'method' => 'get',
+			'path' => 'footprint_attachments/{id}/getMimeTypeIcon',
+			'controller' => FileActions::class . '::getMimeTypeIconAction'
+		],
+		'FootprintAttachmentGet' => [
+			'method' => 'get',
+			'path' => 'footprint_attachments/{id}/getFile',
+			'controller' => FileActions::class . '::getFileAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class FootprintAttachment
 	extends UploadedFile

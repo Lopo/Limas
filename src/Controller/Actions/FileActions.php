@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 
-abstract class FileActions
+class FileActions
 	extends AbstractController
 {
 	public function __construct(
@@ -25,6 +25,30 @@ abstract class FileActions
 		protected readonly array                  $limas
 	)
 	{
+	}
+
+	public function getMimeTypeIconAction(Request $request, int $id): Response
+	{
+		return new BinaryFileResponse(
+			$this->mimetypeIconService->getMimetypeIcon($this->entityManager->find($this->getEntityClass($request), $id)->getMimetype()),
+			Response::HTTP_OK,
+			[],
+			false,
+			null,
+			true,
+			true
+		);
+	}
+
+	public function getFileAction(Request $request, int $id): Response
+	{
+		$file = $this->entityManager->find($this->getEntityClass($request), $id);
+		try {
+			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFullFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
+		} catch (FileNotFound $e) {
+			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFullFilename(), $file->getType()));
+			return new Response('404 File not found', Response::HTTP_NOT_FOUND);
+		}
 	}
 
 	protected function getEntityClass(Request $request): string

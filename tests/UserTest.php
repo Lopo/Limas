@@ -65,7 +65,7 @@ class UserTest
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user);
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($user);
 
 		$client->request('GET', $iri);
 
@@ -94,7 +94,7 @@ class UserTest
 
 		$client = static::makeClientWithCredentials('bernd2', 'admin');
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user) . '/changePassword';
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($user) . '/changePassword';
 
 		$parameters = [
 			'oldpassword' => 'admin',
@@ -132,7 +132,7 @@ class UserTest
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user);
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($user);
 
 		$client->request(
 			'PUT',
@@ -200,7 +200,7 @@ class UserTest
 
 		$this->getContainer()->get(UserPreferenceService::class)->setPreference($user, 'foo', 'bar');
 
-		$client->request('DELETE', $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user));
+		$client->request('DELETE', $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($user));
 
 		self::assertEquals(204, $client->getResponse()->getStatusCode());
 		self::assertEmpty($client->getResponse()->getContent());

@@ -2,10 +2,8 @@
 
 namespace Limas\Service;
 
-use ApiPlatform\Api\IriConverterInterface;
-use ApiPlatform\Api\ResourceClassResolverInterface;
-use ApiPlatform\Api\UrlGeneratorInterface;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -25,9 +23,8 @@ use Symfony\Component\Validator\Constraints\NotNull;
 class ReflectionService
 {
 	public function __construct(
-		private readonly EntityManagerInterface         $em,
-		private readonly IriConverterInterface          $iriConverter,
-		private readonly ResourceClassResolverInterface $resourceClassResolver
+		private readonly EntityManagerInterface $em,
+		private readonly IriConverterInterface  $iriConverter
 	)
 	{
 	}
@@ -58,7 +55,7 @@ class ReflectionService
 			'parentClass' => $parentClass,
 		];
 		try {
-			$renderParams['uri'] = $this->iriConverter->getIriFromResource($entity, UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass($entity));
+			$renderParams['uri'] = $this->iriConverter->getIriFromResourceClass($entity);
 		} catch (\Throwable $e) {
 			$renderParams['uri'] = '';
 		}
@@ -274,7 +271,7 @@ class ReflectionService
 	{
 		$entities = [];
 		foreach ($this->em->getMetadataFactory()->getAllMetadata() as $cm) {
-			if (!$this->resourceClassResolver->isResourceClass($cm->getName())) {
+			if (0 === count($cm->getReflectionClass()->getAttributes(ApiResource::class))) {
 				continue;
 			}
 			$entities[] = $this->getEntity($cm->getName());

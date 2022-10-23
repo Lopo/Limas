@@ -2,29 +2,41 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Action\NotFoundAction;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use Limas\Controller\Actions\ImageGetImage;
-use Limas\Controller\Actions\TempImageUpload;
-use Limas\Controller\Actions\TempImageWebcamUpload;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Limas\Controller\Actions\ImageActions;
+use Limas\Controller\Actions\TemporaryImageActions;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(controller: NotFoundAction::class, output: false, read: false),
-		new Post(uriTemplate: '/temp_images/upload', outputFormats: ['json'], controller: TempImageUpload::class, deserialize: false),
-		new Post(uriTemplate: '/temp_images/webcamUpload', controller: TempImageWebcamUpload::class, deserialize: false),
-
-		new Get(),
-		new Get(uriTemplate: '/temp_images/{id}/getImage', controller: ImageGetImage::class)
+	collectionOperations: [
+		'upload' => [
+			'method' => 'post',
+			'path' => 'temp_images/upload',
+			'controller' => TemporaryImageActions::class . '::uploadAction',
+			'deserialize' => false,
+			'output_formats' => [
+				'json'
+			]
+		],
+		'webcamUpload' => [
+			'method' => 'post',
+			'path' => 'temp_images/webcamUpload',
+			'controller' => TemporaryImageActions::class . '::webcamUploadAction',
+			'deserialize' => false
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	itemOperations: [
+		'get',
+		'getImage' => [
+			'method' => 'get',
+			'path' => 'temp_images/{id}/getImage',
+			'controller' => ImageActions::class . '::getImageAction'
+		]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class TempImage
 	extends Image

@@ -2,31 +2,37 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\FileGetFile;
-use Limas\Controller\Actions\FileGetMimeTypeIcon;
-use Limas\Controller\Actions\ImageGetImage;
+use Limas\Controller\Actions\FileActions;
+use Limas\Controller\Actions\ImageActions;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Get(uriTemplate: '/part_attachments/{id}/getFile', controller: FileGetFile::class),
-		new Get(uriTemplate: '/part_attachments/{id}/getMimeTypeIcon', controller: FileGetMimeTypeIcon::class),
-		new Get(uriTemplate: '/part_attachments/{id}/getImage', controller: ImageGetImage::class)
+	itemOperations: [
+		'get',
+		'PartAttachmentGet' => [
+			'path' => 'part_attachments/{id}/getFile',
+			'method' => 'get',
+			'controller' => FileActions::class . '::getFileAction'
+		],
+		'PartAttachmentMimeTypeIcon' => [
+			'path' => 'part_attachments/{id}/getMimeTypeIcon',
+			'method' => 'get',
+			'controller' => FileActions::class . '::getMimeTypeIconAction'
+		],
+		'PartAttachmentGetImage' => [
+			'path' => 'part_attachments/{id}/getImage',
+			'method' => 'get',
+			'controller' => ImageActions::class . '::getImageAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']])]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
+)]
 class PartAttachment
 	extends UploadedFile
 {

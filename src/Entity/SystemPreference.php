@@ -2,30 +2,33 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\SystemPreferenceActions;
 use Limas\Annotation\IgnoreIds;
-use Limas\Controller\Actions\SystemPreference as Actions;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
 #[IgnoreIds]
 #[ApiResource(
-	operations: [
-		new GetCollection(outputFormats: ['json'], controller: Actions\Get::class),
-		new Post(uriTemplate: '/system_preferences', controller: Actions\Set::class, read: false),
-
-		new Put(uriTemplate: '/system_preferences', controller: Actions\Set::class, read: false),
-		new Delete(uriTemplate: '/system_preferences', controller: Actions\Delete::class, read: false)
+	collectionOperations: [
+		'get' => [
+			'controller' => SystemPreferenceActions::class . '::getAction',
+			'output_formats' => [
+				'json'
+			]
+		],
+		'SystemPreferenceDelete' => [
+			'method' => 'delete',
+			'path' => 'system_preferences',
+			'controller' => SystemPreferenceActions::class . '::deleteAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	itemOperations: [],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class SystemPreference
 {

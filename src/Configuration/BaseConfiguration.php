@@ -2,7 +2,7 @@
 
 namespace Limas\Configuration;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Limas\Filter\AdvancedSearchFilter;

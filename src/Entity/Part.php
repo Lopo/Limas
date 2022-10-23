@@ -2,22 +2,17 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\PartActions;
 use Limas\Annotation\UploadedFileCollection;
-use Limas\Controller\Actions\Part as Actions;
 use Limas\Exceptions\CategoryNotAssignedException;
 use Limas\Exceptions\MinStockLevelOutOfRangeException;
 use Limas\Exceptions\StorageLocationNotAssignedException;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -25,21 +20,51 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	operations: [
-		new GetCollection(controller: Actions\GetParts::class),
-		new Post(controller: Actions\Post::class),
-		new GetCollection(uriTemplate: '/parts/getPartParameterNames', controller: Actions\GetParameterNames::class, deserialize: false),
-		new GetCollection(uriTemplate: '/parts/getPartParameterValues', controller: Actions\GetParameterValues::class, deserialize: false),
-
-		new Get(),
-		new Put(controller: Actions\Put::class, read: false, deserialize: false),
-		new Delete(),
-		new Put(uriTemplate: '/parts/{id}/addStock', controller: Actions\AddStock::class),
-		new Put(uriTemplate: '/parts/{id}/removeStock', controller: Actions\RemoveStock::class),
-		new Put(uriTemplate: '/parts/{id}/setStock', controller: Actions\SetStock::class),
+	collectionOperations: [
+		'get' => [
+			'controller' => PartActions::class . '::GetPartsAction'
+		],
+		'post' => [
+			'controller' => PartActions::class . '::PartPostAction'
+		],
+		'parameterNames' => [
+			'method' => 'get',
+			'path' => 'parts/getPartParameterNames',
+			'controller' => PartActions::class . '::getParameterNamesAction',
+			'deserialize' => false
+		],
+		'parameterValues' => [
+			'method' => 'get',
+			'path' => 'parts/getPartParameterValues',
+			'controller' => PartActions::class . '::getParameterValuesAction',
+			'deserialize' => false
+		]
 	],
-	normalizationContext: ['groups' => ['default', 'readonly']],
-	denormalizationContext: ['groups' => ['default', 'stock']]
+	itemOperations: [
+		'get',
+		'put' => [
+			'controller' => PartActions::class . '::PartPutAction',
+			'deserialize' => false
+		],
+		'delete',
+		'add_stock' => [
+			'method' => 'put',
+			'path' => 'parts/{id}/addStock',
+			'controller' => PartActions::class . '::AddStockAction'
+		],
+		'remove_stock' => [
+			'method' => 'put',
+			'path' => 'parts/{id}/removeStock',
+			'controller' => PartActions::class . '::RemoveStockAction'
+		],
+		'set_stock' => [
+			'method' => 'put',
+			'path' => 'parts/{id}/setStock',
+			'controller' => PartActions::class . '::SetStockAction'
+		]
+	],
+	denormalizationContext: ['groups' => ['default', 'stock']],
+	normalizationContext: ['groups' => ['default', 'readonly']]
 )]
 class Part
 	extends BaseEntity

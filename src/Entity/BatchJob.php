@@ -2,33 +2,29 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\BatchJobExecute;
+use Limas\Controller\Actions\BatchJobActions;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Put(),
-		new Delete(),
-		new Put(uriTemplate: '/batch_jobs/{id}/execute', controller: BatchJobExecute::class)
+	itemOperations: [
+		'get',
+		'put',
+		'delete',
+		'BatchJobExecute' => [
+			'path' => 'batch_jobs/{id}/execute',
+			'method' => 'put',
+			'controller' => BatchJobActions::class . '::BatchJobExecute'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class BatchJob
 	extends BaseEntity

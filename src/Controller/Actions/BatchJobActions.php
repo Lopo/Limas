@@ -2,7 +2,8 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Limas\Entity\BatchJob;
@@ -15,24 +16,25 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 
 #[AsController]
-class BatchJobExecute
+class BatchJobActions
 	extends AbstractController
 {
 	use ActionUtilTrait;
 
 
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly AdvancedSearchFilter   $advancedSearchFilter,
-		private readonly ReflectionService      $reflectionService,
-		private readonly IriConverterInterface  $iriConverter
+		private readonly EntityManagerInterface    $entityManager,
+		private readonly AdvancedSearchFilter      $advancedSearchFilter,
+		private readonly ReflectionService         $reflectionService,
+		private readonly IriConverterInterface     $iriConverter,
+		private readonly ItemDataProviderInterface $dataProvider
 	)
 	{
 	}
 
-	public function __invoke(Request $request, int $id): array
+	public function BatchJobExecute(Request $request, int $id): array
 	{
-		$batchJob = $this->getItem($this->entityManager, BatchJob::class, $id);
+		$batchJob = $this->getItem($this->dataProvider, BatchJob::class, $id);
 		$queryFields = $updateFields = [];
 
 		if ($request->request->has('queryFields')) {
@@ -92,7 +94,7 @@ class BatchJobExecute
 		foreach ($data as $item) {
 			foreach ($updateFieldConfigs as $updateField) {
 				try {
-					$value = $this->iriConverter->getResourceFromIri($updateField->value);
+					$value = $this->iriConverter->getItemFromIri($updateField->value);
 				} catch (\Exception $e) {
 					$value = $updateField->value;
 				}

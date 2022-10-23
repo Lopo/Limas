@@ -8,15 +8,13 @@ use Limas\Service\ImageService;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Serializer\SerializerInterface;
 
 
-#[AsController]
-class TempImageUpload
+class TemporaryImageActions
 	extends ImageActions
 {
-	public function __invoke(Request $request, ImageService $imageService, SerializerInterface $serializer): JsonResponse
+	public function uploadAction(Request $request, ImageService $imageService, SerializerInterface $serializer): JsonResponse
 	{
 		$image = new TempImage;
 		if (null !== ($file = $request->files->get('userfile'))) {
@@ -34,5 +32,19 @@ class TempImageUpload
 		$serializedData = $serializer->normalize($image, 'jsonld', []);
 
 		return new JsonResponse(new TemporaryImageUploadResponse($serializedData));
+	}
+
+	public function webcamUploadAction(Request $request, ImageService $imageService): TempImage
+	{
+		$image = new TempImage;
+		$data = $request->getContent();
+
+		$base64 = explode(',', $data);
+		$imageService->replaceFromData($image, base64_decode($base64[1], true), 'webcam.png');
+
+		$this->entityManager->persist($image);
+		$this->entityManager->flush();
+
+		return $image;
 	}
 }

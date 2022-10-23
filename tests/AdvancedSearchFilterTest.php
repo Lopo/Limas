@@ -60,7 +60,7 @@ class AdvancedSearchFilterTest
 		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
 		self::assertEquals(
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('part.1')),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference('part.1')),
 			$data['hydra:member'][0]['@id']
 		);
 	}
@@ -90,7 +90,7 @@ class AdvancedSearchFilterTest
 		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
 		self::assertEquals(
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('part.1')),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference("part.1")),
 			$data['hydra:member'][0]['@id']
 		);
 	}
@@ -105,7 +105,7 @@ class AdvancedSearchFilterTest
 				[
 					'property' => 'storageLocation',
 					'operator' => '=',
-					'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('storagelocation.first'))
+					'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($this->fixtures->getReference('storagelocation.first'))
 				]
 			]),
 			[],
@@ -132,8 +132,8 @@ class AdvancedSearchFilterTest
 					'property' => 'storageLocation',
 					'operator' => 'IN',
 					'value' => [
-						$iriConverter->getIriFromResource($this->fixtures->getReference('storagelocation.first')),
-						$iriConverter->getIriFromResource($this->fixtures->getReference('storagelocation.second'))
+						$iriConverter->getIriFromItem($this->fixtures->getReference('storagelocation.first')),
+						$iriConverter->getIriFromItem($this->fixtures->getReference('storagelocation.second'))
 					]
 				]
 			]),

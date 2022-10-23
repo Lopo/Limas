@@ -2,27 +2,24 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
-use Limas\Controller\Actions\ImageGetImage;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Limas\Controller\Actions\ImageActions;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Put(),
-		new Get(uriTemplate: '/manufacturer_i_c_logos/{id}/getImage', controller: ImageGetImage::class)
+	itemOperations: [
+		'get',
+		'put',
+		'getImage' => [
+			'method' => 'get',
+			'path' => 'manufacturer_i_c_logos/{id}/getImage',
+			'controller' => ImageActions::class . '::getImageAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class ManufacturerICLogo
 	extends Image

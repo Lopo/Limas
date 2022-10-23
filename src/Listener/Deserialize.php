@@ -2,9 +2,9 @@
 
 namespace Limas\Listener;
 
-use ApiPlatform\Serializer\SerializerContextBuilderInterface;
-use ApiPlatform\Symfony\EventListener\DeserializeListener;
-use ApiPlatform\Util\RequestAttributesExtractor;
+use ApiPlatform\Core\EventListener\DeserializeListener;
+use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Core\Util\RequestAttributesExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -40,7 +40,8 @@ final class Deserialize
 		}
 
 		$context = $this->serializerContextBuilder->createFromRequest($request, false, $attributes);
-		if (null !== ($populated = $request->attributes->get('data'))) {
+		$populated = $request->attributes->get('data');
+		if (null !== $populated) {
 			$context['object_to_populate'] = $populated;
 		}
 

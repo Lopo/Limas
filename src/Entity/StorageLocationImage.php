@@ -2,25 +2,23 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use Limas\Controller\Actions\ImageGetImage;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Limas\Controller\Actions\ImageActions;
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-
-		new Get(),
-		new Get(uriTemplate: '/storage_location_images/{id}/getImage', controller: ImageGetImage::class)
+	itemOperations: [
+		'get',
+		'getImage' => [
+			'path' => 'storage_location_images/{id}/getImage',
+			'method' => 'get',
+			'controller' => ImageActions::class . '::getImageAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class StorageLocationImage
 	extends Image

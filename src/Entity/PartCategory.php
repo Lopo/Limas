@@ -2,19 +2,14 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
-use Limas\Controller\Actions\Category as Actions;
+use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\CategoryActions;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
@@ -22,18 +17,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Index(fields: ['lft']), ORM\Index(fields: ['rgt'])]
 #[Gedmo\Tree(type: 'nested')]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(),
-		new GetCollection(uriTemplate: '/part_categories/getExtJSRootNode', controller: Actions\GetRootNode::class),
-
-		new Get(),
-		new Put(),
-		new Delete(),
-		new Put(uriTemplate: '/part_categories/{id}/move', controller: Actions\Move::class)
+	collectionOperations: [
+		'get',
+		'post',
+		'get_root_node' => [
+			'method' => 'get',
+			'path' => 'part_categories/getExtJSRootNode',
+			'controller' => CategoryActions::class . '::GetRootNodeAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default', 'tree']],
+	itemOperations: [
+		'get',
+		'put',
+		'delete',
+		'move' => [
+			'method' => 'put',
+			'path' => 'part_categories/{id}/move',
+			'controller' => CategoryActions::class . '::MoveAction'
+		]
+	],
 	denormalizationContext: ['groups' => ['default', 'tree']],
+	normalizationContext: ['groups' => ['default', 'tree']],
 	paginationEnabled: false
 )]
 class PartCategory

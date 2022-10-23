@@ -2,20 +2,14 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\DBAL\Types\Types;
+use Limas\Controller\Actions\UserActions;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\VirtualField;
-use Limas\Controller\Actions\User as Actions;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -26,22 +20,41 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'username_provider', fields: ['username', 'provider'])]
 #[ApiResource(
-	operations: [
-		new GetCollection(),
-		new Post(controller: Actions\Post::class),
-
-		new Get(controller: Actions\Get::class),
-		new Put(uriTemplate: '/users/{id}', controller: Actions\Put::class),
-		new Delete(uriTemplate: '/users/{id}', controller: Actions\Delete::class),
-		new Patch(
-			uriTemplate: '/users/{id}/changePassword',
-			inputFormats: ['json' => ['application/merge-patch+json']],
-			controller: Actions\ChangePassword::class,
-			denormalizationContext: ['groups' => ['changePassword:write']]
-		)
+	collectionOperations: [
+		'get',
+		'post' => [
+			'controller' => UserActions::class . '::PostAction'
+//		],
+//		'GetProviders' => [
+//			'path' => 'users/get_user_providers',
+//			'method' => 'get',
+//			'controller' => UserActions::class . '::GetProvidersAction'
+		]
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	itemOperations: [
+		'get' => [
+			'controller' => UserActions::class . '::getAction'
+		],
+		'put' => [
+			'path' => 'users/{id}',
+			'controller' => UserActions::class . '::PutUserAction'
+		],
+		'delete' => [
+			'path' => 'users/{id}',
+			'controller' => UserActions::class . '::DeleteUserAction'
+		],
+		'changePassword' => [
+			'method' => 'patch',
+			'path' => 'users/{id}/changePassword',
+			'controller' => UserActions::class . '::changePasswordAction',
+			'input_formats' => [
+				'json' => ['application/merge-patch+json'],
+			],
+			'denormalization_context' => ['groups' => ['changePassword:write']]
+		]
+	],
+	denormalizationContext: ['groups' => ['default']],
+	normalizationContext: ['groups' => ['default']]
 )]
 class User
 	extends BaseEntity
