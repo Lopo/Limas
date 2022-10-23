@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\Part;
@@ -37,7 +36,7 @@ class StockTest
 
 	private function getStockLevel(Part $part)
 	{
-		$qb = $this->getContainer()->get(EntityManagerInterface::class)->createQueryBuilder();
+		$qb = $this->getContainer()->get('doctrine.orm.entity_manager')->createQueryBuilder();
 		return $qb->select('p.stockLevel')
 			->from(Part::class, 'p')
 			->where($qb->expr()->eq('p.id', ':id'))
@@ -54,7 +53,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			'/api/parts/' . $part->getId() . '/addStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/addStock',
 			['quantity' => 5],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],
@@ -79,7 +78,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			'/api/parts/' . $part->getId() . '/removeStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/removeStock',
 			['quantity' => 7],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],
@@ -103,7 +102,7 @@ class StockTest
 
 		$client->request(
 			'PUT',
-			'/api/parts/' . $part->getId() . '/setStock',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part) . '/setStock',
 			['quantity' => 33],
 			[],
 //			['CONTENT_TYPE' => 'application/json'],

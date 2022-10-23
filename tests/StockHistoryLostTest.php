@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\StockEntry;
@@ -40,7 +39,7 @@ class StockHistoryLostTest
 
 	public function testStockHistory(): void
 	{
-		$em = $this->getContainer()->get(EntityManagerInterface::class);
+		$em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 		$client = static::makeAuthenticatedClient();
 
 		$part1 = $this->fixtures->getReference('part.1');
@@ -52,7 +51,7 @@ class StockHistoryLostTest
 		);
 		$em->flush();
 
-		$iri = '/api/parts/' . $part1->getId();
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part1);
 
 		$client->request('GET', $iri);
 

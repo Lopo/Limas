@@ -23,7 +23,10 @@ class SystemInformationTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$client->request('GET', '/api/system_information');
+		$client->request(
+			'GET',
+			'/api/system_information'
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -39,7 +42,10 @@ class SystemInformationTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$client->request('GET', '/api/system_status');
+		$client->request(
+			'GET',
+			'/api/system_status'
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 

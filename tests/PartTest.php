@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\Part;
@@ -49,8 +48,8 @@ class PartTest
 		$part = (new Part)
 			->setName('TEST')
 			->setStorageLocation($this->fixtures->getReference('storagelocation.first'));
-		$container->get(EntityManagerInterface::class)->persist($part);
-		$container->get(EntityManagerInterface::class)->flush($part);
+		$container->get('doctrine.orm.default_entity_manager')->persist($part);
+		$container->get('doctrine.orm.default_entity_manager')->flush($part);
 	}
 
 	public function testStorageLocationRequired(): void
@@ -61,8 +60,8 @@ class PartTest
 			->setName('TEST')
 			->setCategory($this->fixtures->getReference('partcategory.root'));
 
-		$container->get(EntityManagerInterface::class)->persist($part);
-		$container->get(EntityManagerInterface::class)->flush($part);
+		$container->get('doctrine.orm.default_entity_manager')->persist($part);
+		$container->get('doctrine.orm.default_entity_manager')->flush($part);
 	}
 
 	public function testBasics(): void
@@ -73,8 +72,8 @@ class PartTest
 			->setCategory($this->fixtures->getReference('partcategory.root'))
 			->setStorageLocation($this->fixtures->getReference('storagelocation.first'));
 
-		$container->get(EntityManagerInterface::class)->persist($part);
-		$container->get(EntityManagerInterface::class)->flush($part);
+		$container->get('doctrine.orm.default_entity_manager')->persist($part);
+		$container->get('doctrine.orm.default_entity_manager')->flush($part);
 	}
 
 	public function testAssociationRemoval(): void
@@ -100,14 +99,14 @@ class PartTest
 
 		$part->addAttachment($partAttachment);
 
-		$container->get(EntityManagerInterface::class)->persist($part);
-		$container->get(EntityManagerInterface::class)->flush($part);
+		$container->get('doctrine.orm.default_entity_manager')->persist($part);
+		$container->get('doctrine.orm.default_entity_manager')->flush($part);
 
 		$part->removeDistributor($partDistributor);
 		$part->removeManufacturer($partManufacturer);
 		$part->removeAttachment($partAttachment);
 
-		$container->get(EntityManagerInterface::class)->flush($part);
+		$container->get('doctrine.orm.default_entity_manager')->flush($part);
 
 		$storage = $fileService->getStorage($partAttachment);
 

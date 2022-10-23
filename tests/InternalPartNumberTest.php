@@ -39,11 +39,13 @@ class InternalPartNumberTest
 	{
 		$client = static::makeAuthenticatedClient();
 
+		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+
 		$content = Json::encode([
 			'name' => 'foobar',
-			'storageLocation' => '/api/storage_locations/' . $this->fixtures->getReference('storagelocation.first')->getId(),
-			'category' => '/api/part_categories/' . $this->fixtures->getReference('partcategory.first')->getId(),
-			'partUnit' => '/api/part_measurement_units/' . $this->fixtures->getReference('partunit.default')->getId(),
+			'storageLocation' => $iriConverter->getIriFromResource($this->fixtures->getReference('storagelocation.first')),
+			'category' => $iriConverter->getIriFromResource($this->fixtures->getReference('partcategory.first')),
+			'partUnit' => $iriConverter->getIriFromResource($this->fixtures->getReference('partunit.default')),
 			'internalPartNumber' => 'foo123'
 		]);
 

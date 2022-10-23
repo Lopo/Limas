@@ -2,10 +2,12 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Api\UrlGeneratorInterface;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\Part;
 use Limas\Entity\PartDistributor;
 use Limas\Entity\PartManufacturer;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
@@ -47,18 +49,20 @@ class DistributorAndManufacturerSearchTest
 			->setManufacturer($manufacturer)
 			->setPartNumber('1')
 		);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush();
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush();
+
+		$filters = [[
+			'property' => 'manufacturers.manufacturer',
+			'operator' => '=',
+			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($manufacturer),
+		]];
 
 		$client = static::makeAuthenticatedClient();
 
 		$client->request(
 			'GET',
-			'/api/parts',
-			['filter' => Json::encode([[
-				'property' => 'manufacturers.manufacturer',
-				'operator' => '=',
-				'value' => '/api/manufacturers/' . $manufacturer->getId(),
-			]])]
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource(Part::class, UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass(Part::class)),
+			['filter' => Json::encode($filters)]
 		);
 
 		self::assertEquals(200, $client->getResponse()->getStatusCode());
@@ -77,17 +81,19 @@ class DistributorAndManufacturerSearchTest
 		$partDistributor->setDistributor($distributor);
 
 		$part->addDistributor($partDistributor);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush();
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush();
 
 		$filters = [[
 			'property' => 'distributors.distributor',
 			'operator' => '=',
-			'value' => '/api/distributors/' . $distributor->getId(),
+			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($distributor),
 		]];
 
 		$client = static::makeAuthenticatedClient();
 
-		$client->request('GET', '/api/parts', ['filter' => Json::encode($filters)]);
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource(Part::class, UrlGeneratorInterface::ABS_PATH, (new GetCollection)->withClass(Part::class));
+
+		$client->request('GET', $iri, ['filter' => Json::encode($filters)]);
 
 		self::assertEquals(200, $client->getResponse()->getStatusCode());
 

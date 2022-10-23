@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\ProjectAttachment;
@@ -48,7 +47,9 @@ class ProjectTest
 			'POST',
 			'/api/temp_uploaded_files/upload',
 			[],
-			['userfile' => new UploadedFile($file, 'uploadtest.png', 'image/png', null, true)]
+			[
+				'userfile' => new UploadedFile($file, 'uploadtest.png', 'image/png', null, true)
+			]
 		);
 
 		$uploadedFile = Json::decode($client->getResponse()->getContent());
@@ -71,14 +72,14 @@ class ProjectTest
 				'parts' => [
 					[
 						'quantity' => 1,
-						'part' => '/api/parts/' . $part->getId(),
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part),
 						'remarks' => 'testremark',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
 					],
 					[
 						'quantity' => 2,
-						'part' => '/api/parts/' . $part2->getId(),
+						'part' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($part2),
 						'remarks' => 'testremark2',
 						'overageType' => ProjectPart::OVERAGE_TYPE_ABSOLUTE,
 						'overage' => 0,
@@ -125,7 +126,7 @@ class ProjectTest
 
 		$client->request(
 			'PUT',
-			'/api/projects/' . $project->getId(),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($project),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
@@ -145,7 +146,7 @@ class ProjectTest
 
 	public function testProjectAttachmentRemoval(): void
 	{
-		$em = $this->getContainer()->get(EntityManagerInterface::class);
+		$em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
 		$client = static::makeAuthenticatedClient();
 
 		$project = $this->fixtures->getReference('project');
@@ -162,7 +163,7 @@ class ProjectTest
 
 		$client->request(
 			'PUT',
-			'/api/projects/' . $project->getId(),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($project),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
@@ -190,7 +191,10 @@ class ProjectTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$client->request('GET', '/api/projects/' . $this->fixtures->getReference('project')->getId());
+		$client->request(
+			'GET',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('project'))
+		);
 
 		$project = Json::decode($client->getResponse()->getContent());
 

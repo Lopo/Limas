@@ -60,7 +60,7 @@ class AdvancedSearchFilterTest
 		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
 		self::assertEquals(
-			'/api/parts/' . $this->fixtures->getReference('part.1')->getId(),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('part.1')),
 			$data['hydra:member'][0]['@id']
 		);
 	}
@@ -90,7 +90,7 @@ class AdvancedSearchFilterTest
 		self::assertArrayHasKey('@id', $data['hydra:member'][0]);
 
 		self::assertEquals(
-			'/api/parts/' . $this->fixtures->getReference('part.1')->getId(),
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('part.1')),
 			$data['hydra:member'][0]['@id']
 		);
 	}
@@ -105,7 +105,7 @@ class AdvancedSearchFilterTest
 				[
 					'property' => 'storageLocation',
 					'operator' => '=',
-					'value' => '/api/storage_locations/' . $this->fixtures->getReference('storagelocation.first')->getId()
+					'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->fixtures->getReference('storagelocation.first'))
 				]
 			]),
 			[],
@@ -123,6 +123,8 @@ class AdvancedSearchFilterTest
 	{
 		$client = static::makeAuthenticatedClient();
 
+		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+
 		$client->request(
 			'GET',
 			'/api/parts?filter=' . Json::encode([
@@ -130,8 +132,8 @@ class AdvancedSearchFilterTest
 					'property' => 'storageLocation',
 					'operator' => 'IN',
 					'value' => [
-						'/api/storage_locations/' . $this->fixtures->getReference('storagelocation.first')->getId(),
-						'/api/storage_locations/' . $this->fixtures->getReference('storagelocation.second')->getId()
+						$iriConverter->getIriFromResource($this->fixtures->getReference('storagelocation.first')),
+						$iriConverter->getIriFromResource($this->fixtures->getReference('storagelocation.second'))
 					]
 				]
 			]),

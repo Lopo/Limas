@@ -47,7 +47,10 @@ class FileControllerTest
 
 		self::assertObjectHasAttribute('image', $response);
 
-		$client->request('GET', $response->image->{'@id'} . '/getMimeTypeIcon');
+		$client->request(
+			'GET',
+			$response->image->{'@id'} . '/getMimeTypeIcon'
+		);
 
 		self::assertEquals('image/svg+xml', $client->getResponse()->headers->get('Content-Type'));
 	}
@@ -75,7 +78,10 @@ class FileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$client->request('GET', $response->image->{'@id'} . '/getFile');
+		$client->request(
+			'GET',
+			$response->image->{'@id'} . '/getFile'
+		);
 
 		self::assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
 		self::assertStringEqualsFile($file, $client->getResponse()->getContent());

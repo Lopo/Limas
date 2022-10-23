@@ -2,7 +2,6 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\SystemNoticeService;
@@ -25,9 +24,13 @@ class SystemNoticeTest
 	{
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get(IriConverterInterface::class)->getIriFromResource($this->getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($this->getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
+		$ackIri = $iri . '/acknowledge';
 
-		$client->request('GET', $iri);
+		$client->request(
+			'GET',
+			$iri
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -36,7 +39,10 @@ class SystemNoticeTest
 		self::assertEquals('DING', $response->description);
 		self::assertEquals(false, $response->acknowledged);
 
-		$client->request('PUT', $iri . '/acknowledge');
+		$client->request(
+			'PUT',
+			$ackIri
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 		self::assertEquals(true, $response->acknowledged);

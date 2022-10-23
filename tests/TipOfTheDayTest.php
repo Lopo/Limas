@@ -31,7 +31,10 @@ class TipOfTheDayTest
 
 		$tip = $this->fixtures->getReference('tipoftheday');
 
-		$client->request('PUT', '/api/tip_of_the_days/' . $tip->getId() . '/markTipRead');
+		$client->request(
+			'PUT',
+			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($tip) . '/markTipRead'
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -53,11 +56,17 @@ class TipOfTheDayTest
 		self::assertArrayHasKey(0, $response->{'hydra:member'});
 		self::assertEquals('FOO', $response->{'hydra:member'}[0]->name);
 
-		$client->request('POST', '/api/tip_of_the_days/markAllTipsAsUnread');
+		$client->request(
+			'POST',
+			'/api/tip_of_the_days/markAllTipsAsUnread'
+		);
 
 		self::assertEquals('OK', $client->getResponse()->getContent());
 
-		$client->request('GET', '/api/tip_of_the_day_histories');
+		$client->request(
+			'GET',
+			'/api/tip_of_the_day_histories'
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 

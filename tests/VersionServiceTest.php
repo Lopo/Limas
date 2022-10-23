@@ -31,7 +31,10 @@ class VersionServiceTest
 
 		$client = static::makeAuthenticatedClient();
 
-		$client->request('GET', '/api/system_notices');
+		$client->request(
+			'GET',
+			'/api/system_notices'
+		);
 
 		$response = Json::decode($client->getResponse()->getContent());
 

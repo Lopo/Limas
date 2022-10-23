@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\User;
@@ -61,12 +60,12 @@ class UserTest
 		$user->setPassword($this->hasher->hashPassword($user, 'admin'))
 			->setProvider($this->getContainer()->get(UserService::class)->getBuiltinProvider());
 
-		$this->getContainer()->get(EntityManagerInterface::class)->persist($user);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush($user);
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->persist($user);
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush($user);
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = '/api/users/' . $user->getId();
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user);
 
 		$client->request('GET', $iri);
 
@@ -75,14 +74,7 @@ class UserTest
 		unset($response->password);
 		$response->newPassword = 'foobar';
 
-		$client->request(
-			'PUT',
-			$iri,
-			[],
-			[],
-			[],
-			Json::encode($response)
-		);
+		$client->request('PUT', $iri, [], [], [], Json::encode($response));
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -97,26 +89,19 @@ class UserTest
 		$user->setPassword($this->hasher->hashPassword($user, 'admin'))
 			->setProvider($this->getContainer()->get(UserService::class)->getBuiltinProvider());
 
-		$this->getContainer()->get(EntityManagerInterface::class)->persist($user);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush($user);
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->persist($user);
+		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush($user);
 
 		$client = static::makeClientWithCredentials('bernd2', 'admin');
 
-		$iri = '/api/users/' . $user->getId() . '/changePassword';
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user) . '/changePassword';
 
 		$parameters = [
 			'oldpassword' => 'admin',
 			'newpassword' => 'foobar',
 		];
 
-		$client->request(
-			'PATCH',
-			$iri,
-			[],
-			[],
-			['CONTENT_TYPE' => 'application/merge-patch+json'],
-			Json::encode($parameters)
-		);
+		$client->request('PATCH', $iri, [], [], ['CONTENT_TYPE' => 'application/merge-patch+json'], Json::encode($parameters));
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -126,14 +111,7 @@ class UserTest
 
 		$client = static::makeClientWithCredentials('bernd2', 'foobar');
 
-		$client->request(
-			'PATCH',
-			$iri,
-			[],
-			[],
-			['CONTENT_TYPE' => 'application/merge-patch+json'],
-			Json::encode($parameters)
-		);
+		$client->request('PATCH', $iri, [], [], ['CONTENT_TYPE' => 'application/merge-patch+json'], Json::encode($parameters));
 
 		$response = Json::decode($client->getResponse()->getContent());
 
@@ -154,7 +132,7 @@ class UserTest
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = '/api/users/' . $user->getId();
+		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user);
 
 		$client->request(
 			'PUT',
@@ -222,7 +200,7 @@ class UserTest
 
 		$this->getContainer()->get(UserPreferenceService::class)->setPreference($user, 'foo', 'bar');
 
-		$client->request('DELETE', '/api/users/' . $user->getId());
+		$client->request('DELETE', $this->getContainer()->get('api_platform.iri_converter')->getIriFromResource($user));
 
 		self::assertEquals(204, $client->getResponse()->getStatusCode());
 		self::assertEmpty($client->getResponse()->getContent());
