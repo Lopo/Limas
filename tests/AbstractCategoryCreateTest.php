@@ -31,8 +31,7 @@ abstract class AbstractCategoryCreateTest
 
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
 
-		/** @var IriConverterInterface $iriConverter */
-		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+		$iriConverter = $this->getContainer()->get(IriConverterInterface::class);
 
 		$client->request(
 			'POST',
@@ -65,7 +64,7 @@ abstract class AbstractCategoryCreateTest
 
 		$client->request(
 			'POST',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass($this->getResourceClass()),
+			$this->getContainer()->get(IriConverterInterface::class)->getIriFromResourceClass($this->getResourceClass()),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],

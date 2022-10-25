@@ -30,7 +30,7 @@ abstract class AbstractCategoryGetRootNodeTest
 		self::assertFalse($errexp);
 
 		$client = static::makeAuthenticatedClient();
-		$client->request('GET', $this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass($this->getResourceClass()) . '/getExtJSRootNode');
+		$client->request('GET', $this->getUriBase() . '/getExtJSRootNode');
 
 		[$errres, $recres] = Json::canonicalize($client->getResponse()->getContent());
 		self::assertFalse($errres);
@@ -42,4 +42,6 @@ abstract class AbstractCategoryGetRootNodeTest
 	abstract protected function getResourceClass(): string;
 
 	abstract protected function getExpected(): string;
+
+	abstract protected function getUriBase(): string;
 }

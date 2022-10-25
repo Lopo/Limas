@@ -2,6 +2,7 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\ImageService;
@@ -16,7 +17,7 @@ class ImageControllerTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		static::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
@@ -43,10 +44,7 @@ class ImageControllerTest
 		$imageId = $response->image->{'@id'};
 		$uri = $imageId . '/getImage';
 
-		$client->request(
-			'GET',
-			$uri
-		);
+		$client->request('GET', $uri);
 
 		self::assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
 
@@ -55,12 +53,9 @@ class ImageControllerTest
 		self::assertEquals(51, $imageSize[0]);
 		self::assertEquals(23, $imageSize[1]);
 
-		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get('api_platform.iri_converter')->getItemFromIri($imageId));
+		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get(IriConverterInterface::class)->getItemFromIri($imageId));
 
-		$client->request(
-			'GET',
-			$uri
-		);
+		$client->request('GET', $uri);
 
 		self::assertEquals(404, $client->getResponse()->getStatusCode());
 	}

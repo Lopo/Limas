@@ -3,9 +3,9 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
-use Limas\Entity\Part;
 use Limas\Entity\PartDistributor;
 use Limas\Entity\PartManufacturer;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
@@ -27,7 +27,7 @@ class DistributorAndManufacturerSearchTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = static::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
 			PartCategoryDataLoader::class,
@@ -47,20 +47,18 @@ class DistributorAndManufacturerSearchTest
 			->setManufacturer($manufacturer)
 			->setPartNumber('1')
 		);
-		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush();
-
-		$filters = [[
-			'property' => 'manufacturers.manufacturer',
-			'operator' => '=',
-			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($manufacturer),
-		]];
+		$this->getContainer()->get(EntityManagerInterface::class)->flush();
 
 		$client = static::makeAuthenticatedClient();
 
 		$client->request(
 			'GET',
-			$this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass(Part::class),
-			['filter' => Json::encode($filters)]
+			'/api/parts',
+			['filter' => Json::encode([[
+				'property' => 'manufacturers.manufacturer',
+				'operator' => '=',
+				'value' => '/api/manufacturers/' . $manufacturer->getId()
+			]])]
 		);
 
 		self::assertEquals(200, $client->getResponse()->getStatusCode());
@@ -79,19 +77,17 @@ class DistributorAndManufacturerSearchTest
 		$partDistributor->setDistributor($distributor);
 
 		$part->addDistributor($partDistributor);
-		$this->getContainer()->get('doctrine.orm.default_entity_manager')->flush();
+		$this->getContainer()->get(EntityManagerInterface::class)->flush();
 
 		$filters = [[
 			'property' => 'distributors.distributor',
 			'operator' => '=',
-			'value' => $this->getContainer()->get('api_platform.iri_converter')->getIriFromItem($distributor),
+			'value' => '/api/distributors/' . $distributor->getId()
 		]];
 
 		$client = static::makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get('api_platform.iri_converter')->getIriFromResourceClass(Part::class);
-
-		$client->request('GET', $iri, ['filter' => Json::encode($filters)]);
+		$client->request('GET', '/api/parts', ['filter' => Json::encode($filters)]);
 
 		self::assertEquals(200, $client->getResponse()->getStatusCode());
 

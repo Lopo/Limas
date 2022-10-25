@@ -19,7 +19,7 @@ class FileControllerTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = static::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
@@ -47,10 +47,7 @@ class FileControllerTest
 
 		self::assertObjectHasAttribute('image', $response);
 
-		$client->request(
-			'GET',
-			$response->image->{'@id'} . '/getMimeTypeIcon'
-		);
+		$client->request('GET', $response->image->{'@id'} . '/getMimeTypeIcon');
 
 		self::assertEquals('image/svg+xml', $client->getResponse()->headers->get('Content-Type'));
 	}
@@ -78,10 +75,7 @@ class FileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		$client->request(
-			'GET',
-			$response->image->{'@id'} . '/getFile'
-		);
+		$client->request('GET', $response->image->{'@id'} . '/getFile');
 
 		self::assertEquals('image/png', $client->getResponse()->headers->get('Content-Type'));
 		self::assertStringEqualsFile($file, $client->getResponse()->getContent());

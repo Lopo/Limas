@@ -2,6 +2,7 @@
 
 namespace Limas\Tests;
 
+use ApiPlatform\Core\Api\IriConverterInterface;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
@@ -30,7 +31,7 @@ abstract class AbstractMoveCategoryTest
 		$secondCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.second');
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
 
-		$iriConverter = $this->getContainer()->get('api_platform.iri_converter');
+		$iriConverter = $this->getContainer()->get(IriConverterInterface::class);
 		$iri = $iriConverter->getIriFromItem($secondCategory) . '/move';
 		$targetIri = $iriConverter->getIriFromItem($rootCategory);
 
