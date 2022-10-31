@@ -4,24 +4,23 @@ namespace Limas\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Gaufrette\Exception\FileNotFound;
-use Gaufrette\Filesystem;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Knp\Bundle\GaufretteBundle\FilesystemMap;
 use Limas\Entity\UploadedFile;
 use Limas\Exceptions\DiskSpaceExhaustedException;
+use Nette\Utils\FileSystem;
+use Nette\Utils\Strings;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\File\File;
 
 
 class UploadedFileService
 {
 	public function __construct(
-		protected readonly ContainerBagInterface  $container,
 		private readonly SystemService            $systemService,
-		private readonly LoggerInterface          $logger,
+		protected readonly LoggerInterface        $logger,
 		private readonly FilesystemMap            $filesystem,
 		protected readonly EntityManagerInterface $entityManager,
 		protected readonly array                  $limas
@@ -34,8 +33,15 @@ class UploadedFileService
 		$this->replaceFromFilesystem($file, $filesystemFile);
 	}
 
+	/**
+	 * @throws DiskSpaceExhaustedException
+	 */
 	public function replaceFromFilesystem(UploadedFile $file, File $filesystemFile): void
 	{
+		if ($filesystemFile->getSize() > $this->systemService->getFreeDiskSpace()) {
+			throw new DiskSpaceExhaustedException;
+		}
+
 		$file->setOriginalFilename($filesystemFile->getBasename());
 		$file->setExtension($filesystemFile->getExtension());
 		$file->setMimetype($filesystemFile->getMimeType());
@@ -43,23 +49,19 @@ class UploadedFileService
 
 		$storage = $this->getStorage($file);
 
-		if ($filesystemFile->getSize() > $this->systemService->getFreeDiskSpace()) {
-			throw new DiskSpaceExhaustedException;
-		}
-
-		$storage->write($file->getFullFilename(), file_get_contents($filesystemFile->getPathname()), true);
+		$storage->write($file->getFullFilename(), FileSystem::read($filesystemFile->getPathname()), true);
 	}
 
 	public function replaceFromData(UploadedFile $file, $data, $filename): void
 	{
 		$tempName = tempnam(ini_get('upload_tmp_dir') ?? sys_get_temp_dir(), 'LIMAS');
 
-		file_put_contents($tempName, $data);
+		FileSystem::write($tempName, $data);
 
 		$this->replaceFromFilesystem($file, new File($tempName));
 		$file->setOriginalFilename($filename);
 
-		unlink($tempName);
+		FileSystem::delete($tempName);
 	}
 
 	public function delete(UploadedFile $file): void
@@ -116,8 +118,8 @@ class UploadedFileService
 		return $this->limas['directories'][$file->getType()];
 	}
 
-	public function getStorage(UploadedFile $file): Filesystem
+	public function getStorage(UploadedFile $file): \Gaufrette\Filesystem
 	{
-		return $this->filesystem->get(strtolower($file->getType()));
+		return $this->filesystem->get(Strings::lower($file->getType()));
 	}
 }

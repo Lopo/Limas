@@ -9,8 +9,11 @@ use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Limas\Entity\CachedImage;
 use Limas\Entity\UploadedFile;
+use Limas\Service\ImageService;
 use Limas\Service\MimetypeIconService;
 use Limas\Service\UploadedFileService;
+use Nette\Utils\FileSystem;
+use Nette\Utils\Strings;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,13 +23,14 @@ class ImageActions
 	extends FileActions
 {
 	public function __construct(
-		EntityManagerInterface                   $entityManager,
-		UploadedFileService                      $uploadedFileService,
-		MimetypeIconService                      $mimetypeIconService,
-		LoggerInterface                          $logger,
-		array                                    $limas,
+		EntityManagerInterface             $entityManager,
+		UploadedFileService                $uploadedFileService,
+		MimetypeIconService                $mimetypeIconService,
+		LoggerInterface                    $logger,
+		array                              $limas,
 
-		protected readonly AbstractImagine       $liipImagine
+		protected readonly ImageService    $imageService,
+		protected readonly AbstractImagine $liipImagine
 	)
 	{
 		parent::__construct($entityManager, $uploadedFileService, $mimetypeIconService, $logger, $limas);
@@ -50,25 +54,11 @@ class ImageActions
 			return $this->createImageResponse($width, $height, Response::HTTP_INTERNAL_SERVER_ERROR, '500 Server Error');
 		}
 
-		return new Response(file_get_contents($file), Response::HTTP_OK, ['Content-Type' => 'image/png']);
-	}
-
-	protected function getImageCacheDirectory(): string
-	{
-		return $this->limas['image_cache_directory'];
-	}
-
-	protected function ensureCacheDirExists(): void
-	{
-		if (!is_dir($this->getImageCacheDirectory())) {
-			mkdir($this->getImageCacheDirectory(), 0777, true);
-		}
+		return new Response(FileSystem::read($file), Response::HTTP_OK, ['Content-Type' => 'image/png']);
 	}
 
 	protected function fitWithin(UploadedFile $image, int $width, int $height, bool $padding = false): string
 	{
-		$this->ensureCacheDirExists();
-
 		$mode = $padding ? 'fwp' : 'fw';
 
 		$outputFile = $this->getImageCacheFilename($image, $width, $height, $mode);
@@ -77,9 +67,9 @@ class ImageActions
 			return $outputFile;
 		}
 
-		$localCacheFile = $this->getImageCacheDirectory() . $image->getFullFilename();
+		$localCacheFile = $this->imageService->getCacheDirForImage($image) . $image->getFullFilename();
 
-		file_put_contents($localCacheFile, $this->uploadedFileService->getStorage($image)->read($image->getFullFilename()));
+		FileSystem::write($localCacheFile, $this->uploadedFileService->getStorage($image)->read($image->getFullFilename()));
 
 		$this->liipImagine
 			->open($localCacheFile)
@@ -94,9 +84,9 @@ class ImageActions
 
 	protected function getImageCacheFilename(UploadedFile $image, int $width, int $height, string $mode): string
 	{
-		return $this->getImageCacheDirectory()
-			/*. '/' */ . sha1($image->getFilename())
-			. $width . 'x' . $height . '_' . $mode . '.png';
+		$path = $this->imageService->getCacheDirForImage($image);
+		FileSystem::createDir($path);
+		return "$path{$width}x{$height}_$mode.png";
 	}
 
 	protected function hasCacheFile(UploadedFile $image, $width, $height, $mode): bool
@@ -117,17 +107,22 @@ class ImageActions
 		if (0 === $maxHeight) {
 			$maxHeight = 300;
 		}
+		$cacheFile = $this->imageService->getImageCacheDirectory() . "$code-{$maxWidth}x$maxHeight-" . Strings::webalize($message) . '.png';
+		if (!file_exists($cacheFile)) {
+			$image = $this->liipImagine->create(new Box(300, 300));
+			$image->draw()->text($message, $this->liipImagine->font(realpath($this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Regular.ttf'), 24, $image->palette()->color('000')), new Point(0, 0));
 
-		$image = $this->liipImagine->create(new Box(300, 300));
-		$image->draw()->text($message, $this->liipImagine->font(realpath($this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Regular.ttf'), 24, $image->palette()->color('000')), new Point(0, 0));
-
-		$box = $image->getSize();
-		$box = $box->widen($maxWidth);
-		if ($box->getHeight() > $maxHeight) {
-			$box = $box->heighten($maxHeight);
+			$box = $image->getSize();
+			$box = $box->widen($maxWidth);
+			if ($box->getHeight() > $maxHeight) {
+				$box = $box->heighten($maxHeight);
+			}
+			$image->resize($box);
+			FileSystem::write($cacheFile, $content = $image->get('png'));
+		} else {
+			$content = FileSystem::read($cacheFile);
 		}
-		$image->resize($box);
 
-		return new Response($image->get('png'), $code, ['Content-Type' => 'image/png']);
+		return new Response($content, $code, ['Content-Type' => 'image/png']);
 	}
 }

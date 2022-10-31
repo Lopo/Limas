@@ -53,7 +53,7 @@ class IndexController
 				? $val
 				: min($this->systemService->getBytesFromHumanReadable(ini_get('post_max_size')), $this->systemService->getBytesFromHumanReadable(ini_get('upload_max_filesize'))),
 			'isOctoPartAvailable' => ($this->getLimasParameterWithDefault('octopart.nexarId', '') !== '' && $this->getLimasParameterWithDefault('octopart.nexarSecret', '') !== ''),
-			'availableImageFormats' => array_map(static fn(Format $format) => $format->getMimeType(), $this->liipImagine->getDriverInfo()->getSupportedFormats()->getAll()),
+			'availableImageFormats' => array_map(static fn(Format $format): string => $format->getMimeType(), $this->liipImagine->getDriverInfo()->getSupportedFormats()->getAll()),
 			'max_users' => $this->getLimasParameterWithDefault('auth.max_users', 'unlimited'),
 			'authentication_provider' => $this->limas['authentication_provider'],
 			'tip_of_the_day_uri' => $this->limas['tip_of_the_day_uri'],
