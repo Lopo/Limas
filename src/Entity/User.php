@@ -76,9 +76,10 @@ class User
 	#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
 	private ?\DateTimeInterface $lastSeen;
 	#[ORM\ManyToOne(targetEntity: UserProvider::class)]
+	#[ORM\JoinColumn(nullable: false)]
 	#[Groups(['default'])]
 	#[ApiProperty(writableLink: true)]
-	private ?UserProvider $provider;
+	private UserProvider $provider;
 	/** @var Collection<TipOfTheDayHistory> */
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: TipOfTheDayHistory::class, cascade: ['remove'], orphanRemoval: true)]
 	private Collection $tipHistories;

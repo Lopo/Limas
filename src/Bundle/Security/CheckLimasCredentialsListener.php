@@ -66,9 +66,8 @@ class CheckLimasCredentialsListener
 
 		/** @var User $user */
 		$user = $passport->getUser();
-		$provider = $user->getProvider();
 
-		switch ($provider->getType()) {
+		switch ($user->getProvider()->getType()) {
 			case UserService::BUILTIN_PROVIDER:
 				$this->checkBuiltin($user, $presentedPassword);
 				if (!$passport->hasBadge(PasswordUpgradeBadge::class)) {

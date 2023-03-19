@@ -53,7 +53,7 @@ class UserService
 //		};
 	}
 
-	public function getProviderByType($type): UserProvider
+	public function getProviderByType(string $type): UserProvider
 	{
 		$provider = $this->entityManager->getRepository(UserProvider::class)->findOneBy(['type' => $type]);
 

@@ -2,12 +2,12 @@
 
 namespace Limas\Command;
 
-use Limas\Entity\User;
-use Limas\Entity\UserPreference;
-use Limas\Entity\UserProvider;
-use Limas\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use DoctrineMigrations\Version00000000000001;
+use Limas\Entity\User;
+use Limas\Entity\UserPreference;
+use Limas\Kernel;
+use Limas\Service\UserService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -32,7 +32,8 @@ class InstallCommand
 	public function __construct(
 		private readonly Kernel                      $kernel,
 		private readonly UserPasswordHasherInterface $hasher,
-		private readonly EntityManagerInterface      $manager
+		private readonly EntityManagerInterface      $manager,
+		private readonly UserService                 $userService
 	)
 	{
 		parent::__construct();
@@ -110,10 +111,9 @@ class InstallCommand
 		}
 
 		$io->note('Creating SuperAdmin account');
-		$admin = (new User($yaml['superadmin']['username']))
+		$admin = (new User($yaml['superadmin']['username'], $this->userService->getBuiltinProvider()))
 			->setRoles(['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'])
-			->setEmail($yaml['superadmin']['email'])
-			->setProvider($this->manager->find(UserProvider::class, 1));
+			->setEmail($yaml['superadmin']['email']);
 		$admin->setPassword($this->hasher->hashPassword($admin, $yaml['superadmin']['password']));
 		$this->manager->persist($admin);
 		$this->manager->persist((new UserPreference($admin, 'limas.tipoftheday.showtips', 'true')));
