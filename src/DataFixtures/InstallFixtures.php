@@ -46,6 +46,8 @@ class InstallFixtures
 			->setShortName('pcs')
 			->setDefault(true));
 
+		$manager->persist(new SiPrefix('quetta', 'Q', 30, 10));
+		$manager->persist(new SiPrefix('ronna', 'R', 27, 10));
 		$manager->persist(new SiPrefix('yotta', 'Y', 24, 10));
 		$manager->persist(new SiPrefix('zetta', 'Z', 21, 10));
 		$manager->persist(new SiPrefix('exa', 'E', 18, 10));
@@ -67,6 +69,8 @@ class InstallFixtures
 		$manager->persist(new SiPrefix('atto', 'a', -18, 10));
 		$manager->persist(new SiPrefix('zepto', 'z', -21, 10));
 		$manager->persist(new SiPrefix('yocto', 'y', -24, 10));
+		$manager->persist(new SiPrefix('ronto', 'r', -27, 10));
+		$manager->persist(new SiPrefix('quecto', 'q', -30, 10));
 		$manager->persist(new SiPrefix('kibi', 'Ki', 1, 1024));
 		$manager->persist(new SiPrefix('mebi', 'Mi', 2, 1024));
 		$manager->persist(new SiPrefix('gibi', 'Gi', 3, 1024));
