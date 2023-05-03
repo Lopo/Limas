@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: 'UserProvider',
+#[ORM\Table(
 	uniqueConstraints: [
 		new ORM\UniqueConstraint(name: 'type', fields: ['type'])
 	]

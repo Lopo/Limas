@@ -32,7 +32,7 @@ class Unit
 	private string $symbol;
 	/** @var Collection<SiPrefix> */
 	#[ORM\ManyToMany(targetEntity: SiPrefix::class)]
-	#[ORM\JoinTable(name: 'UnitSiPrefixes',
+	#[ORM\JoinTable(
 		joinColumns: [new ORM\JoinColumn(name: 'unit_id', referencedColumnName: 'id')],
 		inverseJoinColumns: [new ORM\JoinColumn(name: 'siprefix_id', referencedColumnName: 'id')]
 	)]
