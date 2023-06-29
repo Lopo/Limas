@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "49d9a2a6a306c158019a4a6204d6aa02",
+    "content-hash": "2f2a4d3f07a568fa8e93bf4fa177ffb6",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2873,7 +2873,7 @@
             "version": "3.5.6",
             "dist": {
                 "type": "zip",
-                "url": "https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip"
+                "url": "https://p.yusukekamiyamane.com/icon/downloads/fugue-icons-3.5.6.zip"
             },
             "type": "asset-zip"
         },
