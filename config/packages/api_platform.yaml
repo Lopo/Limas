@@ -1,12 +1,18 @@
 api_platform:
+    enable_swagger: false
+    enable_swagger_ui: false
+    enable_re_doc: false
+    enable_entrypoint: false
+    enable_docs: false
+    enable_profiler: false
     mapping:
         paths: [ '%kernel.project_dir%/src/Entity' ]
     patch_formats:
         json: [ 'application/merge-patch+json' ]
     formats:
         jsonld: [ 'application/ld+json' ]
-        csv: [ 'text/csv' ]
         json: [ 'application/json' ]
+        csv: [ 'text/csv' ]
 #        xlsx: [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ]
     eager_loading:
         force_eager: false
@@ -20,6 +26,8 @@ api_platform:
 
 when@dev:
     api_platform:
+        enable_swagger: true
+        enable_docs: true
         formats:
             html: [ 'text/html' ]
         title: 'Limas'
@@ -39,8 +47,3 @@ when@dev:
                 apiKey:
                     name: Authorization
                     type: header
-
-when@prod:
-    api_platform:
-        enable_swagger_ui: false
-        enable_re_doc: false

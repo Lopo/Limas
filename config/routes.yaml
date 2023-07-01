@@ -12,3 +12,9 @@ api_login_jwt:
 
 gesdinet_jwt_refresh_token:
     path: /api/token/refresh
+
+when@dev: &swager_dev
+    swagger_ui:
+        path: /docs
+        controller: api_platform.swagger.action.ui
+when@test: *swager_dev

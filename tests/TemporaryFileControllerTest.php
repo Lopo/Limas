@@ -170,7 +170,7 @@ class TemporaryFileControllerTest
 		self::assertEquals('TempUploadedFile', $response->$property);
 	}
 
-	public function testGetFile(): void
-	{
-	}
+//	public function testGetFile(): void
+//	{
+//	}
 }

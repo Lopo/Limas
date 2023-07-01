@@ -1,2 +1,4 @@
-maker:
-    root_namespace: 'Limas'
+when@dev: &maker_dev
+    maker:
+        root_namespace: 'Limas'
+when@test: *maker_dev
