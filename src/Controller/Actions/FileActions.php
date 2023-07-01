@@ -2,6 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
+use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Gaufrette\Exception\FileNotFound;
 use Limas\Entity\UploadedFile;
@@ -17,12 +18,16 @@ use Symfony\Component\HttpFoundation\Response;
 class FileActions
 	extends AbstractController
 {
+	use ActionUtilTrait;
+
+
 	public function __construct(
-		protected readonly EntityManagerInterface $entityManager,
-		protected readonly UploadedFileService    $uploadedFileService,
-		protected readonly MimetypeIconService    $mimetypeIconService,
-		protected readonly LoggerInterface        $logger,
-		protected readonly array                  $limas
+		protected readonly EntityManagerInterface    $entityManager,
+		protected readonly UploadedFileService       $uploadedFileService,
+		protected readonly MimetypeIconService       $mimetypeIconService,
+		protected readonly LoggerInterface           $logger,
+		protected readonly ItemDataProviderInterface $dataProvider,
+		protected readonly array                     $limas
 	)
 	{
 	}
@@ -42,12 +47,25 @@ class FileActions
 
 	public function getFileAction(Request $request, int $id): Response
 	{
-		$file = $this->entityManager->find($this->getEntityClass($request), $id);
+		$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
 		try {
 			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFullFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
 		} catch (FileNotFound $e) {
 			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFullFilename(), $file->getType()));
 			return new Response('404 File not found', Response::HTTP_NOT_FOUND);
+		}
+	}
+
+	public function deleteFileAction(Request $request, int $id): object
+	{
+		try {
+			/** @var UploadedFile $file */
+			$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
+			$this->uploadedFileService->getStorage($file)->delete($file->getFullFilename());
+			$this->entityManager->remove($file);
+			return $file;
+		} catch (\Throwable $e) {
+			return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
 		}
 	}
 

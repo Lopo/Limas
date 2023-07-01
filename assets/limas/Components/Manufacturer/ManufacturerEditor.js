@@ -112,7 +112,14 @@ Ext.define('Limas.ManufacturerEditor', {
 		j.show();
 	},
 	deleteImage: function () {
-		this.iclogoGrid.getStore().remove(this.iclogoGrid.getSelectionModel().getLastSelected());
+		let logo = this.iclogoGrid.getSelectionModel().getLastSelected();
+		if (logo) {
+			Ext.Ajax.request({
+				url: logo.getId(),
+				method: 'DELETE'
+			});
+		}
+		this.iclogoGrid.getStore().remove(logo);
 	},
 	onEditStart: function () {
 		this.iclogoGrid.bindStore(this.record.icLogos());

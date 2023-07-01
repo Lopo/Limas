@@ -3,9 +3,9 @@
 namespace Limas\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\ImageActions;
 use Limas\Controller\Actions\TemporaryImageActions;
-use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
@@ -29,6 +29,11 @@ use Doctrine\ORM\Mapping as ORM;
 	],
 	itemOperations: [
 		'get',
+		'delete' => [
+			'method' => 'delete',
+			'path' => 'temp_images/{id}',
+			'controller' => ImageActions::class . '::deleteImageAction'
+		],
 		'getImage' => [
 			'method' => 'get',
 			'path' => 'temp_images/{id}/getImage',

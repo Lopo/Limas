@@ -3,8 +3,8 @@
 namespace Limas\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use Limas\Controller\Actions\TemporaryFileActions;
 use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\TemporaryFileActions;
 
 
 #[ORM\Entity]
@@ -34,6 +34,11 @@ use Doctrine\ORM\Mapping as ORM;
 			'method' => 'get',
 			'path' => 'temp_uploaded_files/{id}/getFile',
 			'controller' => TemporaryFileActions::class . '::getFileAction'
+		],
+		'delete' => [
+			'method' => 'delete',
+			'path' => 'temp_uploaded_files/{id}',
+			'controller' => TemporaryFileActions::class . '::deleteFileAction'
 		]
 	],
 	denormalizationContext: ['groups' => ['default']],

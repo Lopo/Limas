@@ -7,6 +7,7 @@ use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Response;
 
 
 class TemporaryFileControllerTest
@@ -170,7 +171,62 @@ class TemporaryFileControllerTest
 		self::assertEquals('TempUploadedFile', $response->$property);
 	}
 
-//	public function testGetFile(): void
-//	{
-//	}
+	public function testGetFile(): void
+	{
+		$client = static::makeAuthenticatedClient();
+
+		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
+
+		$image = new UploadedFile(
+			$file,
+			'uploadtest.png',
+			'image/png',
+			null,
+			true
+		);
+
+		$client->request(
+			'POST',
+			'/api/temp_uploaded_files/upload',
+			[],
+			['userfile' => $image]
+		);
+		$response = Json::decode($client->getResponse()->getContent());
+		$id = $response->response->{'@id'};
+
+		$client->request(
+			'GET',
+			"$id/getFile"
+		);
+		$response = $client->getResponse();
+		self::assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		self::assertStringEqualsFile($file, $response->getContent());
+	}
+
+	public function testDeleteFile(): void
+	{
+		$client = static::makeAuthenticatedClient();
+
+		$image = new UploadedFile(
+			__DIR__ . '/DataFixtures/files/uploadtest.png',
+			'uploadtest.png',
+			'image/png',
+			null,
+			true
+		);
+
+		$client->request(
+			'POST',
+			'/api/temp_uploaded_files/upload',
+			[],
+			['userfile' => $image]
+		);
+		$response = Json::decode($client->getResponse()->getContent());
+
+		$client->request(
+			'DELETE',
+			$response->response->{'@id'}
+		);
+		self::assertEquals(Response::HTTP_NO_CONTENT, $client->getResponse()->getStatusCode());
+	}
 }

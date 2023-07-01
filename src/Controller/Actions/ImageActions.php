@@ -2,6 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
+use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Gaufrette\Exception\FileNotFound;
 use Imagine\Image\AbstractImagine;
@@ -27,13 +28,14 @@ class ImageActions
 		UploadedFileService                $uploadedFileService,
 		MimetypeIconService                $mimetypeIconService,
 		LoggerInterface                    $logger,
+		ItemDataProviderInterface          $dataProvider,
 		array                              $limas,
 
 		protected readonly ImageService    $imageService,
 		protected readonly AbstractImagine $liipImagine
 	)
 	{
-		parent::__construct($entityManager, $uploadedFileService, $mimetypeIconService, $logger, $limas);
+		parent::__construct($entityManager, $uploadedFileService, $mimetypeIconService, $logger, $dataProvider, $limas);
 	}
 
 	public function getImageAction(Request $request, int $id, LoggerInterface $logger): Response
@@ -55,6 +57,18 @@ class ImageActions
 		}
 
 		return new Response(FileSystem::read($file), Response::HTTP_OK, ['Content-Type' => 'image/png']);
+	}
+
+	public function deleteImageAction(Request $request, int $id): object
+	{
+		try {
+			$image = $this->entityManager->find($this->getEntityClass($request), $id);
+			$this->uploadedFileService->getStorage($image)->delete($image->getFullFilename());
+			$this->entityManager->remove($image);
+			return $image;
+		} catch (\Throwable $e) {
+			return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	protected function fitWithin(UploadedFile $image, int $width, int $height, bool $padding = false): string
