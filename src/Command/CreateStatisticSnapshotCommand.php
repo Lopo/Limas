@@ -28,7 +28,7 @@ class CreateStatisticSnapshotCommand
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$this->statisticService->createStatisticSnapshot();
-		$this->cronLoggerService->markCronRun('limas:cron:create-statistic-snapshot');
+		$this->cronLoggerService->markCronRun($this->getName());
 
 		return Command::SUCCESS;
 	}

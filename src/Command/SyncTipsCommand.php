@@ -28,7 +28,7 @@ class SyncTipsCommand
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$this->tipOfTheDayService->syncTips();
-		$this->cronLoggerService->markCronRun('limas:cron:synctips');
+		$this->cronLoggerService->markCronRun($this->getName());
 
 		return Command::SUCCESS;
 	}

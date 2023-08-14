@@ -28,7 +28,7 @@ class CheckForUpdatesCommand
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$this->versionService->doVersionCheck();
-		$this->cronLoggerService->markCronRun('limas:cron:versioncheck');
+		$this->cronLoggerService->markCronRun($this->getName());
 
 		return Command::SUCCESS;
 	}
