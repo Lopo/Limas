@@ -56,6 +56,7 @@ use Limas\Entity\Unit;
 use Limas\Entity\User;
 use Limas\Entity\UserPreference;
 use Limas\Entity\UserProvider;
+use Limas\Service\UserService;
 use Nette\Utils\FileSystem as NFileSystem;
 use Nette\Utils\Json;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -80,7 +81,8 @@ class ImportPartKeeprCommand
 
 	public function __construct(
 		private readonly EntityManagerInterface $entityManager,
-		private readonly FilesystemMap          $filesystemMap
+		private readonly FilesystemMap          $filesystemMap,
+		private readonly UserService            $userService
 	)
 	{
 		parent::__construct();
