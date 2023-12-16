@@ -25,14 +25,10 @@ class OctopartController
 	#[Route(path: '/api/octopart/query/', name: 'api_octopart_query', defaults: ['_format' => 'json'], methods: ['GET'])]
 	public function getPartsByQueryAction(Request $request): JsonResponse
 	{
-		$start = 1;
 		$responseData = [];
 
 		$query = $request->query->get('q');
-
-		if ($request->query->has('page')) {
-			$start = $request->query->get('page');
-		}
+		$start = $request->query->getInt('page', 1);
 
 		$data = $this->octoPartService->getPartyByQuery($query, $start);
 

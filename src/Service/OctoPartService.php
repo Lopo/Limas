@@ -17,8 +17,8 @@ class OctoPartService
   $filters: Map
   $limit: Int!
   $start: Int
-  $country: String = "DE"
-  $currency: String = "EUR"
+  $country: String!
+  $currency: String!
 ) {
   supSearch(
     q: $q
@@ -40,6 +40,8 @@ class OctoPartService
         manufacturer {
           name
         }
+        manufacturerUrl
+        freeSampleUrl
         bestDatasheet {
           name
           url
@@ -65,6 +67,7 @@ class OctoPartService
             url
             creditString
             creditUrl
+            mimeType
           }
         }
         descriptions {
@@ -73,6 +76,17 @@ class OctoPartService
         }
         cad {
           addToLibraryUrl
+          has3dModel
+          hasAltium
+          hasEagle
+          hasOrcad
+          hasKicad
+          downloadUrlAltium
+          downloadUrlEagle
+          downloadUrlOrcad
+          downloadUrlKicad
+          footprintImageUrl
+          symbolImageUrl
         }
         referenceDesigns {
           name
@@ -84,6 +98,7 @@ class OctoPartService
             isVerified
             name
             slug
+            displayFlag
           }
           isAuthorized
           isBroker
@@ -113,8 +128,8 @@ EOD;
 	private const OCTOPART_PARTQUERY = <<<'EOD'
     query MyPartSearch(
   $id: String!
-  $country: String = "DE"
-  $currency: String = "EUR"
+  $country: String!
+  $currency: String!
 ) {
   supParts(ids: [$id], country: $country, currency: $currency) {
     id
@@ -125,6 +140,8 @@ EOD;
     manufacturer {
       name
     }
+    manufacturerUrl
+    freeSampleUrl
     bestDatasheet {
       name
       url
@@ -150,6 +167,7 @@ EOD;
         url
         creditString
         creditUrl
+        mimeType
       }
     }
     descriptions {
@@ -158,6 +176,17 @@ EOD;
     }
     cad {
       addToLibraryUrl
+      has3dModel
+      hasAltium
+      hasEagle
+      hasOrcad
+      hasKicad
+      downloadUrlAltium
+      downloadUrlEagle
+      downloadUrlOrcad
+      downloadUrlKicad
+      footprintImageUrl
+      symbolImageUrl
     }
     referenceDesigns {
       name
@@ -169,6 +198,7 @@ EOD;
         isVerified
         name
         slug
+        displayFlag
       }
       isAuthorized
       isBroker
@@ -199,7 +229,9 @@ EOD;
 	public function __construct(
 		private readonly string $clientId,
 		private readonly string $clientSecret,
-		private readonly int    $limit = 3
+		private readonly int    $limit = 3,
+		private readonly string $country = 'DE',
+		private readonly string $currency = 'EUR'
 	)
 	{
 	}
@@ -227,7 +259,9 @@ EOD;
 					'query' => self::OCTOPART_PARTQUERY,
 					'operationName' => 'MyPartSearch',
 					'variables' => [
-						'id' => $uid
+						'id' => $uid,
+						'country' => $this->country,
+						'currency' => $this->currency
 					]
 				]
 			])->getBody();
@@ -252,7 +286,9 @@ EOD;
 					'variables' => [
 						'q' => $q,
 						'limit' => $this->limit,
-						'start' => ($startpage - 1) * $this->limit // 0-based
+						'start' => ($startpage - 1) * $this->limit, // 0-based
+						'country' => $this->country,
+						'currency' => $this->currency
 					]
 				]
 			])->getBody();

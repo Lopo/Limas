@@ -39,6 +39,8 @@ services:
             $clientId: '%env(NEXAR_ID)%'
             $clientSecret: '%env(NEXAR_SECRET)%'
             $limit: "@=parameter('limas')['octopart']['limit']"
+            $country: '%env(NEXAR_COUNTRY)%'
+            $currency: '%env(NEXAR_CURRENCY)%'
     Limas\Filter\AdvancedSearchFilter:
         tags:
             - { name: api_platform.doctrine.orm.query_extension.collection }
