@@ -33,7 +33,7 @@ class ReflectionController
 	}
 
 	#[Route('/reflection/models.js', name: 'app_reflection_models')]
-	public function assetEntites()
+	public function assetEntites(): Response
 	{
 		$content = '';
 		foreach ($this->reflectionService->getAssetEntities() as $entity) {

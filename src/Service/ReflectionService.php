@@ -2,8 +2,10 @@
 
 namespace Limas\Service;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Api\UrlGeneratorInterface;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
@@ -20,11 +22,12 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 
-class ReflectionService
+readonly class ReflectionService
 {
 	public function __construct(
-		private readonly EntityManagerInterface $em,
-		private readonly IriConverterInterface  $iriConverter
+		private EntityManagerInterface                     $em,
+		private IriConverterInterface                      $iriConverter,
+		private ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory
 	)
 	{
 	}
@@ -55,7 +58,13 @@ class ReflectionService
 			'parentClass' => $parentClass,
 		];
 		try {
-			$renderParams['uri'] = $this->iriConverter->getIriFromResourceClass($entity);
+//			$renderParams['uri'] = $this->iriConverter->getIriFromResourceClass($entity);
+			$op = $this->resourceMetadataCollectionFactory->create($entity)->getOperation(null, true, true);
+//			$url = $this->router->generate($this->resourceMetadataCollectionFactory->create($entity)->getOperation(null, true, true)->getName(), [], UrlGeneratorInterface::ABS_PATH);
+			$renderParams['uri'] = $this->iriConverter->getIriFromResource($entity, UrlGeneratorInterface::ABS_PATH, $op);
+			if (str_contains($renderParams['uri'], '/.well-known/genid/')) {
+				$renderParams['uri'] = '';
+			}
 		} catch (\Throwable $e) {
 			$renderParams['uri'] = '';
 		}
@@ -119,9 +128,16 @@ class ReflectionService
 				$currentMapping['nullable'] = false;
 			}
 
+			$name = null;
+			if ($currentMapping['type'] === Types::JSON) {
+				$type = (new \ReflectionClass($cm->getName()))->getProperty($field)->getType();
+				if ($type instanceof \ReflectionNamedType) {
+					$name = $type->getName();
+				}
+			}
 			$fieldMappings[] = [
 				'name' => $currentMapping['fieldName'],
-				'type' => $this->getExtJSFieldMapping($currentMapping['type'], $currentMapping['type'] === Types::JSON ? (new \ReflectionClass($cm->getName()))->getProperty($field)?->getType()?->getName() : null),
+				'type' => $this->getExtJSFieldMapping($currentMapping['type'], $name),
 				'nullable' => $currentMapping['nullable'],
 				'validators' => Json::encode($asserts),
 				'persist' => $this->allowPersist($cm, $field)

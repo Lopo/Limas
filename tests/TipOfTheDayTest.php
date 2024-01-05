@@ -3,8 +3,8 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\TipOfTheDay;
 use Limas\Tests\DataFixtures\TipOfTheDayDataLoader;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
@@ -19,7 +19,7 @@ class TipOfTheDayTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			TipOfTheDayDataLoader::class,
 			UserDataLoader::class
 		])->getReferenceRepository();
@@ -27,16 +27,16 @@ class TipOfTheDayTest
 
 	public function testTips(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$tip = $this->fixtures->getReference('tipoftheday');
+		$tip = $this->fixtures->getReference('tipoftheday', TipOfTheDay::class);
 
 		$client->request('PUT', '/api/tip_of_the_days/' . $tip->getId() . '/markTipRead');
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('name', $response);
-		self::assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasProperty('name', $response);
+		self::assertObjectHasProperty('@type', $response);
 
 		self::assertEquals('TipOfTheDay', $response->{'@type'});
 		self::assertEquals('FOO', $response->name);
@@ -45,8 +45,8 @@ class TipOfTheDayTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('@type', $response);
-		self::assertObjectHasAttribute('hydra:member', $response);
+		self::assertObjectHasProperty('@type', $response);
+		self::assertObjectHasProperty('hydra:member', $response);
 
 		self::assertEquals('hydra:Collection', $response->{'@type'});
 
@@ -61,8 +61,8 @@ class TipOfTheDayTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('@type', $response);
-		self::assertObjectHasAttribute('hydra:member', $response);
+		self::assertObjectHasProperty('@type', $response);
+		self::assertObjectHasProperty('hydra:member', $response);
 
 		self::assertEquals('hydra:Collection', $response->{'@type'});
 

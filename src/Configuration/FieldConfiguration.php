@@ -36,11 +36,11 @@ class FieldConfiguration
 	{
 		if (!property_exists($configuration, 'fieldConfiguration')) {
 			return false;
-			throw new \Exception('The key fieldConfiguration does not exist!');
+			throw new \RuntimeException('The key fieldConfiguration does not exist!');
 		}
 
 		if (!in_array($configuration->fieldConfiguration, self::fieldConfigurationModes, true)) {
-			throw new \Exception('The key fieldConfiguration contains an invalid value!');
+			throw new \RuntimeException('The key fieldConfiguration contains an invalid value!');
 		}
 
 		$this->fieldConfiguration = $configuration->fieldConfiguration;
@@ -48,13 +48,13 @@ class FieldConfiguration
 		switch ($this->fieldConfiguration) {
 			case self::FIELDCONFIGURATION_FIXEDVALUE:
 				if (!property_exists($configuration, 'setToValue')) {
-					throw new \Exception('The key setToValue does not exist for mode fixedValue!');
+					throw new \RuntimeException('The key setToValue does not exist for mode fixedValue!');
 				}
 				$this->fixedValue = $configuration->setToValue;
 				break;
 			case self::FIELDCONFIGURATION_COPYFROM:
 				if (!property_exists($configuration, 'copyFromField')) {
-					throw new \Exception('The key copyFromField does not exist for mode copyFrom!');
+					throw new \RuntimeException('The key copyFromField does not exist for mode copyFrom!');
 				}
 				$this->copyFromField = $configuration->copyFromField;
 				break;

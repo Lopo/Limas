@@ -2,7 +2,10 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\ImageActions;
 use Limas\Controller\Actions\TemporaryImageActions;
@@ -10,38 +13,32 @@ use Limas\Controller\Actions\TemporaryImageActions;
 
 #[ORM\Entity]
 #[ApiResource(
-	collectionOperations: [
-		'upload' => [
-			'method' => 'post',
-			'path' => 'temp_images/upload',
-			'controller' => TemporaryImageActions::class . '::uploadAction',
-			'deserialize' => false,
-			'output_formats' => [
-				'json'
-			]
-		],
-		'webcamUpload' => [
-			'method' => 'post',
-			'path' => 'temp_images/webcamUpload',
-			'controller' => TemporaryImageActions::class . '::webcamUploadAction',
-			'deserialize' => false
-		]
+	operations: [
+		new Post(
+			uriTemplate: 'temp_images/upload',
+			outputFormats: ['json'],
+			controller: TemporaryImageActions::class . '::uploadAction',
+			deserialize: false,
+			name: 'TemporaryImageUpload'
+		),
+		new Post(
+			uriTemplate: 'temp_images/webcamUpload',
+			controller: TemporaryImageActions::class . '::webcamUploadAction',
+			deserialize: false,
+			name: 'TemporaryImageUploadWebcam'
+		),
+		new Get,
+		new Get(
+			uriTemplate: 'temp_images/{id}/getImage',
+			controller: ImageActions::class . '::getImageAction',
+			name: 'TemporaryImageGet'
+		),
+		new Delete(
+			controller: ImageActions::class . '::deleteImageAction'
+		)
 	],
-	itemOperations: [
-		'get',
-		'delete' => [
-			'method' => 'delete',
-			'path' => 'temp_images/{id}',
-			'controller' => ImageActions::class . '::deleteImageAction'
-		],
-		'getImage' => [
-			'method' => 'get',
-			'path' => 'temp_images/{id}/getImage',
-			'controller' => ImageActions::class . '::getImageAction'
-		]
-	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class TempImage
 	extends Image

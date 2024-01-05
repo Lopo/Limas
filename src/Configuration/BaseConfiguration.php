@@ -2,7 +2,7 @@
 
 namespace Limas\Configuration;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Limas\Filter\AdvancedSearchFilter;
@@ -31,7 +31,6 @@ abstract class BaseConfiguration
 	 * Returns the path of this configuration node with an optional suffix
 	 *
 	 * @param bool|string $suffix Set to any string to return an additional suffix, or false to skip
-	 *
 	 * @return array The individual path components
 	 */
 	public function getPath(bool|string $suffix = false): array

@@ -7,11 +7,11 @@ use GuzzleHttp\Client;
 use Limas\Entity\TipOfTheDay;
 
 
-class TipOfTheDayService
+readonly class TipOfTheDayService
 {
 	public function __construct(
-		private array                           $limas,
-		private readonly EntityManagerInterface $entityManager
+		private array                  $limas,
+		private EntityManagerInterface $entityManager
 	)
 	{
 	}

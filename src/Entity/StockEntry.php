@@ -2,7 +2,12 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -11,8 +16,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	operations: [
+		new GetCollection,
+		new Post,
+		new Get,
+		new Put,
+		new Delete
+	],
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class StockEntry
 	extends BaseEntity
@@ -28,7 +40,7 @@ class StockEntry
 	private ?User $user;
 	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4, nullable: true)]
 	#[Groups(['default'])]
-	private ?string $price = '0';
+	private ?string $price = null;
 	#[ORM\Column(type: Types::DATETIME_MUTABLE)]
 	#[Groups(['default'])]
 	private \DateTimeInterface $dateTime;
@@ -67,9 +79,9 @@ class StockEntry
 		return $this->correction;
 	}
 
-	public function setPrice(?string $price): self
+	public function setPrice(string|float|null $price): self
 	{
-		$this->price = $price;
+		$this->price = $price !== null ? (string)$price : null;
 		return $this;
 	}
 

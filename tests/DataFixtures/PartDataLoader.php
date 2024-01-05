@@ -4,6 +4,8 @@ namespace Limas\Tests\DataFixtures;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Persistence\ObjectManager;
+use Limas\Entity\PartCategory;
+use Limas\Entity\StorageLocation;
 use Limas\Filter\Filter;
 use Limas\Entity\MetaPartParameterCriteria;
 use Limas\Entity\Part;
@@ -27,11 +29,11 @@ class PartDataLoader
 		$part = (new Part)
 			->setName('FOOBAR')
 			->setPartUnit($partUnit)
-			->setCategory($this->getReference('partcategory.first'))
-			->setStorageLocation($this->getReference('storagelocation.first'));
+			->setCategory($this->getReference('partcategory.first', PartCategory::class))
+			->setStorageLocation($this->getReference('storagelocation.first', StorageLocation::class));
 
-		$category = $this->getReference('partcategory.first');
-		$storageLocation = $this->getReference('storagelocation.second');
+		$category = $this->getReference('partcategory.first', PartCategory::class);
+		$storageLocation = $this->getReference('storagelocation.second', StorageLocation::class);
 
 		$part2 = (new Part)
 			->setName('FOOBAR2')

@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Limas\Entity\PartMeasurementUnit;
 use Limas\Service\PartMeasurementUnitService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +17,7 @@ class SetDefaultUnit
 	use ActionUtilTrait;
 
 
-	public function __construct(private readonly ItemDataProviderInterface $dataProvider)
+	public function __construct(private readonly ItemProvider $dataProvider)
 	{
 	}
 

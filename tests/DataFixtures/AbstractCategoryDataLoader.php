@@ -12,15 +12,19 @@ abstract class AbstractCategoryDataLoader
 	public function load(ObjectManager $manager)
 	{
 		$entityClass = $this->getEntityClass();
+		$separator = ' ➤ ';
 
 		$rootNode = (new $entityClass)
 			->setName('Root Node');
+		$rootNode->setCategoryPath($rootNode->generateCategoryPath($separator));
 		$firstCategory = (new $entityClass)
 			->setParent($rootNode)
 			->setName('First Category');
+		$firstCategory->setCategoryPath($firstCategory->generateCategoryPath($separator));
 		$secondCategory = (new $entityClass)
 			->setParent($firstCategory)
 			->setName('Second Category');
+		$secondCategory->setCategoryPath($secondCategory->generateCategoryPath($separator));
 
 		$manager->persist($rootNode);
 		$manager->persist($firstCategory);
@@ -33,5 +37,6 @@ abstract class AbstractCategoryDataLoader
 	}
 
 	abstract protected function getEntityClass(): string;
+
 	abstract protected function getReferencePrefix(): string;
 }

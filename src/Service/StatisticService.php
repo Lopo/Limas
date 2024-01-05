@@ -10,9 +10,9 @@ use Limas\Entity\StatisticSnapshot;
 use Limas\Entity\StatisticSnapshotUnit;
 
 
-class StatisticService
+readonly class StatisticService
 {
-	public function __construct(private readonly EntityManagerInterface $entityManager)
+	public function __construct(private EntityManagerInterface $entityManager)
 	{
 	}
 
@@ -40,16 +40,16 @@ class StatisticService
 	{
 		$qb = $this->entityManager->createQueryBuilder();
 		return $qb->select('SUM(p.averagePrice * p.stockLevel)')
-				->from(Part::class, 'p')
-				->getQuery()->getSingleScalarResult() ?? 0;
+			->from(Part::class, 'p')
+			->getQuery()->getSingleScalarResult() ?? 0;
 	}
 
 	public function getAveragePrice(): float
 	{
 		$qb = $this->entityManager->createQueryBuilder();
 		return $qb->select($qb->expr()->avg('p.averagePrice'))
-				->from(Part::class, 'p')
-				->getQuery()->getSingleScalarResult() ?? 0;
+			->from(Part::class, 'p')
+			->getQuery()->getSingleScalarResult() ?? 0;
 	}
 
 	public function getUnitCounts(): array
@@ -72,7 +72,7 @@ class StatisticService
 	{
 		if ($startDate->getTimestamp() > $endDate->getTimestamp()) {
 			// Swap both times
-			list($startDate, $endDate) = [$endDate, $startDate];
+			[$startDate, $endDate] = [$endDate, $startDate];
 		}
 
 		$intervalSize = (int)(($endDate->getTimestamp() - $startDate->getTimestamp()) / $sampleSize);

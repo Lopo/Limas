@@ -2,7 +2,7 @@
 
 namespace Limas\Listener;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
@@ -13,20 +13,19 @@ use Limas\Entity\TempUploadedFile;
 use Limas\Entity\UploadedFile;
 use Limas\Service\ImageService;
 use Limas\Service\UploadedFileService;
-use Nette\Utils\Strings;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 
-class TemporaryFile
+readonly class TemporaryFile
 	implements EventSubscriberInterface
 {
 	public function __construct(
-		private readonly UploadedFileService       $uploadedFileService,
-		private readonly ImageService              $imageService,
-		private readonly PropertyAccessorInterface $propertyAccessor,
-		private readonly IriConverterInterface     $iriConverter
+		private UploadedFileService       $uploadedFileService,
+		private ImageService              $imageService,
+		private PropertyAccessorInterface $propertyAccessor,
+		private IriConverterInterface     $iriConverter
 	)
 	{
 	}
@@ -54,7 +53,7 @@ class TemporaryFile
 		}
 
 		$classReflection = new \ReflectionClass($data);
-		if (!Strings::startsWith($classReflection->getNamespaceName(), 'Limas\\')) {
+		if (!str_starts_with($classReflection->getNamespaceName(), 'Limas\\')) {
 			return;
 		}
 
@@ -83,7 +82,7 @@ class TemporaryFile
 					} else {
 						$item = $this->propertyAccessor->getValue($data, $property->getName());
 						if ($item !== null && $item->getReplacement() !== null) {
-							$this->replaceFile($item, $this->iriConverter->getItemFromIri($item->getReplacement()));
+							$this->replaceFile($item, $this->iriConverter->getResourceFromIri($item->getReplacement()));
 						}
 					}
 				}

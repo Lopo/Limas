@@ -3,8 +3,8 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\Part;
 use Limas\Service\PartService;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
 use Limas\Tests\DataFixtures\ManufacturerDataLoader;
@@ -24,7 +24,7 @@ class MetaPartTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -37,20 +37,22 @@ class MetaPartTest
 
 	public function testMetaPartMatching(): void
 	{
-		$metaPart1 = $this->fixtures->getReference('metapart.1');
-		$metaSourcePart1 = $this->fixtures->getReference('metapart.source.1');
-		$metaSourcePart2 = $this->fixtures->getReference('metapart.source.2');
-		$metaSourcePart3 = $this->fixtures->getReference('metapart.source.3');
+		$container = self::getContainer();
 
-		$matches = $this->getContainer()->get(PartService::class)->getMatchingMetaParts($metaPart1);
+		$metaPart1 = $this->fixtures->getReference('metapart.1', Part::class);
+		$metaSourcePart1 = $this->fixtures->getReference('metapart.source.1', Part::class);
+		$metaSourcePart2 = $this->fixtures->getReference('metapart.source.2', Part::class);
+		$metaSourcePart3 = $this->fixtures->getReference('metapart.source.3', Part::class);
+
+		$matches = $container->get(PartService::class)->getMatchingMetaParts($metaPart1);
 
 		self::assertContains($metaSourcePart1, $matches);
 		self::assertContains($metaSourcePart2, $matches);
 		self::assertNotContains($metaSourcePart3, $matches);
 
-		$metaPart2 = $this->fixtures->getReference('metapart.2');
+		$metaPart2 = $this->fixtures->getReference('metapart.2', Part::class);
 
-		$matches2 = $this->getContainer()->get(PartService::class)->getMatchingMetaParts($metaPart2);
+		$matches2 = $container->get(PartService::class)->getMatchingMetaParts($metaPart2);
 
 		self::assertNotContains($metaSourcePart1, $matches2);
 		self::assertContains($metaSourcePart2, $matches2);

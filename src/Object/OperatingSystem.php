@@ -2,6 +2,8 @@
 
 namespace Limas\Object;
 
+use Nette\Utils\FileSystem;
+
 
 class OperatingSystem
 {
@@ -19,11 +21,11 @@ class OperatingSystem
 			}
 		}
 
-		if (\PHP_OS === 'WINNT') {
-			return 'Windows';
-		}
-
-		return 'unknown';
+		return match (\PHP_OS) {
+			'Linux' => 'Linux',
+			'WINNT' => 'Windows',
+			default => 'unknown',
+		};
 	}
 
 	/**
@@ -34,8 +36,8 @@ class OperatingSystem
 		switch (strtolower($this->getPlatform())) {
 			case 'freebsd':
 				/*
-				 * Unfortunately, there's no text file on FreeBSD which tells us the release
-				 * number. Thus, we hope that "release" within posix_uname() is defined.
+				 * Unfortunately, there's no text file on FreeBSD which tells us the release number. Thus, we hope that
+				 * "release" within posix_uname() is defined.
 				 */
 				if (function_exists('posix_uname')) {
 					$data = posix_uname();
@@ -72,8 +74,8 @@ class OperatingSystem
 	 * Tries to detect the distribution
 	 *
 	 * Currently, we only execute lsb_release to find out the version number.
-	 * As I don't have any other distributions at hand to test with, I rely
-	 * on user feedback which distributions don't have lsb_release.
+	 * As I don't have any other distributions at hand to test with, I rely on user feedback which distributions don't
+	 * have lsb_release.
 	 */
 	public function getLinuxDistribution(): string
 	{
@@ -82,7 +84,26 @@ class OperatingSystem
 		$release = @exec('lsb_release -d -s', $void, $retval);
 
 		if ($retval === 0 && $release !== '') {
-			return $release;
+			return trim(str_replace(['"', "'"], '', $release));
+		}
+
+		$name = '';
+		foreach (glob('/etc/*-release') as $file) {
+			foreach (FileSystem::readLines($file) as $line) {
+				$kv = explode('=', $line);
+				if (count($kv) !== 2) {
+					continue;
+				}
+				if (trim($kv[0]) === 'PRETTY_NAME') {
+					return trim(str_replace(['"', "'"], '', $kv[1]));
+				}
+				if ($name === '' && trim($kv[0]) === 'NAME') {
+					$name = trim($kv[1]);
+				}
+			}
+		}
+		if ($name !== '') {
+			return $name;
 		}
 
 		//@todo we need better handling here

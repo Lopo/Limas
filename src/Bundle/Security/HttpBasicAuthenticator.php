@@ -20,14 +20,14 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 
-class HttpBasicAuthenticator
+readonly class HttpBasicAuthenticator
 	implements AuthenticatorInterface
 {
 	public function __construct(
-		private readonly UserProviderInterface $userProvider,
-		private readonly string                $ldapServiceId,
-		private readonly ?LoggerInterface      $logger = null,
-		private readonly string                $dnString = '{username}'
+		private UserProviderInterface $userProvider,
+		private string                $ldapServiceId,
+		private ?LoggerInterface      $logger = null,
+		private string                $dnString = '{username}'
 	)
 	{
 	}

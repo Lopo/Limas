@@ -5,6 +5,7 @@ namespace Limas\Tests\DataFixtures;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Persistence\ObjectManager;
 use Limas\Entity\StorageLocation;
+use Limas\Entity\StorageLocationCategory;
 
 
 class StorageLocationDataLoader
@@ -14,10 +15,10 @@ class StorageLocationDataLoader
 	{
 		$storageLocation = (new StorageLocation)
 			->setName('test')
-			->setCategory($this->getReference('storagelocationcategory.first'));
+			->setCategory($this->getReference('storagelocationcategory.first', StorageLocationCategory::class));
 		$storageLocation2 = (new StorageLocation)
 			->setName('test2')
-			->setCategory($this->getReference('storagelocationcategory.second'));
+			->setCategory($this->getReference('storagelocationcategory.second', StorageLocationCategory::class));
 
 		$manager->persist($storageLocation);
 		$manager->persist($storageLocation2);

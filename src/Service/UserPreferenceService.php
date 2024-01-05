@@ -8,9 +8,9 @@ use Limas\Entity\UserPreference;
 use Limas\Exceptions\UserPreferenceNotFoundException;
 
 
-class UserPreferenceService
+readonly class UserPreferenceService
 {
-	public function __construct(private readonly EntityManagerInterface $entityManager)
+	public function __construct(private EntityManagerInterface $entityManager)
 	{
 	}
 
@@ -38,6 +38,9 @@ class UserPreferenceService
 		return $this->entityManager->getRepository(UserPreference::class)->findBy(['user' => $user]);
 	}
 
+	/**
+	 * @throws UserPreferenceNotFoundException
+	 */
 	public function getPreference(User $user, string $key): UserPreference
 	{
 		$pref = $this->entityManager->getRepository(UserPreference::class)->findOneBy(['user' => $user, 'preferenceKey' => $key]);

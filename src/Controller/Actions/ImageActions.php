@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Gaufrette\Exception\FileNotFound;
 use Imagine\Image\AbstractImagine;
@@ -23,12 +23,15 @@ use Symfony\Component\HttpFoundation\Response;
 class ImageActions
 	extends FileActions
 {
+	use ActionUtilTrait;
+
+
 	public function __construct(
 		EntityManagerInterface             $entityManager,
 		UploadedFileService                $uploadedFileService,
 		MimetypeIconService                $mimetypeIconService,
 		LoggerInterface                    $logger,
-		ItemDataProviderInterface          $dataProvider,
+		ItemProvider                       $dataProvider,
 		array                              $limas,
 
 		protected readonly ImageService    $imageService,
@@ -61,9 +64,9 @@ class ImageActions
 
 	public function deleteImageAction(Request $request, int $id): object
 	{
+		$image = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
 		try {
-			$image = $this->entityManager->find($this->getEntityClass($request), $id);
-			$this->uploadedFileService->getStorage($image)->delete($image->getFullFilename());
+			$this->uploadedFileService->getStorage($image)->delete($image->getFilename());
 			$this->entityManager->remove($image);
 			return $image;
 		} catch (\Throwable $e) {
@@ -81,9 +84,9 @@ class ImageActions
 			return $outputFile;
 		}
 
-		$localCacheFile = $this->imageService->getCacheDirForImage($image) . $image->getFullFilename();
+		$localCacheFile = $this->imageService->getCacheDirForImage($image) . $image->getFilename();
 
-		FileSystem::write($localCacheFile, $this->uploadedFileService->getStorage($image)->read($image->getFullFilename()));
+		FileSystem::write($localCacheFile, $this->uploadedFileService->getStorage($image)->read($image->getFilename()));
 
 		$this->liipImagine
 			->open($localCacheFile)
@@ -106,11 +109,11 @@ class ImageActions
 	protected function hasCacheFile(UploadedFile $image, $width, $height, $mode): bool
 	{
 		$queryBuilder = $this->entityManager->createQueryBuilder();
-		return $queryBuilder->select($queryBuilder->expr()->count('c'))
+		return 0 < $queryBuilder->select($queryBuilder->expr()->count('c'))
 				->from(CachedImage::class, 'c')
 				->where($queryBuilder->expr()->eq('c.cacheFile', ':file'))
 				->setParameter('file', $this->getImageCacheFilename($image, $width, $height, $mode))
-				->getQuery()->getSingleScalarResult() > 0;
+				->getQuery()->getSingleScalarResult();
 	}
 
 	private function createImageResponse(int $maxWidth, int $maxHeight, int $code, string $message): Response
@@ -126,8 +129,7 @@ class ImageActions
 			$image = $this->liipImagine->create(new Box(300, 300));
 			$image->draw()->text($message, $this->liipImagine->font(realpath($this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Regular.ttf'), 24, $image->palette()->color('000')), new Point(0, 0));
 
-			$box = $image->getSize();
-			$box = $box->widen($maxWidth);
+			$box = $image->getSize()->widen($maxWidth);
 			if ($box->getHeight() > $maxHeight) {
 				$box = $box->heighten($maxHeight);
 			}

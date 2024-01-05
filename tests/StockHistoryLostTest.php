@@ -4,9 +4,10 @@ namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\Part;
 use Limas\Entity\StockEntry;
+use Limas\Entity\User;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
 use Limas\Tests\DataFixtures\ManufacturerDataLoader;
 use Limas\Tests\DataFixtures\PartCategoryDataLoader;
@@ -26,7 +27,7 @@ class StockHistoryLostTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -40,15 +41,15 @@ class StockHistoryLostTest
 
 	public function testStockHistory(): void
 	{
-		$em = $this->getContainer()->get(EntityManagerInterface::class);
-		$client = static::makeAuthenticatedClient();
+		$em = self::getContainer()->get(EntityManagerInterface::class);
+		$client = $this->makeAuthenticatedClient();
 
-		$part1 = $this->fixtures->getReference('part.1');
+		$part1 = $this->fixtures->getReference('part.1', Part::class);
 
 		$part1->addStockLevel((new StockEntry)
 			->setPart($part1)
 			->setStockLevel(5)
-			->setUser($this->fixtures->getReference('user.admin'))
+			->setUser($this->fixtures->getReference('user.admin', User::class))
 		);
 		$em->flush();
 

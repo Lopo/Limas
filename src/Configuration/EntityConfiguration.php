@@ -16,7 +16,10 @@ class EntityConfiguration
 	];
 	private const UPDATEBEHAVIOUR_DONTUPDATE = 'dontUpdate';
 	private const UPDATEBEHAVIOUR_UPDATEDATA = 'update';
-	private const updateBehaviours = [self::UPDATEBEHAVIOUR_DONTUPDATE, self::UPDATEBEHAVIOUR_UPDATEDATA];
+	private const updateBehaviours = [
+		self::UPDATEBEHAVIOUR_DONTUPDATE,
+		self::UPDATEBEHAVIOUR_UPDATEDATA
+	];
 
 	protected string $importBehaviour;
 	protected string $updateBehaviour;
@@ -26,10 +29,10 @@ class EntityConfiguration
 	public function parseConfiguration($importConfiguration): bool
 	{
 		if (!property_exists($importConfiguration, 'importBehaviour')) {
-			throw new \Exception(sprintf('The key importBehaviour does not exist for path /%s!', implode('/', $this->getPath())));
+			throw new \RuntimeException(sprintf('The key importBehaviour does not exist for path /%s!', implode('/', $this->getPath())));
 		}
 		if (!in_array($importConfiguration->importBehaviour, self::importBehaviours, true)) {
-			throw new \Exception('The key importBehaviour contains an invalid value!');
+			throw new \RuntimeException('The key importBehaviour contains an invalid value!');
 		}
 
 		$this->importBehaviour = $importConfiguration->importBehaviour;
@@ -37,10 +40,10 @@ class EntityConfiguration
 		switch ($this->importBehaviour) {
 			case self::IMPORTBEHAVIOUR_MATCHDATA:
 				if (!property_exists($importConfiguration, 'matchers')) {
-					throw new \Exception('No matchers defined');
+					throw new \RuntimeException('No matchers defined');
 				}
 				if (!is_array($importConfiguration->matchers)) {
-					throw new \Exception('matchers must be an array');
+					throw new \RuntimeException('matchers must be an array');
 				}
 
 				foreach ($importConfiguration->matchers as $matcher) {
@@ -48,17 +51,17 @@ class EntityConfiguration
 						|| !property_exists($matcher, 'importField')
 						|| $matcher->importField === ''
 					) {
-						throw new \Exception('matcher configuration error');
+						throw new \RuntimeException('matcher configuration error');
 					}
 				}
 
 				$this->matchers = $importConfiguration->matchers;
 
 				if (!property_exists($importConfiguration, 'updateBehaviour')) {
-					throw new \Exception('The key updateBehaviour does not exist for mode matchData!');
+					throw new \RuntimeException('The key updateBehaviour does not exist for mode matchData!');
 				}
 				if (!in_array($importConfiguration->updateBehaviour, self::updateBehaviours, true)) {
-					throw new \Exception('Invalid value for updateBehaviour');
+					throw new \RuntimeException('Invalid value for updateBehaviour');
 				}
 
 				$this->updateBehaviour = $importConfiguration->updateBehaviour;
@@ -82,12 +85,12 @@ class EntityConfiguration
 			case self::IMPORTBEHAVIOUR_MATCHDATA:
 				$configuration = [];
 				foreach ($this->matchers as $matcher) {
-					$foo = new \stdClass();
+					$foo = new \stdClass;
 					$foo->property = $matcher->matchField;
-					$foo->operator = "=";
+					$foo->operator = '=';
 					$foo->value = $row[$matcher->importField];
 
-					$descriptions[] = sprintf("%s = %s", $matcher->matchField, $row[$matcher->importField]);
+					$descriptions[] = sprintf('%s = %s', $matcher->matchField, $row[$matcher->importField]);
 					$configuration[] = $foo;
 				}
 
@@ -106,7 +109,7 @@ class EntityConfiguration
 					if (count($result) === 0) {
 						$this->log(sprintf('No item of type %s for the configured matcher (%s) found, creating a new one',
 							$this->baseEntity,
-							implode($descriptions, ', ')
+							implode(', ', $descriptions)
 						));
 						return parent::import($row);
 					}
@@ -114,19 +117,17 @@ class EntityConfiguration
 					if (count($result) === 1) {
 						$this->log(sprintf('Found item of type %s for the configured matcher (%s)',
 							$this->baseEntity,
-							implode($descriptions, ", ")
+							implode(', ', $descriptions)
 						));
 						return parent::import($row, $result[0]);
 					}
 
-					if (count($result) > 1) {
-						$this->log(sprintf("Found %d items of type %s for the configured matcher (%s). Can't continue since we don't know which item to use. Configure the matcher to narrow the results",
-							count($result),
-							$this->baseEntity,
-							implode($descriptions, ', ')
-						));
-						return null;
-					}
+					$this->log(sprintf("Found %d items of type %s for the configured matcher (%s). Can't continue since we don't know which item to use. Configure the matcher to narrow the results",
+						count($result),
+						$this->baseEntity,
+						implode(', ', $descriptions)
+					));
+					return null;
 				} catch (\Exception $e) {
 				}
 		}

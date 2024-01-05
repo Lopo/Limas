@@ -4,8 +4,10 @@ namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\Distributor;
+use Limas\Entity\Manufacturer;
+use Limas\Entity\Part;
 use Limas\Entity\PartDistributor;
 use Limas\Entity\PartManufacturer;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
@@ -27,7 +29,7 @@ class DistributorAndManufacturerSearchTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
 			PartCategoryDataLoader::class,
@@ -40,16 +42,16 @@ class DistributorAndManufacturerSearchTest
 
 	public function testManufacturerFilter(): void
 	{
-		$part = $this->fixtures->getReference('part.1');
-		$manufacturer = $this->fixtures->getReference('manufacturer.first');
+		$part = $this->fixtures->getReference('part.1', Part::class);
+		$manufacturer = $this->fixtures->getReference('manufacturer.first', Manufacturer::class);
 
 		$part->addManufacturer((new PartManufacturer)
 			->setManufacturer($manufacturer)
 			->setPartNumber('1')
 		);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush();
+		self::getContainer()->get(EntityManagerInterface::class)->flush();
 
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request(
 			'GET',
@@ -70,14 +72,14 @@ class DistributorAndManufacturerSearchTest
 
 	public function testDistributorFilter(): void
 	{
-		$part = $this->fixtures->getReference('part.1');
-		$distributor = $this->fixtures->getReference('distributor.first');
+		$part = $this->fixtures->getReference('part.1', Part::class);
+		$distributor = $this->fixtures->getReference('distributor.first', Distributor::class);
 
 		$partDistributor = new PartDistributor;
 		$partDistributor->setDistributor($distributor);
 
 		$part->addDistributor($partDistributor);
-		$this->getContainer()->get(EntityManagerInterface::class)->flush();
+		self::getContainer()->get(EntityManagerInterface::class)->flush();
 
 		$filters = [[
 			'property' => 'distributors.distributor',
@@ -85,7 +87,7 @@ class DistributorAndManufacturerSearchTest
 			'value' => '/api/distributors/' . $distributor->getId()
 		]];
 
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request('GET', '/api/parts', ['filter' => Json::encode($filters)]);
 

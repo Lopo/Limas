@@ -13,19 +13,18 @@ use Symfony\Component\Ldap\Security\LdapBadge;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\Exception\LogicException;
-use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\PasswordUpgradeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Event\CheckPassportEvent;
 
 
-class CheckLimasCredentialsListener
+readonly class CheckLimasCredentialsListener
 	implements EventSubscriberInterface
 {
 	public function __construct(
-		private readonly PasswordHasherFactoryInterface $hasherFactory,
-		private readonly ContainerInterface             $ldapLocator
+		private PasswordHasherFactoryInterface $hasherFactory,
+		private ContainerInterface             $ldapLocator
 	)
 	{
 	}
@@ -78,18 +77,18 @@ class CheckLimasCredentialsListener
 				$this->checkLdap($passport);
 				break;
 			default:
-				throw new \Exception('Not implemented');
+				throw new \RuntimeException('Not implemented');
 		}
 		$limasBadge->markResolved();
 		$passwordCredentials->markResolved();
 	}
 
-	protected function checkBuiltin(User $user, string $password): void
+	protected function checkBuiltin(User $user, #[\SensitiveParameter] string $password): void
 	{
 		if (null === $user->getPassword()) {
 			throw new BadCredentialsException('The presented password is invalid.');
 		}
-		if (!$this->hasherFactory->getPasswordHasher($user)->verify($user->getPassword(), $password, $user instanceof LegacyPasswordAuthenticatedUserInterface ? $user->getSalt() : null)) {
+		if (!$this->hasherFactory->getPasswordHasher($user)->verify($user->getPassword(), $password)) {
 			throw new BadCredentialsException('The presented password is invalid.');
 		}
 	}
@@ -116,7 +115,7 @@ class CheckLimasCredentialsListener
 		$user = $passport->getUser();
 		$ldap = $this->ldapLocator->get($ldapBadge->getLdapServiceId());
 		try {
-			if ($ldapBadge->getQueryString()) {
+			if ('' !== ($ldapBadge->getQueryString() ?? '')) {
 				if ('' !== $ldapBadge->getSearchDn() && '' !== $ldapBadge->getSearchPassword()) {
 					try {
 						$ldap->bind($ldapBadge->getSearchDn(), $ldapBadge->getSearchPassword());

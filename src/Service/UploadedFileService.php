@@ -43,13 +43,12 @@ class UploadedFileService
 		}
 
 		$file->setOriginalFilename($filesystemFile->getBasename());
-		$file->setExtension($filesystemFile->getExtension());
 		$file->setMimetype($filesystemFile->getMimeType());
 		$file->setSize($filesystemFile->getSize());
 
 		$storage = $this->getStorage($file);
 
-		$storage->write($file->getFullFilename(), FileSystem::read($filesystemFile->getPathname()), true);
+		$storage->write($file->getFilename(), FileSystem::read($filesystemFile->getPathname()), true);
 	}
 
 	public function replaceFromData(UploadedFile $file, $data, $filename): void
@@ -69,18 +68,18 @@ class UploadedFileService
 		$storage = $this->getStorage($file);
 
 		try {
-			$storage->delete($file->getFullFilename());
+			$storage->delete($file->getFilename());
 			$this->entityManager->remove($file);
 			$this->entityManager->flush();
 		} catch (FileNotFound $e) {
-			$this->logger->alert(sprintf('Unable to delete file %s', $file->getFullFilename()), [$e, $file]);
+			$this->logger->alert(sprintf('Unable to delete file %s', $file->getFilename()), [$e, $file]);
 		}
 	}
 
 	public function replaceFromUploadedFile(UploadedFile $target, UploadedFile $source): void
 	{
 		$storage = $this->getStorage($source);
-		$this->replaceFromData($target, $storage->read($source->getFullFilename()), $source->getFullFilename());
+		$this->replaceFromData($target, $storage->read($source->getFilename()), $source->getFilename());
 		$target->setOriginalFilename($source->getOriginalFilename());
 	}
 
@@ -107,7 +106,7 @@ class UploadedFileService
 				])
 				->getBody();
 		} catch (GuzzleException $e) {
-			throw new \Exception('replaceFromURL error: ' . str_replace(['>', '<'], '', $e->getMessage()), $e->getCode(), $e);
+			throw new \RuntimeException('replaceFromURL error: ' . str_replace(['>', '<'], '', $e->getMessage()), $e->getCode(), $e);
 		}
 
 		$this->replaceFromData($file, $data, basename($url));

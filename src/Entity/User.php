@@ -2,14 +2,20 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
-use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\UserActions;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\VirtualField;
+use Limas\Controller\Actions\UserActions;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -20,41 +26,36 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'username_provider', fields: ['username', 'provider'])]
 #[ApiResource(
-	collectionOperations: [
-		'get',
-		'post' => [
-			'controller' => UserActions::class . '::PostAction'
-//		],
-//		'GetProviders' => [
-//			'path' => 'users/get_user_providers',
-//			'method' => 'get',
-//			'controller' => UserActions::class . '::GetProvidersAction'
-		]
-	],
-	itemOperations: [
-		'get' => [
-			'controller' => UserActions::class . '::getAction'
-		],
-		'put' => [
-			'path' => 'users/{id}',
-			'controller' => UserActions::class . '::PutUserAction'
-		],
-		'delete' => [
-			'path' => 'users/{id}',
-			'controller' => UserActions::class . '::DeleteUserAction'
-		],
-		'changePassword' => [
-			'method' => 'patch',
-			'path' => 'users/{id}/changePassword',
-			'controller' => UserActions::class . '::changePasswordAction',
-			'input_formats' => [
-				'json' => ['application/merge-patch+json'],
+	operations: [
+		new GetCollection,
+		new Post(controller: UserActions::class . '::PostAction'),
+//		new GetCollection(
+//			uriTemplate: 'users/get_user_providers',
+//			controller: UserActions::class . '::GetProvidersAction'
+//		),
+		new Get(controller: UserActions::class . '::getAction'),
+		new Put(
+			uriTemplate: 'users/{id}',
+			controller: UserActions::class . '::PutUserAction',
+		),
+		new Delete(
+			uriTemplate: 'users/{id}',
+			controller: UserActions::class . '::DeleteUserAction'
+		),
+		new Patch(
+			uriTemplate: 'users/{id}/changePassword',
+			inputFormats: [
+				'json' => ['application/merge-patch+json']
 			],
-			'denormalization_context' => ['groups' => ['changePassword:write']]
-		]
+			controller: UserActions::class . '::changePasswordAction',
+			denormalizationContext: [
+				'groups' => ['changePassword:write']
+			],
+			name: 'changePassword'
+		)
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class User
 	extends BaseEntity
@@ -211,7 +212,7 @@ class User
 		return $this->password;
 	}
 
-	public function setPassword(?string $password): self
+	public function setPassword(#[\SensitiveParameter] ?string $password): self
 	{
 		$this->password = $password;
 		return $this;
@@ -222,7 +223,7 @@ class User
 		return $this->newPassword;
 	}
 
-	public function setNewPassword(?string $newPassword): self
+	public function setNewPassword(#[\SensitiveParameter] ?string $newPassword): self
 	{
 		$this->newPassword = $newPassword;
 		return $this;

@@ -2,7 +2,7 @@
 
 namespace Limas\Controller;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Limas\Service\ImporterService;
 use Limas\Service\UploadedFileService;
 use Nette\Utils\Json;
@@ -58,10 +58,10 @@ class ImportController
 
 	protected function extractCSVData(string $tempFileIRI, bool $includeHeaders = true): array
 	{
-		$tempUploadedFile = $this->iriConverter->getItemFromIri($tempFileIRI);
+		$tempUploadedFile = $this->iriConverter->getResourceFromIri($tempFileIRI);
 
 		$tempFile = tempnam(sys_get_temp_dir(), 'import');
-		file_put_contents($tempFile, $this->uploadedFileService->getStorage($tempUploadedFile)->read($tempUploadedFile->getFullFilename()));
+		file_put_contents($tempFile, $this->uploadedFileService->getStorage($tempUploadedFile)->read($tempUploadedFile->getFilename()));
 		$fp = fopen($tempFile, 'r');
 
 		$data = [];

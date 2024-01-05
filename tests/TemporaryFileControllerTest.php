@@ -2,7 +2,6 @@
 
 namespace Limas\Tests;
 
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
@@ -16,19 +15,18 @@ class TemporaryFileControllerTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testUploadAction(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
 		$originalFilename = 'uploadtest.png';
 		$mimeType = 'image/png';
-		$extension = 'png';
 
 		$image = new UploadedFile(
 			$file,
@@ -48,9 +46,9 @@ class TemporaryFileControllerTest
 		self::assertEquals(200, $client->getResponse()->getStatusCode());
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('success', $response);
-		self::assertObjectHasAttribute('image', $response);
-		self::assertObjectHasAttribute('response', $response);
+		self::assertObjectHasProperty('success', $response);
+		self::assertObjectHasProperty('image', $response);
+		self::assertObjectHasProperty('response', $response);
 
 		self::assertEquals(true, $response->success);
 
@@ -63,14 +61,12 @@ class TemporaryFileControllerTest
 			'type',
 			'filename',
 			'mimetype',
-			'extension',
-//			'description',
-//			'legacyExtension'
+//			'description'
 		];
 
 		foreach ($propertiesToCheck as $property) {
-			self::assertObjectHasAttribute($property, $response->image);
-			self::assertObjectHasAttribute($property, $response->response);
+			self::assertObjectHasProperty($property, $response->image);
+			self::assertObjectHasProperty($property, $response->response);
 		}
 
 		self::assertEquals(filesize($file), $response->image->size);
@@ -81,9 +77,6 @@ class TemporaryFileControllerTest
 
 		self::assertEquals($mimeType, $response->image->mimetype);
 		self::assertEquals($mimeType, $response->response->mimetype);
-
-		self::assertEquals($extension, $response->image->extension);
-		self::assertEquals($extension, $response->response->extension);
 
 		self::assertEquals('tempfile', $response->image->type);
 		self::assertEquals('tempfile', $response->response->type);
@@ -96,7 +89,7 @@ class TemporaryFileControllerTest
 
 	public function testURLUploadAction(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request(
 			'POST',
@@ -106,14 +99,14 @@ class TemporaryFileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('success', $response);
-		self::assertObjectHasAttribute('image', $response);
-		self::assertObjectHasAttribute('response', $response);
+		self::assertObjectHasProperty('success', $response);
+		self::assertObjectHasProperty('image', $response);
+		self::assertObjectHasProperty('response', $response);
 	}
 
 	public function testUploadException(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request('POST', '/api/temp_uploaded_files/upload');
 
@@ -121,13 +114,13 @@ class TemporaryFileControllerTest
 
 		$attribute = '@type';
 
-		self::assertObjectHasAttribute($attribute, $response);
+		self::assertObjectHasProperty($attribute, $response);
 		self::assertEquals('hydra:Error', $response->$attribute);
 	}
 
 	public function testWebcamUploadAction(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
 		$fileString = 'data:image/png;base64,' . base64_encode(file_get_contents($file));
@@ -152,19 +145,16 @@ class TemporaryFileControllerTest
 			'type',
 			'filename',
 			'mimetype',
-			'extension',
-			'description',
-//			'legacyExtension'
+//			'description'
 		];
 
 		foreach ($propertiesToCheck as $property) {
-			self::assertObjectHasAttribute($property, $response);
+			self::assertObjectHasProperty($property, $response);
 		}
 
 		self::assertEquals(filesize($file), $response->size);
 		self::assertEquals('image/png', $response->mimetype);
 		self::assertEquals('webcam.png', $response->originalFilename);
-		self::assertEquals('png', $response->extension);
 		self::assertEquals('tempfile', $response->type);
 
 		$property = '@type';
@@ -173,7 +163,7 @@ class TemporaryFileControllerTest
 
 	public function testGetFile(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
 
@@ -205,7 +195,7 @@ class TemporaryFileControllerTest
 
 	public function testDeleteFile(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$image = new UploadedFile(
 			__DIR__ . '/DataFixtures/files/uploadtest.png',

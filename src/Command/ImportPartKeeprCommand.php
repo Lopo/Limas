@@ -111,7 +111,7 @@ class ImportPartKeeprCommand
 			$io->error('Limas DB is not up to date, run `bin/console doctrine:migrations:migrate`');
 			return Command::FAILURE;
 		}
-		if ($this->entityManager->getRepository(User::class)->count([]) || $this->entityManager->getRepository(SiPrefix::class)->count([])) {
+		if ($this->entityManager->getRepository(User::class)->count([]) !== 0 || $this->entityManager->getRepository(SiPrefix::class)->count([]) !== 0) {
 			$io->error('Limas DB already contains some data');
 			return Command::FAILURE;
 		}
@@ -192,7 +192,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing BatchJob');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM BatchJob')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM BatchJob')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM BatchJob')->fetchAllAssociative() as $row) {
@@ -219,7 +219,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing BatchJobQueryField');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM BatchJobQueryField')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM BatchJobQueryField')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM BatchJobQueryField')->fetchAllAssociative() as $row) {
@@ -254,7 +254,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing BatchJobUpdateField');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM BatchJobUpdateField')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM BatchJobUpdateField')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM BatchJobUpdateField')->fetchAllAssociative() as $row) {
@@ -287,7 +287,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing CachedImage');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM CachedImage')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM CachedImage')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM CachedImage')->fetchAllAssociative() as $row) {
@@ -316,7 +316,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing CronLogger');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM CronLogger')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM CronLogger')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM CronLogger')->fetchAllAssociative() as $row) {
@@ -343,7 +343,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Distributor');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Distributor')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Distributor')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Distributor')->fetchAllAssociative() as $row) {
@@ -384,7 +384,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Footprint');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Footprint')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Footprint')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Footprint')->fetchAllAssociative() as $row) {
@@ -414,7 +414,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('footprintattachment');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing FootprintAttachment');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM FootprintAttachment')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM FootprintAttachment')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM FootprintAttachment')->fetchAllAssociative() as $row) {
@@ -427,7 +427,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created'
 				])
@@ -439,12 +438,11 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -456,7 +454,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing FootprintCategory');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM FootprintCategory')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM FootprintCategory')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM FootprintCategory')->fetchAllAssociative() as $row) {
@@ -495,7 +493,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('footprint');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing FootprintImage');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM FootprintImage')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM FootprintImage')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM FootprintImage')->fetchAllAssociative() as $row) {
@@ -508,7 +506,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created'
 				])
@@ -520,12 +517,11 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -537,7 +533,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing GridPreset');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM GridPreset')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM GridPreset')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM GridPreset')->fetchAllAssociative() as $row) {
@@ -567,7 +563,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ImportPreset');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ImportPreset')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ImportPreset')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ImportPreset')->fetchAllAssociative() as $row) {
@@ -595,7 +591,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Manufacturer');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Manufacturer')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Manufacturer')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Manufacturer')->fetchAllAssociative() as $row) {
@@ -633,7 +629,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('iclogo');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ManufacturerICLogo');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ManufacturerICLogo')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ManufacturerICLogo')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ManufacturerICLogo')->fetchAllAssociative() as $row) {
@@ -646,7 +642,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created'
 				])
@@ -658,12 +653,11 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -675,7 +669,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing MetaPartParameterCriteria');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM MetaPartParameterCriteria')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM MetaPartParameterCriteria')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM MetaPartParameterCriteria')->fetchAllAssociative() as $row) {
@@ -716,7 +710,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Part');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Part')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Part')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Part')->fetchAllAssociative() as $row) {
@@ -778,7 +772,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('partattachment');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartAttachment');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartAttachment')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartAttachment')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ProjectAttachment')->fetchAllAssociative() as $row) {
@@ -791,7 +785,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created',
 					'isImage' => ':isImage'
@@ -804,13 +797,12 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created'],
 					'isImage' => $row['isImage']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -822,7 +814,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartCategory');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartCategory')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartCategory')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartCategory')->fetchAllAssociative() as $row) {
@@ -861,7 +853,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartDistributor');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartDistributor')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartDistributor')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartDistributor')->fetchAllAssociative() as $row) {
@@ -900,7 +892,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing User');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartKeeprUser')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartKeeprUser')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartKeeprUser')->fetchAllAssociative() as $row) {
@@ -940,7 +932,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartManufacturer');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartManufacturer')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartManufacturer')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartManufacturer')->fetchAllAssociative() as $row) {
@@ -969,7 +961,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartParameter');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartParameter')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartParameter')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartParameter')->fetchAllAssociative() as $row) {
@@ -1022,7 +1014,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartMeasurementUnit');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM PartUnit')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM PartUnit')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM PartUnit')->fetchAllAssociative() as $row) {
@@ -1051,7 +1043,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Project');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Project')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Project')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Project')->fetchAllAssociative() as $row) {
@@ -1081,7 +1073,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('projectattachment');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ProjectAttachment');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ProjectAttachment')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ProjectAttachment')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ProjectAttachment')->fetchAllAssociative() as $row) {
@@ -1094,7 +1086,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created'
 				])
@@ -1106,12 +1097,11 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -1123,7 +1113,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ProjectPart');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ProjectPart')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ProjectPart')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ProjectPart')->fetchAllAssociative() as $row) {
@@ -1160,7 +1150,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ProjectRun');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ProjectRun')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ProjectRun')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ProjectRun')->fetchAllAssociative() as $row) {
@@ -1189,7 +1179,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ProjectRunPart');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ProjectRunPart')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ProjectRunPart')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ProjectRunPart')->fetchAllAssociative() as $row) {
@@ -1220,7 +1210,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Report');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Report')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Report')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Report')->fetchAllAssociative() as $row) {
@@ -1247,7 +1237,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ReportPart');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ReportPart')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ReportPart')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ReportPart')->fetchAllAssociative() as $row) {
@@ -1278,7 +1268,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ReportProject');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM ReportProject')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM ReportProject')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM ReportProject')->fetchAllAssociative() as $row) {
@@ -1307,7 +1297,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing SiPrefix');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM SiPrefix')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM SiPrefix')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM SiPrefix')->fetchAllAssociative() as $row) {
@@ -1338,7 +1328,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StatisticSnapshot');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StatisticSnapshot')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StatisticSnapshot')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StatisticSnapshot')->fetchAllAssociative() as $row) {
@@ -1367,7 +1357,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StatisticSnapshotUnit');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StatisticSnapshotUnit')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StatisticSnapshotUnit')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StatisticSnapshotUnit')->fetchAllAssociative() as $row) {
@@ -1396,7 +1386,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StockEntry');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StockEntry')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StockEntry')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StockEntry')->fetchAllAssociative() as $row) {
@@ -1433,7 +1423,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StorageLocation');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StorageLocation')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StorageLocation')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StorageLocation')->fetchAllAssociative() as $row) {
@@ -1460,7 +1450,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StorageLocationCategory');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StorageLocationCategory')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StorageLocationCategory')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StorageLocationCategory')->fetchAllAssociative() as $row) {
@@ -1500,7 +1490,7 @@ class ImportPartKeeprCommand
 		$storage = $this->filesystemMap->get('storagelocation');
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StorageLocationImage');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM StorageLocationImage')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM StorageLocationImage')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM StorageLocationImage')->fetchAllAssociative() as $row) {
@@ -1513,7 +1503,6 @@ class ImportPartKeeprCommand
 					'originalname' => ':originalname',
 					'mimetype' => ':mimetype',
 					'size' => ':size',
-					'extension' => ':extension',
 					'description' => ':description',
 					'created' => ':created'
 				])
@@ -1525,12 +1514,11 @@ class ImportPartKeeprCommand
 					'originalname' => $row['originalname'],
 					'mimetype' => $row['mimetype'],
 					'size' => $row['size'],
-					'extension' => $row['extension'],
 					'description' => $row['description'],
 					'created' => $row['created']
 				])
 				->executeStatement();
-			$storage->write($row['filename'] . '.' . $row['extension'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
+			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -1542,7 +1530,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing SystemNotice');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM SystemNotice')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM SystemNotice')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM SystemNotice')->fetchAllAssociative() as $row) {
@@ -1600,7 +1588,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing TipOfTheDay');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM TipOfTheDay')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM TipOfTheDay')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM TipOfTheDay')->fetchAllAssociative() as $row) {
@@ -1625,7 +1613,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing TipOfTheDayHistory');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM TipOfTheDayHistory')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM TipOfTheDayHistory')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM TipOfTheDayHistory')->fetchAllAssociative() as $row) {
@@ -1652,7 +1640,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing Unit');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM Unit')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM Unit')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM Unit')->fetchAllAssociative() as $row) {
@@ -1731,7 +1719,7 @@ class ImportPartKeeprCommand
 	{
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing UserProvider');
-		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(*) FROM UserProvider')->fetchOne());
+		$bar = $io->createProgressBar($pk->executeQuery('SELECT COUNT(id) FROM UserProvider')->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery('SELECT * FROM UserProvider')->fetchAllAssociative() as $row) {

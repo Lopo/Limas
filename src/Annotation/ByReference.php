@@ -2,7 +2,7 @@
 
 namespace Limas\Annotation;
 
-use Doctrine\ORM\Mapping\Annotation;
+use Doctrine\ORM\Mapping\MappingAttribute;
 
 
 /**
@@ -11,6 +11,6 @@ use Doctrine\ORM\Mapping\Annotation;
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class ByReference
-	implements Annotation
+	implements MappingAttribute
 {
 }

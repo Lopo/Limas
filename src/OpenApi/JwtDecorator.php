@@ -2,18 +2,18 @@
 
 namespace Limas\OpenApi;
 
-use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
-use ApiPlatform\Core\OpenApi\OpenApi;
-use ApiPlatform\Core\OpenApi\Model;
+use ApiPlatform\OpenApi\Model;
+use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\OpenApi\OpenApi;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 
-final class JwtDecorator
+final readonly class JwtDecorator
 	implements OpenApiFactoryInterface
 {
 	public function __construct(
-		private readonly OpenApiFactoryInterface $decorated,
-		private readonly UrlGeneratorInterface   $urlGenerator
+		private OpenApiFactoryInterface $decorated,
+		private UrlGeneratorInterface   $urlGenerator
 	)
 	{
 	}

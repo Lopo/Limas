@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Limas\Service\CronLoggerService;
 
 
@@ -12,7 +11,8 @@ class CronLoggerTest
 {
 	public function testCronLogger(): void
 	{
-		$cronlogger = $this->getContainer()->get(CronLoggerService::class);
+		$container = self::getContainer();
+		$cronlogger = $container->get(CronLoggerService::class);
 
 		$cronLoggerEntry = $cronlogger->markCronRun('test');
 
@@ -24,7 +24,7 @@ class CronLoggerTest
 		$inactiveCronjobs = $cronlogger->getInactiveCronjobs(['test']);
 		self::assertEquals(false, in_array('test', $inactiveCronjobs, true));
 
-		$this->getContainer()->get(EntityManagerInterface::class)->flush();
+		$container->get(EntityManagerInterface::class)->flush();
 
 		$inactiveCronjobs = $cronlogger->getInactiveCronjobs(['test']);
 

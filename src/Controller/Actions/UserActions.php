@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\User;
 use Limas\Entity\UserPreference;
@@ -36,7 +36,7 @@ class UserActions
 		private readonly UserPreferenceService       $userPreferenceService,
 		private readonly SerializerInterface         $serializer,
 		private readonly UserPasswordHasherInterface $userPasswordHasher,
-		private readonly ItemDataProviderInterface   $dataProvider
+		private readonly ItemProvider                $dataProvider
 	)
 	{
 	}
@@ -134,15 +134,15 @@ class UserActions
 
 	public function changePasswordAction(Request $request, User $data, array $limas): User
 	{
-		if (!($limas['auth'] && $limas['auth']['allow_password_change'] ?? false)) {
+		if (!($limas['auth'] && ($limas['auth']['allow_password_change'] ?? false))) {
 			throw new PasswordChangeNotAllowedException;
 		}
 
 		$decoded = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-		if (!isset($decoded['oldpassword']) || 0 === Strings::length($decoded['oldpassword'])
-			|| !isset($decoded['newpassword']) || 0 === Strings::length($decoded['newpassword'])
+		if (!isset($decoded['oldpassword']) || !isset($decoded['newpassword'])
+			|| 0 === Strings::length($decoded['oldpassword']) || 0 === Strings::length($decoded['newpassword'])
 		) {
-			throw new \Exception('old password and new password need to be specified');
+			throw new \RuntimeException('old password and new password need to be specified');
 		}
 
 		if (!$this->userPasswordHasher->isPasswordValid($data, $decoded['oldpassword'])) {

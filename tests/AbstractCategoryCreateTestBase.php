@@ -2,15 +2,14 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
 
 
-abstract class AbstractCategoryCreateTest
+abstract class AbstractCategoryCreateTestBase
 	extends WebTestCase
 {
 	protected ReferenceRepository $fixtures;
@@ -19,7 +18,7 @@ abstract class AbstractCategoryCreateTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			$this->getFixtureLoaderClass()
 		])->getReferenceRepository();
@@ -27,20 +26,20 @@ abstract class AbstractCategoryCreateTest
 
 	public function testCreateCategory(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root');
+		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root', $this->getResourceClass());
 
-		$iriConverter = $this->getContainer()->get(IriConverterInterface::class);
+		$iriConverter = self::getContainer()->get(IriConverterInterface::class);
 
 		$client->request(
 			'POST',
-			$iriConverter->getIriFromResourceClass($this->getResourceClass()),
+			$this->getUriBase(),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
 			Json::encode([
-				'parent' => $iriConverter->getIriFromItem($rootCategory),
+				'parent' => $iriConverter->getIriFromResource($rootCategory),
 				'name' => 'test',
 			])
 		);
@@ -49,10 +48,10 @@ abstract class AbstractCategoryCreateTest
 
 		self::assertIsObject($responseObject);
 
-		self::assertObjectHasAttribute('@id', $responseObject);
-		self::assertObjectHasAttribute('name', $responseObject);
+		self::assertObjectHasProperty('@id', $responseObject);
+		self::assertObjectHasProperty('name', $responseObject);
 
-		$item = $iriConverter->getItemFromIri($responseObject->{'@id'});
+		$item = $iriConverter->getResourceFromIri($responseObject->{'@id'});
 
 		self::assertNotNull($item->getParent());
 		self::assertEquals($item->getParent()->getId(), $rootCategory->getId());
@@ -60,11 +59,11 @@ abstract class AbstractCategoryCreateTest
 
 	public function testCreateRootCategory(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request(
 			'POST',
-			$this->getContainer()->get(IriConverterInterface::class)->getIriFromResourceClass($this->getResourceClass()),
+			$this->getUriBase(),
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
@@ -75,8 +74,8 @@ abstract class AbstractCategoryCreateTest
 
 		$responseObject = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('@type', $responseObject);
-		self::assertObjectHasAttribute('hydra:description', $responseObject);
+		self::assertObjectHasProperty('@type', $responseObject);
+		self::assertObjectHasProperty('hydra:description', $responseObject);
 
 		self::assertEquals('There may be only one root node', $responseObject->{'hydra:description'});
 	}
@@ -86,4 +85,6 @@ abstract class AbstractCategoryCreateTest
 	abstract public function getReferencePrefix(): string;
 
 	abstract public function getResourceClass(): string;
+
+	abstract public function getUriBase(): string;
 }

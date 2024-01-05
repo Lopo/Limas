@@ -7,7 +7,7 @@ use Limas\Tests\DataFixtures\FootprintCategoryDataLoader;
 
 
 class FootprintCategoryCreateTest
-	extends AbstractCategoryCreateTest
+	extends AbstractCategoryCreateTestBase
 {
 	public function getFixtureLoaderClass(): string
 	{
@@ -22,5 +22,10 @@ class FootprintCategoryCreateTest
 	public function getResourceClass(): string
 	{
 		return FootprintCategory::class;
+	}
+
+	public function getUriBase(): string
+	{
+		return '/api/footprint_categories';
 	}
 }

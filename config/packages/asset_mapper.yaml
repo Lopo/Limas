@@ -1,0 +1,6 @@
+framework:
+    asset_mapper:
+        # The paths to make available to the asset mapper.
+        paths:
+            assets/: ''
+            vendor/atelierspierrot/famfamfam-silk-sprite/src/: 'famfamfam-silk'

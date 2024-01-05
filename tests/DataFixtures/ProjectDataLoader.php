@@ -4,6 +4,7 @@ namespace Limas\Tests\DataFixtures;
 
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Persistence\ObjectManager;
+use Limas\Entity\Part;
 use Limas\Entity\Project;
 use Limas\Entity\ProjectPart;
 
@@ -14,13 +15,13 @@ class ProjectDataLoader
 	public function load(ObjectManager $manager)
 	{
 		$projectPart1 = (new ProjectPart)
-			->setPart($this->getReference('part.1'))
+			->setPart($this->getReference('part.1', Part::class))
 			->setQuantity(1)
 			->setOverageType(ProjectPart::OVERAGE_TYPE_ABSOLUTE)
 			->setOverage(0);
 
 		$projectPart2 = (new ProjectPart)
-			->setPart($this->getReference('part.2'))
+			->setPart($this->getReference('part.2', Part::class))
 			->setQuantity(1)
 			->setOverageType(ProjectPart::OVERAGE_TYPE_ABSOLUTE)
 			->setOverage(0);

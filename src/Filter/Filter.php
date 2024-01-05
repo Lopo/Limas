@@ -51,12 +51,12 @@ class Filter
 	}
 
 	/**
-	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function setType(string $type): self
 	{
 		if (!in_array($type, self::TYPES, true)) {
-			throw new \Exception("Invalid type $type");
+			throw new \RuntimeException("Invalid type $type");
 		}
 		$this->type = $type;
 		return $this;
@@ -68,12 +68,12 @@ class Filter
 	}
 
 	/**
-	 * @throws \Exception Thrown if an invalid operator was passed
+	 * @throws \RuntimeException Thrown if an invalid operator was passed
 	 */
 	public function setOperator(string $operator): self
 	{
 		if (!in_array(strtolower($operator), self::OPERATORS, true)) {
-			throw new \Exception("Invalid operator $operator");
+			throw new \RuntimeException("Invalid operator $operator");
 		}
 		$this->operator = strtolower($operator);
 		return $this;

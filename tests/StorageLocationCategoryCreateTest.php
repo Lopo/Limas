@@ -7,7 +7,7 @@ use Limas\Tests\DataFixtures\StorageLocationCategoryDataLoader;
 
 
 class StorageLocationCategoryCreateTest
-	extends AbstractCategoryCreateTest
+	extends AbstractCategoryCreateTestBase
 {
 	public function getFixtureLoaderClass(): string
 	{
@@ -22,5 +22,10 @@ class StorageLocationCategoryCreateTest
 	public function getResourceClass(): string
 	{
 		return StorageLocationCategory::class;
+	}
+
+	public function getUriBase(): string
+	{
+		return '/api/storage_location_categories';
 	}
 }

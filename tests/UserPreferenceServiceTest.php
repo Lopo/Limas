@@ -2,7 +2,6 @@
 
 namespace Limas\Tests;
 
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Limas\Entity\UserPreference;
 use Limas\Exceptions\UserPreferenceNotFoundException;
 use Limas\Service\UserPreferenceService;
@@ -14,8 +13,10 @@ class UserPreferenceServiceTest
 {
 	public function testBasics(): void
 	{
-		$service = $this->getContainer()->get(UserPreferenceService::class);
-		$userService = $this->getContainer()->get(UserService::class);
+		$container = self::getContainer();
+
+		$service = $container->get(UserPreferenceService::class);
+		$userService = $container->get(UserService::class);
 
 		$user = $userService->getUser('admin', $userService->getBuiltinProvider(), true);
 
@@ -50,10 +51,12 @@ class UserPreferenceServiceTest
 
 	public function testGetPreferenceException(): void
 	{
-		$service = $this->getContainer()->get(UserPreferenceService::class);
-		$userService = $this->getContainer()->get(UserService::class);
+		$container = self::getContainer();
 
-		$user = $this->getContainer()->get(UserService::class)->getUser(
+		$service = $container->get(UserPreferenceService::class);
+		$userService = $container->get(UserService::class);
+
+		$user = $container->get(UserService::class)->getUser(
 			'admin',
 			$userService->getBuiltinProvider(),
 			true

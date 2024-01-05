@@ -1,0 +1,24 @@
+parameters:
+	phpVersion: 80200
+	level: 1
+	paths:
+		- bin/
+		- config/
+		- src/
+#		- tests/
+		- migrations/
+	doctrine:
+		objectManagerLoader: tests/object-manager.php
+	symfony:
+		containerXmlPath: var/cache/dev/Limas_KernelDevDebugContainer.xml
+		consoleApplicationLoader: tests/console-application.php
+#	scanDirectories:
+#		- var/cache/dev/Symfony/Config
+#	ignoreErrors:
+#		-
+#			message: '#^Variable property access on (mixed|object)\.$#'
+#			path: %rootDir%/../../../tests/
+includes:
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-loose-calls.neon

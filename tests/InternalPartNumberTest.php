@@ -3,8 +3,10 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\PartCategory;
+use Limas\Entity\PartMeasurementUnit;
+use Limas\Entity\StorageLocation;
 use Limas\Tests\DataFixtures\DistributorDataLoader;
 use Limas\Tests\DataFixtures\ManufacturerDataLoader;
 use Limas\Tests\DataFixtures\PartCategoryDataLoader;
@@ -24,7 +26,7 @@ class InternalPartNumberTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -37,13 +39,13 @@ class InternalPartNumberTest
 
 	public function testInternalPartNumberUniqueness(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$content = Json::encode([
 			'name' => 'foobar',
-			'storageLocation' => '/api/storage_locations/' . $this->fixtures->getReference('storagelocation.first')->getId(),
-			'category' => '/api/part_categories/' . $this->fixtures->getReference('partcategory.first')->getId(),
-			'partUnit' => '/api/part_measurement_units/' . $this->fixtures->getReference('partunit.default')->getId(),
+			'storageLocation' => '/api/storage_locations/' . $this->fixtures->getReference('storagelocation.first', StorageLocation::class)->getId(),
+			'category' => '/api/part_categories/' . $this->fixtures->getReference('partcategory.first', PartCategory::class)->getId(),
+			'partUnit' => '/api/part_measurement_units/' . $this->fixtures->getReference('partunit.default', PartMeasurementUnit::class)->getId(),
 			'internalPartNumber' => 'foo123'
 		]);
 
@@ -68,10 +70,10 @@ class InternalPartNumberTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('@type', $response);
-		self::assertObjectHasAttribute('@context', $response);
-		self::assertObjectHasAttribute('hydra:title', $response);
-		self::assertObjectHasAttribute('hydra:description', $response);
+		self::assertObjectHasProperty('@type', $response);
+		self::assertObjectHasProperty('@context', $response);
+		self::assertObjectHasProperty('hydra:title', $response);
+		self::assertObjectHasProperty('hydra:description', $response);
 
 		self::assertEquals('/api/contexts/Error', $response->{'@context'});
 		self::assertEquals('hydra:Error', $response->{'@type'});

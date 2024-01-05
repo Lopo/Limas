@@ -2,7 +2,12 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -11,8 +16,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'name_entity_unique', fields: ['baseEntity', 'name'])]
 #[ApiResource(
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	operations: [
+		new GetCollection,
+		new Post,
+		new Get,
+		new Put,
+		new Delete
+	],
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class ImportPreset
 	extends BaseEntity

@@ -6,9 +6,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\GridPreset;
 
 
-class GridPresetService
+readonly class GridPresetService
 {
-	public function __construct(private readonly EntityManagerInterface $entityManager)
+	public function __construct(private EntityManagerInterface $entityManager)
 	{
 	}
 

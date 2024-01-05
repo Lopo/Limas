@@ -4,8 +4,9 @@ namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Limas\Entity\Part;
+use Limas\Entity\Project;
 use Limas\Entity\ProjectAttachment;
 use Limas\Entity\ProjectPart;
 use Limas\Service\UploadedFileService;
@@ -29,7 +30,7 @@ class ProjectTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -41,7 +42,7 @@ class ProjectTest
 
 	public function testCreateProject(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
 
@@ -54,8 +55,8 @@ class ProjectTest
 
 		$uploadedFile = Json::decode($client->getResponse()->getContent());
 
-		$part = $this->fixtures->getReference('part.1');
-		$part2 = $this->fixtures->getReference('part.2');
+		$part = $this->fixtures->getReference('part.1', Part::class);
+		$part2 = $this->fixtures->getReference('part.2', Part::class);
 
 		$client->request(
 			'POST',
@@ -90,16 +91,16 @@ class ProjectTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('@type', $response);
+		self::assertObjectHasProperty('@type', $response);
 		self::assertEquals('Project', $response->{'@type'});
 
-		self::assertObjectHasAttribute('name', $response);
+		self::assertObjectHasProperty('name', $response);
 		self::assertEquals('foobar', $response->name);
 
-		self::assertObjectHasAttribute('description', $response);
+		self::assertObjectHasProperty('description', $response);
 		self::assertEquals('testdescription', $response->description);
 
-		self::assertObjectHasAttribute('parts', $response);
+		self::assertObjectHasProperty('parts', $response);
 		self::assertIsArray($response->parts);
 
 		self::assertCount(2, $response->parts);
@@ -109,7 +110,7 @@ class ProjectTest
 		self::assertEquals('testremark', $response->parts[0]->remarks);
 		self::assertEquals('Part', $response->parts[0]->part->{'@type'});
 
-		self::assertObjectHasAttribute('attachments', $response);
+		self::assertObjectHasProperty('attachments', $response);
 		self::assertCount(1, $response->attachments);
 		self::assertArrayHasKey(0, $response->attachments);
 		self::assertEquals('ProjectAttachment', $response->attachments[0]->{'@type'});
@@ -119,10 +120,10 @@ class ProjectTest
 
 	public function testProjectPartRemoval(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$project = $this->fixtures->getReference('project')
-			->removePart($this->fixtures->getReference('projectpart.1'));
+		$project = $this->fixtures->getReference('project', Project::class)
+			->removePart($this->fixtures->getReference('projectpart.1', ProjectPart::class));
 
 		$client->request(
 			'PUT',
@@ -130,7 +131,7 @@ class ProjectTest
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
-			Json::encode($this->getContainer()->get(SerializerInterface::class)->normalize($project, 'jsonld'))
+			Json::encode(self::getContainer()->get(SerializerInterface::class)->normalize($project, 'jsonld'))
 		);
 
 		$response = Json::decode($client->getResponse()->getContent());
@@ -146,18 +147,19 @@ class ProjectTest
 
 	public function testProjectAttachmentRemoval(): void
 	{
-		$em = $this->getContainer()->get(EntityManagerInterface::class);
-		$client = static::makeAuthenticatedClient();
+		$em = self::getContainer()->get(EntityManagerInterface::class);
 
-		$project = $this->fixtures->getReference('project');
+		$client = $this->makeAuthenticatedClient();
+
+		$project = $this->fixtures->getReference('project', Project::class);
 		$em->refresh($project);
 
 		$projectAttachment = new ProjectAttachment;
-		$this->getContainer()->get(UploadedFileService::class)
+		self::getContainer()->get(UploadedFileService::class)
 			->replaceFromData($projectAttachment, 'BLA', 'test.txt');
 
 		$project->addAttachment($projectAttachment);
-		$em->flush($project);
+		$em->flush();
 
 		$project->removeAttachment($projectAttachment);
 
@@ -167,7 +169,7 @@ class ProjectTest
 			[],
 			[],
 			['CONTENT_TYPE' => 'application/json'],
-			Json::encode($this->getContainer()->get(SerializerInterface::class)->normalize($project, 'jsonld'))
+			Json::encode(self::getContainer()->get(SerializerInterface::class)->normalize($project, 'jsonld'))
 		);
 
 		$response = Json::decode($client->getResponse()->getContent());
@@ -189,13 +191,13 @@ class ProjectTest
 	 */
 	public function testAbsentProjectReference(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$client->request('GET', '/api/projects/' . $this->fixtures->getReference('project')->getId());
+		$client->request('GET', '/api/projects/' . $this->fixtures->getReference('project', Project::class)->getId());
 
 		$project = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('parts', $project);
+		self::assertObjectHasProperty('parts', $project);
 		self::assertIsArray($project->parts);
 
 //		foreach ($project->parts as $part) {

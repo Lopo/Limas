@@ -7,7 +7,7 @@ use Limas\Tests\DataFixtures\FootprintCategoryDataLoader;
 
 
 class FootprintCategoryGetRootNodeTest
-	extends AbstractCategoryGetRootNodeTest
+	extends AbstractCategoryGetRootNodeTestBase
 {
 	public function getFixtureLoaderClass(): string
 	{

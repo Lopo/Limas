@@ -16,22 +16,23 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\InteractiveAuthenticatorInterface;
-//use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\PasswordUpgradeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\HttpUtils;
 use Symfony\Contracts\Translation\TranslatorInterface;
+//use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 
 
 class JsonAuthenticator
+	extends AbstractAuthenticator
 	implements InteractiveAuthenticatorInterface
 {
 	private array $options;
@@ -63,7 +64,7 @@ class JsonAuthenticator
 
 	public function supports(Request $request): ?bool
 	{
-		if (!\str_contains($request->getRequestFormat() ?? '', 'json') && !\str_contains($request->getContentType() ?? '', 'json')) {
+		if (!\str_contains($request->getRequestFormat() ?? '', 'json') && !\str_contains($request->getContentTypeFormat() ?? '', 'json')) {
 			return false;
 		}
 		if (isset($this->options['check_path']) && !$this->httpUtils->checkRequestPath($request, $this->options['check_path'])) {
@@ -131,12 +132,12 @@ class JsonAuthenticator
 		return true;
 	}
 
-	public function setTranslator(TranslatorInterface $translator)
+	public function setTranslator(TranslatorInterface $translator): void
 	{
 		$this->translator = $translator;
 	}
 
-	private function getCredentials(Request $request)
+	private function getCredentials(Request $request): array
 	{
 		$data = json_decode($request->getContent());
 		if (!$data instanceof \stdClass) {
@@ -150,7 +151,7 @@ class JsonAuthenticator
 			if (!\is_string($credentials['username'])) {
 				throw new BadRequestHttpException(sprintf('The key "%s" must be a string.', $this->options['username_path']));
 			}
-			if (\strlen($credentials['username']) > Security::MAX_USERNAME_LENGTH) {
+			if (\strlen($credentials['username']) > UserBadge::MAX_USERNAME_LENGTH) {
 				throw new BadCredentialsException('Invalid username.');
 			}
 		} catch (AccessException $e) {

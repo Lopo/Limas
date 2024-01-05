@@ -1,6 +1,6 @@
 <?php
 
-namespace Limas\Command;
+namespace Limas\Command\User;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\User;
@@ -14,10 +14,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 
 #[AsCommand(
-	name: 'limas:user:unprotect',
-	description: 'Unprotects a given user against changes'
+	name: 'limas:user:protect',
+	description: 'Protects a given user against changes'
 )]
-class UnprotectUserCommand
+class ProtectCommand
 	extends Command
 {
 	public function __construct(
@@ -31,7 +31,7 @@ class UnprotectUserCommand
 	protected function configure(): void
 	{
 		$this
-			->addArgument('username', InputArgument::REQUIRED, 'The username to unprotect against changes');
+			->addArgument('username', InputArgument::REQUIRED, 'The username to protect against changes');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -45,9 +45,9 @@ class UnprotectUserCommand
 			return Command::FAILURE;
 		}
 
-		$this->userService->unprotect($this->userService->getUser($username, $this->userService->getBuiltinProvider(), true));
+		$this->userService->protect($this->userService->getUser($username, $this->userService->getBuiltinProvider(), true));
 
-		$io->success(sprintf('User %s unprotected against changes', $username));
+		$io->success(sprintf('User %s protected against changes', $username));
 
 		return Command::SUCCESS;
 	}

@@ -4,7 +4,6 @@ namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Entity\Part;
 use Limas\Tests\DataFixtures\PartCategoryDataLoader;
@@ -26,7 +25,7 @@ class StockTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			StorageLocationCategoryDataLoader::class,
 			StorageLocationDataLoader::class,
@@ -37,7 +36,7 @@ class StockTest
 
 	private function getStockLevel(Part $part)
 	{
-		$qb = $this->getContainer()->get(EntityManagerInterface::class)->createQueryBuilder();
+		$qb = self::getContainer()->get(EntityManagerInterface::class)->createQueryBuilder();
 		return $qb->select('p.stockLevel')
 			->from(Part::class, 'p')
 			->where($qb->expr()->eq('p.id', ':id'))
@@ -49,7 +48,7 @@ class StockTest
 	{
 		$client = $this->makeAuthenticatedClient();
 
-		$part = $this->fixtures->getReference('part.1');
+		$part = $this->fixtures->getReference('part.1', Part::class);
 		$oldStockLevel = $this->getStockLevel($part);
 
 		$client->request(
@@ -66,15 +65,15 @@ class StockTest
 		$newStockLevel = $this->getStockLevel($part);
 
 		self::assertEquals($oldStockLevel + 5, $newStockLevel);
-		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertObjectHasProperty('stockLevel', $result);
 		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 
 	public function testRemoveStock(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$part = $this->fixtures->getReference('part.1');
+		$part = $this->fixtures->getReference('part.1', Part::class);
 		$oldStockLevel = $this->getStockLevel($part);
 
 		$client->request(
@@ -91,15 +90,15 @@ class StockTest
 		$newStockLevel = $this->getStockLevel($part);
 
 		self::assertEquals($oldStockLevel - 7, $newStockLevel);
-		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertObjectHasProperty('stockLevel', $result);
 		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 
 	public function testSetStock(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$part = $this->fixtures->getReference('part.1');
+		$part = $this->fixtures->getReference('part.1', Part::class);
 
 		$client->request(
 			'PUT',
@@ -115,7 +114,7 @@ class StockTest
 		$newStockLevel = $this->getStockLevel($part);
 
 		self::assertEquals(33, $newStockLevel);
-		self::assertObjectHasAttribute('stockLevel', $result);
+		self::assertObjectHasProperty('stockLevel', $result);
 		self::assertEquals($newStockLevel, $result->stockLevel);
 	}
 }

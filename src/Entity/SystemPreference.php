@@ -2,33 +2,55 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Action\NotFoundAction;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\SystemPreferenceActions;
-use Limas\Annotation\IgnoreIds;
 use Doctrine\ORM\Mapping as ORM;
+use Limas\Annotation\IgnoreIds;
+use Limas\Controller\Actions\SystemPreferenceActions;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
 #[IgnoreIds]
 #[ApiResource(
-	collectionOperations: [
-		'get' => [
-			'controller' => SystemPreferenceActions::class . '::getAction',
-			'output_formats' => [
-				'json'
-			]
-		],
-		'SystemPreferenceDelete' => [
-			'method' => 'delete',
-			'path' => 'system_preferences',
-			'controller' => SystemPreferenceActions::class . '::deleteAction'
-		]
+//	collectionOperations: [
+//		'get' => [
+//			'controller' => SystemPreferenceActions::class . '::getAction',
+//			'output_formats' => [
+//				'json'
+//			]
+//		],
+//		'SystemPreferenceDelete' => [
+//			'method' => 'delete',
+//			'path' => 'system_preferences',
+//			'controller' => SystemPreferenceActions::class . '::deleteAction'
+//		]
+//	],
+//	itemOperations: [],
+	operations: [
+		new GetCollection(
+			uriTemplate: 'system_preferences',
+			outputFormats: ['json'],
+			controller: SystemPreferenceActions::class . '::getAction',
+			name: 'SystemPreferenceGet'
+		),
+		new Delete(
+			uriTemplate: 'system_preferences',
+			controller: SystemPreferenceActions::class . '::deleteAction',
+			name: 'SystemPreferenceDelete'
+		),
+		new Get(
+			controller: NotFoundAction::class,
+			output: false,
+			read: false
+		)
 	],
-	itemOperations: [],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class SystemPreference
 {

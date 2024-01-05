@@ -2,8 +2,8 @@
 
 namespace Limas\Annotation;
 
-use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\Common\Annotations\Annotation\NamedArgumentConstructor;
+use Doctrine\ORM\Mapping\MappingAttribute;
 
 
 /**
@@ -11,10 +11,10 @@ use Doctrine\Common\Annotations\Annotation\NamedArgumentConstructor;
  * @NamedArgumentConstructor
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-final class VirtualField
-	implements Annotation
+final readonly class VirtualField
+	implements MappingAttribute
 {
-	public function __construct(readonly string $type)
+	public function __construct(public string $type)
 	{
 	}
 }

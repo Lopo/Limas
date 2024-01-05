@@ -2,19 +2,25 @@
 
 namespace Limas\Tests;
 
+use Limas\Entity\FootprintCategory;
 use Limas\Tests\DataFixtures\FootprintCategoryDataLoader;
 
 
 class FootprintMoveActionTest
-	extends AbstractMoveCategoryTest
+	extends AbstractMoveCategoryTestBase
 {
-	public function getFixtureLoaderClass()
+	public function getFixtureLoaderClass(): string
 	{
 		return FootprintCategoryDataLoader::class;
 	}
 
-	public function getReferencePrefix()
+	public function getReferencePrefix(): string
 	{
 		return 'footprintcategory';
+	}
+
+	protected function getResourceClass(): string
+	{
+		return FootprintCategory::class;
 	}
 }

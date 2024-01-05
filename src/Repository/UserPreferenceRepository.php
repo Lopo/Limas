@@ -2,12 +2,10 @@
 
 namespace Limas\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Limas\Entity\User;
 use Limas\Entity\UserPreference;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Doctrine\Persistence\ManagerRegistry;
 
 
 /**
@@ -23,10 +21,6 @@ class UserPreferenceRepository
 		parent::__construct($registry, UserPreference::class);
 	}
 
-	/**
-	 * @throws ORMException
-	 * @throws OptimisticLockException
-	 */
 	public function add(UserPreference $entity, bool $flush = true): void
 	{
 		$this->_em->persist($entity);
@@ -35,10 +29,6 @@ class UserPreferenceRepository
 		}
 	}
 
-	/**
-	 * @throws ORMException
-	 * @throws OptimisticLockException
-	 */
 	public function remove(UserPreference $entity, bool $flush = true): void
 	{
 		$this->_em->remove($entity);
@@ -47,34 +37,6 @@ class UserPreferenceRepository
 		}
 	}
 
-	// /**
-	//  * @return UserPreference[] Returns an array of UserPreference objects
-	//  */
-	/*
-	public function findByExampleField($value)
-	{
-		return $this->createQueryBuilder('u')
-			->andWhere('u.exampleField = :val')
-			->setParameter('val', $value)
-			->orderBy('u.id', 'ASC')
-			->setMaxResults(10)
-			->getQuery()
-			->getResult()
-		;
-	}
-	*/
-
-	/*
-	public function findOneBySomeField($value): ?UserPreference
-	{
-		return $this->createQueryBuilder('u')
-			->andWhere('u.exampleField = :val')
-			->setParameter('val', $value)
-			->getQuery()
-			->getOneOrNullResult()
-		;
-	}
-	*/
 	public function getPreferences(User $user): array
 	{
 		return $this->findBy(['user' => $user]);

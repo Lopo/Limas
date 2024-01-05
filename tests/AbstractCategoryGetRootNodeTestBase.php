@@ -3,13 +3,12 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use PHPUnit\Util\Json;
 
 
-abstract class AbstractCategoryGetRootNodeTest
+abstract class AbstractCategoryGetRootNodeTestBase
 	extends WebTestCase
 {
 	protected ReferenceRepository $fixtures;
@@ -18,7 +17,7 @@ abstract class AbstractCategoryGetRootNodeTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class,
 			$this->getFixtureLoaderClass()
 		])->getReferenceRepository();
@@ -29,7 +28,7 @@ abstract class AbstractCategoryGetRootNodeTest
 		[$errexp, $recexp] = Json::canonicalize($this->getExpected());
 		self::assertFalse($errexp);
 
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 		$client->request('GET', $this->getUriBase() . '/getExtJSRootNode');
 
 		[$errres, $recres] = Json::canonicalize($client->getResponse()->getContent());

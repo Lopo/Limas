@@ -2,20 +2,20 @@
 
 namespace Limas\Listener;
 
-use ApiPlatform\Core\EventListener\DeserializeListener;
-use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
-use ApiPlatform\Core\Util\RequestAttributesExtractor;
+use ApiPlatform\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\Symfony\EventListener\DeserializeListener;
+use ApiPlatform\Symfony\Util\RequestAttributesExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 
-final class Deserialize
+final readonly class Deserialize
 {
 	public function __construct(
-		private readonly DenormalizerInterface             $denormalizer,
-		private readonly SerializerContextBuilderInterface $serializerContextBuilder,
-		private readonly DeserializeListener               $decorated
+		private DenormalizerInterface             $denormalizer,
+		private SerializerContextBuilderInterface $serializerContextBuilder,
+		private DeserializeListener               $decorated
 	)
 	{
 	}
@@ -23,10 +23,10 @@ final class Deserialize
 	public function onKernelRequest(RequestEvent $event): void
 	{
 		$request = $event->getRequest();
-		if ($request->isMethodCacheable(false) || $request->isMethod(Request::METHOD_DELETE)) {
+		if ($request->isMethodCacheable() || $request->isMethod(Request::METHOD_DELETE)) {
 			return;
 		}
-		if ('form' === $request->getContentType()) {
+		if ('form' === $request->getContentTypeFormat()) {
 			$this->denormalizeFormRequest($request);
 		} else {
 			$this->decorated->onKernelRequest($event);
@@ -35,7 +35,7 @@ final class Deserialize
 
 	private function denormalizeFormRequest(Request $request): void
 	{
-		if (!$attributes = RequestAttributesExtractor::extractAttributes($request)) {
+		if (0 === count($attributes = RequestAttributesExtractor::extractAttributes($request))) {
 			return;
 		}
 

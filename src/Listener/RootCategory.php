@@ -2,7 +2,7 @@
 
 namespace Limas\Listener;
 
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -11,16 +11,9 @@ use Limas\Exceptions\OnlySingleRootNodeAllowedException;
 use Limas\Exceptions\RootMayNotBeDeletedException;
 
 
+#[AsDoctrineListener(event: Events::onFlush)]
 class RootCategory
-	implements EventSubscriberInterface
 {
-	public function getSubscribedEvents(): array
-	{
-		return [
-			Events::onFlush
-		];
-	}
-
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
 		$em = $eventArgs->getObjectManager();
@@ -38,10 +31,8 @@ class RootCategory
 		}
 
 		foreach ($uow->getScheduledEntityDeletions() as $deletion) {
-			if (is_a($deletion, AbstractCategory::class)) {
-				if ($deletion->getParent() === null) {
-					throw new RootMayNotBeDeletedException;
-				}
+			if (is_a($deletion, AbstractCategory::class) && $deletion->getParent() === null) {
+				throw new RootMayNotBeDeletedException;
 			}
 		}
 	}

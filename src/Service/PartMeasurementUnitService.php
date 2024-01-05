@@ -6,9 +6,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\PartMeasurementUnit;
 
 
-class PartMeasurementUnitService
+readonly class PartMeasurementUnitService
 {
-	public function __construct(private readonly EntityManagerInterface $entityManager)
+	public function __construct(private EntityManagerInterface $entityManager)
 	{
 	}
 

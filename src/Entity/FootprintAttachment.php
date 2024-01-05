@@ -2,28 +2,33 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use Limas\Controller\Actions\FileActions;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\FileActions;
 
 
 #[ORM\Entity]
 #[ApiResource(
-	itemOperations: [
-		'get',
-		'FootprintAttachmentMimeTypeIcon' => [
-			'method' => 'get',
-			'path' => 'footprint_attachments/{id}/getMimeTypeIcon',
-			'controller' => FileActions::class . '::getMimeTypeIconAction'
-		],
-		'FootprintAttachmentGet' => [
-			'method' => 'get',
-			'path' => 'footprint_attachments/{id}/getFile',
-			'controller' => FileActions::class . '::getFileAction'
-		]
+	operations: [
+		new GetCollection,
+		new Post,
+		new Get,
+		new Get(
+			uriTemplate: 'footprint_attachments/{id}/getFile',
+			controller: FileActions::class . '::getFileAction',
+			name: 'FootprintAttachmentGet'
+		),
+		new Get(
+			uriTemplate: 'footprint_attachments/{id}/getMimeTypeIcon',
+			controller: FileActions::class . '::getMimeTypeIconAction',
+			name: 'FootprintAttachmentMimeTypeIcon'
+		)
 	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class FootprintAttachment
 	extends UploadedFile

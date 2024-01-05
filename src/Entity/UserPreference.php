@@ -2,36 +2,45 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Action\NotFoundAction;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\UserPreferenceActions;
-use Limas\Annotation\IgnoreIds;
-use Limas\Repository\UserPreferenceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Limas\Annotation\IgnoreIds;
+use Limas\Controller\Actions\UserPreferenceActions;
+use Limas\Repository\UserPreferenceRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: UserPreferenceRepository::class)]
 #[IgnoreIds]
 #[ApiResource(
-	collectionOperations: [
-		'get' => [
-			'controller' => UserPreferenceActions::class . '::getPreferencesAction',
-			'deserialize' => false,
-			'normalization_context' => [
+	operations: [
+		new GetCollection(
+			controller: UserPreferenceActions::class . '::getPreferencesAction',
+			normalizationContext: [
 				'groups' => ['default']
-			]
-		],
-		'UserPreferenceDelete' => [
-			'method' => 'delete',
-			'path' => 'user_preferences',
-			'controller' => UserPreferenceActions::class . '::deletePreferenceAction',
-			'deserialize' => false,
-		]
+			],
+			deserialize: false,
+			name: 'UserPreferenceGet'
+		),
+		new Delete(
+			uriTemplate: 'user_preferences',
+			controller: UserPreferenceActions::class . '::deletePreferenceAction',
+			deserialize: false,
+			name: 'UserPreferenceDelete'
+		),
+		new Get(
+			controller: NotFoundAction::class,
+			output: false,
+			read: false
+		)
 	],
-	itemOperations: ['get'],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class UserPreference
 {
@@ -51,7 +60,7 @@ class UserPreference
 	{
 		$this->user = $user;
 		$this->preferenceKey = $preferenceKey;
-		if ($preferenceValue) {
+		if ($preferenceValue !== null) {
 			$this->setPreferenceValue($preferenceValue);
 		}
 	}

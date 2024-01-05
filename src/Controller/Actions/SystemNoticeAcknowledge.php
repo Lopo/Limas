@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\SystemNotice;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,8 +18,8 @@ class SystemNoticeAcknowledge
 
 
 	public function __construct(
-		private readonly ItemDataProviderInterface $dataProvider,
-		private readonly EntityManagerInterface    $entityManager
+		private readonly ItemProvider           $dataProvider,
+		private readonly EntityManagerInterface $entityManager
 	)
 	{
 	}

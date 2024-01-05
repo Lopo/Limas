@@ -1,6 +1,6 @@
 <?php
 
-namespace Limas\Command;
+namespace Limas\Command\Cron;
 
 use Limas\Service\CronLoggerService;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 	name: 'limas:cron:clear',
 	description: 'Clears all cron logger entries',
 )]
-class CronClearCommand
+class ClearCommand
 	extends Command
 {
 	public function __construct(private readonly CronLoggerService $cronLoggerService)

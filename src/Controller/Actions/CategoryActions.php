@@ -2,16 +2,17 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Metadata\Exception\ItemNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
-use Limas\Entity\AbstractCategory;
 use Limas\Exceptions\MissingParentCategoryException;
 use Limas\Exceptions\RootMayNotBeMovedException;
 use Limas\Exceptions\RootNodeNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 
 
 class CategoryActions
@@ -21,30 +22,35 @@ class CategoryActions
 
 
 	public function __construct(
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly EntityManagerInterface $entityManager,
+		private readonly ItemProvider           $dataProvider
 	)
 	{
 	}
 
-	public function GetRootNodeAction(Request $request): AbstractCategory
+	public function GetRootNodeAction(Request $request, SerializerInterface $serializer): Response
 	{
 		$roots = $this->entityManager->getRepository($this->getResourceClass($request))->getRootNodes();
 		if (0 === count($roots)) {
 			throw new RootNodeNotFoundException;
 		}
-		return reset($roots);
+		return new Response($serializer->serialize(reset($roots), $request->getRequestFormat(), ['groups' => ['default', 'tree']]));
 	}
 
+	/**
+	 * @throws MissingParentCategoryException
+	 * @throws RootMayNotBeMovedException
+	 */
 	public function MoveAction(Request $request, int $id, IriConverterInterface $iriConverter): Response
 	{
 		$entity = $this->getItem($this->dataProvider, $this->getResourceClass($request), $id);
 		$parentId = $request->request->get('parent');
-		$parentEntity = $iriConverter->getItemFromIri($parentId);
-
-		if ($parentEntity === null) {
+		try {
+			$parentEntity = $iriConverter->getResourceFromIri($parentId);
+		} catch (\InvalidArgumentException|ItemNotFoundException $e) {
 			throw new MissingParentCategoryException($parentId);
 		}
+
 		if ($entity->getLevel() === 0) {
 			throw new RootMayNotBeMovedException;
 		}

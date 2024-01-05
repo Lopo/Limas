@@ -23,6 +23,9 @@ abstract class Image
 		parent::__construct();
 	}
 
+	/**
+	 * @throws InvalidImageTypeException
+	 */
 	protected function setType(string $type): self
 	{
 		switch ($type) {

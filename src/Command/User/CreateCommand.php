@@ -28,6 +28,9 @@ use Symfony\Component\Validator\Validation;
 class CreateCommand
 	extends Command
 {
+	private $roles = ['user', 'admin', 'super_admin'];
+
+
 	public function __construct(
 		private readonly UserPasswordHasherInterface $hasher,
 		private readonly EntityManagerInterface      $manager,
@@ -40,11 +43,11 @@ class CreateCommand
 	protected function configure(): void
 	{
 		$this
-			->addOption('--role', null, InputOption::VALUE_REQUIRED, 'one of [user, admin, super_admin]', 'user', function (CompletionInput $input) {
+			->addOption('--role', null, InputOption::VALUE_REQUIRED, 'one of [' . implode(', ', $this->roles) . ']', 'user', function (CompletionInput $input) {
 				$curVal = $input->getCompletionValue();
 				$sug = [];
-				foreach (['user', 'admin', 'super_admin'] as $pos) {
-					if (Strings::startsWith($pos, $curVal)) {
+				foreach ($this->roles as $pos) {
+					if (str_starts_with($pos, $curVal)) {
 						$sug[] = $pos;
 					}
 				}
@@ -64,7 +67,7 @@ class CreateCommand
 		$email = $input->getArgument('email');
 
 		$rUser = $this->manager->getRepository(User::class);
-		if ($rUser->findOneBy(['username' => $username])) {
+		if (null !== $rUser->findOneBy(['username' => $username])) {
 			$io->error('Given username already in DB');
 			return Command::FAILURE;
 		}
@@ -73,21 +76,24 @@ class CreateCommand
 			$io->error($viols->get(0));
 			return Command::INVALID;
 		}
-		if ($rUser->findOneBy(['email' => $email])) {
+		if (null !== $rUser->findOneBy(['email' => $email])) {
 			$io->error('Given email already in DB');
 			return Command::FAILURE;
 		}
 
-		if ($role = $input->getOption('role')) {
-			if (!in_array($role, ['user', 'admin', 'super_admin'], true)) {
-				$io->error("Invalid role '$role', allowed one of [user, admin, super_admin]");
+		if ($input->hasOption('role')) {
+			$role = $input->getOption('role');
+			if (!in_array($role, $this->roles, true)) {
+				$io->error("Invalid role '$role', allowed one of [" . implode(', ', $this->roles) . ']');
 				return Command::INVALID;
 			}
 			$role = 'ROLE_' . Strings::upper($role);
 		} else {
 			$role = 'ROLE_USER';
 		}
-		$password = $input->getArgument('password') ?? Random::generate(10, '0-9a-z');
+		$password = $input->hasArgument('password')
+			? $input->getArgument('password')
+			: Random::generate(10, '0-9a-z');
 
 		$io->comment('Creating user account');
 		$admin = (new User($input->getArgument('username'), $this->userService->getBuiltinProvider()))
@@ -99,7 +105,7 @@ class CreateCommand
 
 		$this->manager->flush();
 
-		if (!$input->getArgument('password')) {
+		if (!$input->hasArgument('password')) {
 			$io->note("Generated password: '$password'");
 		}
 		$io->success('account created');

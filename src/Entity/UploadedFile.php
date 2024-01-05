@@ -27,9 +27,6 @@ abstract class UploadedFile
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $size;
-	#[ORM\Column(type: Types::STRING, nullable: true)]
-	#[Groups(['default'])]
-	private ?string $extension;
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
 	#[Groups(['default'])]
 	private ?string $description;
@@ -111,11 +108,6 @@ abstract class UploadedFile
 		return $this;
 	}
 
-	public function getFullFilename(): string
-	{
-		return $this->getFilename() . '.' . $this->getExtension();
-	}
-
 	public function getFilename(): string
 	{
 		return $this->filename;
@@ -125,33 +117,6 @@ abstract class UploadedFile
 	{
 		$this->filename = $filename;
 		return $this;
-	}
-
-	public function getExtension(): ?string
-	{
-		if ($this->extension == '') {
-			/* @noinspection PhpDeprecationInspection */
-			return $this->getLegacyExtension();
-		}
-
-		return $this->extension;
-	}
-
-	public function setExtension(?string $extension): self
-	{
-		$this->extension = $extension;
-		return $this;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	public function getLegacyExtension(): string
-	{
-		$data = explode('/', $this->getMimetype());
-		return array_key_exists(1, $data)
-			? $data[1]
-			: 'undefined';
 	}
 
 	public function getMimetype(): string

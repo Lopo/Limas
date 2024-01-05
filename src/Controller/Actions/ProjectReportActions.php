@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\ProjectPart;
 use Limas\Entity\Report;
@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 
@@ -22,10 +23,11 @@ class ProjectReportActions
 
 
 	public function __construct(
-		private readonly SerializerInterface       $serializer,
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly PartService               $partService,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly SerializerInterface    $serializer,
+		private readonly NormalizerInterface    $normalizer,
+		private readonly EntityManagerInterface $entityManager,
+		private readonly PartService            $partService,
+		private readonly ItemProvider           $dataProvider
 	)
 	{
 	}
@@ -77,7 +79,7 @@ class ProjectReportActions
 			if ($reportPart->getPart()->isMetaPart()) {
 				$matchingParts = $this->partService->getMatchingMetaParts($reportPart->getPart());
 				foreach ($matchingParts as $matchingPart) {
-					$subParts[] = $this->serializer->normalize($matchingPart, 'jsonld');
+					$subParts[] = $this->normalizer->normalize($matchingPart, 'jsonld');
 				}
 				$reportPart->setMetaPart(true);
 				$reportPart->setSubParts($subParts);

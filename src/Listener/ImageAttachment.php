@@ -2,32 +2,25 @@
 
 namespace Limas\Listener;
 
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Events;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Limas\Entity\PartAttachment;
 use Limas\Service\ImageService;
 
 
-class ImageAttachment
-	implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::postLoad)]
+readonly class ImageAttachment
 {
-	public function __construct(private readonly ImageService $imageService)
+	public function __construct(private ImageService $imageService)
 	{
-	}
-
-	public function getSubscribedEvents(): array
-	{
-		return [
-			Events::postLoad
-		];
 	}
 
 	public function postLoad(LifecycleEventArgs $args): void
 	{
 		if ($args->getObject() instanceof PartAttachment) {
 			$entity = $args->getObject();
-			$entity->setIsImage($this->imageService->canHandleMimetype($entity->getMimeType()));
+			$entity->setIsImage($this->imageService->canHandleMimetype($entity->getMimetype()));
 		}
 	}
 }

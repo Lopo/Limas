@@ -33,6 +33,15 @@ yarn-error.log
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor
+###< symfony/asset-mapper ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
 /public/js/packages/
 /public/js/models.js
 /assets/zip/

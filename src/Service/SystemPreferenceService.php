@@ -7,9 +7,9 @@ use Limas\Entity\SystemPreference;
 use Limas\Exceptions\SystemPreferenceNotFoundException;
 
 
-class SystemPreferenceService
+readonly class SystemPreferenceService
 {
-	public function __construct(private readonly EntityManagerInterface $entityManager)
+	public function __construct(private EntityManagerInterface $entityManager)
 	{
 	}
 
@@ -43,7 +43,7 @@ class SystemPreferenceService
 	/**
 	 * @return SystemPreference[]
 	 */
-	public function getPreferences()
+	public function getPreferences(): array
 	{
 		return $this->entityManager->getRepository(SystemPreference::class)->findAll();
 	}

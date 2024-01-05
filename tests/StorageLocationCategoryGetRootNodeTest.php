@@ -7,7 +7,7 @@ use Limas\Tests\DataFixtures\StorageLocationCategoryDataLoader;
 
 
 class StorageLocationCategoryGetRootNodeTest
-	extends AbstractCategoryGetRootNodeTest
+	extends AbstractCategoryGetRootNodeTestBase
 {
 	public function getFixtureLoaderClass(): string
 	{

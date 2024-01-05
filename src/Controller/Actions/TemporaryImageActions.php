@@ -8,13 +8,13 @@ use Limas\Service\ImageService;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 
 class TemporaryImageActions
 	extends ImageActions
 {
-	public function uploadAction(Request $request, ImageService $imageService, SerializerInterface $serializer): JsonResponse
+	public function uploadAction(Request $request, ImageService $imageService, NormalizerInterface $normalizer): JsonResponse
 	{
 		$image = new TempImage;
 		if (null !== ($file = $request->files->get('userfile'))) {
@@ -23,13 +23,13 @@ class TemporaryImageActions
 		} elseif (null !== ($url = $request->request->get('url'))) {
 			$imageService->replaceFromURL($image, $url);
 		} else {
-			throw new \Exception('Error: No valid file given');
+			throw new \RuntimeException('Error: No valid file given');
 		}
 
 		$this->entityManager->persist($image);
 		$this->entityManager->flush();
 
-		$serializedData = $serializer->normalize($image, 'jsonld', []);
+		$serializedData = $normalizer->normalize($image, 'jsonld', []);
 
 		return new JsonResponse(new TemporaryImageUploadResponse($serializedData));
 	}
@@ -37,9 +37,8 @@ class TemporaryImageActions
 	public function webcamUploadAction(Request $request, ImageService $imageService): TempImage
 	{
 		$image = new TempImage;
-		$data = $request->getContent();
 
-		$base64 = explode(',', $data);
+		$base64 = explode(',', $request->getContent());
 		$imageService->replaceFromData($image, base64_decode($base64[1], true), 'webcam.png');
 
 		$this->entityManager->persist($image);

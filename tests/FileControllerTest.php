@@ -3,10 +3,10 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
@@ -16,17 +16,25 @@ class FileControllerTest
 	protected ReferenceRepository $fixtures;
 
 
+	public static function setUpBeforeClass(): void
+	{
+		parent::setUpBeforeClass();
+
+		$fs = new Filesystem;
+		$fs->mkdir(self::getContainer()->getParameter('limas')['filesystem']['data_directory']);
+	}
+
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testMimeType(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$image = new UploadedFile(
 			__DIR__ . '/DataFixtures/files/uploadtest.png',
@@ -45,7 +53,7 @@ class FileControllerTest
 
 		$response = Json::decode($client->getResponse()->getContent());
 
-		self::assertObjectHasAttribute('image', $response);
+		self::assertObjectHasProperty('image', $response);
 
 		$client->request('GET', $response->image->{'@id'} . '/getMimeTypeIcon');
 
@@ -54,7 +62,7 @@ class FileControllerTest
 
 	public function testGetFile(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$file = __DIR__ . '/DataFixtures/files/uploadtest.png';
 

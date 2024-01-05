@@ -7,10 +7,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 
-class JWTDecoded
+readonly class JWTDecoded
 	implements EventSubscriberInterface
 {
-	public function __construct(private readonly RequestStack $requestStack)
+	public function __construct(private RequestStack $requestStack)
 	{
 	}
 

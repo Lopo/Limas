@@ -2,8 +2,8 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Limas\Entity\BatchJob;
@@ -23,11 +23,11 @@ class BatchJobActions
 
 
 	public function __construct(
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly AdvancedSearchFilter      $advancedSearchFilter,
-		private readonly ReflectionService         $reflectionService,
-		private readonly IriConverterInterface     $iriConverter,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly EntityManagerInterface $entityManager,
+		private readonly AdvancedSearchFilter   $advancedSearchFilter,
+		private readonly ReflectionService      $reflectionService,
+		private readonly IriConverterInterface  $iriConverter,
+		private readonly ItemProvider           $dataProvider
 	)
 	{
 	}
@@ -53,7 +53,7 @@ class BatchJobActions
 
 			if ($batchJobQueryField->getDynamic()) {
 				foreach ($queryFields as $queryField) {
-					if ($queryField['property'] == $batchJobQueryField->getProperty()) {
+					if ($queryField['property'] === $batchJobQueryField->getProperty()) {
 						$queryFilter->value = $queryField['value'];
 					}
 				}
@@ -71,7 +71,7 @@ class BatchJobActions
 
 			if ($batchJobUpdateField->getDynamic()) {
 				foreach ($updateFields as $updateField) {
-					if ($updateField['property'] == $batchJobUpdateField->getProperty()) {
+					if ($updateField['property'] === $batchJobUpdateField->getProperty()) {
 						$updateFieldConfig->value = $updateField['value'];
 					}
 				}
@@ -94,7 +94,7 @@ class BatchJobActions
 		foreach ($data as $item) {
 			foreach ($updateFieldConfigs as $updateField) {
 				try {
-					$value = $this->iriConverter->getItemFromIri($updateField->value);
+					$value = $this->iriConverter->getResourceFromIri($updateField->value);
 				} catch (\Exception $e) {
 					$value = $updateField->value;
 				}

@@ -5,19 +5,18 @@ namespace Limas\Service;
 use Composer\InstalledVersions;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
-use GuzzleHttp\Client;
 use Limas\Entity;
 use Limas\Object\OperatingSystem;
 use Limas\Object\SystemInformationRecord;
 
 
-class SystemService
+readonly class SystemService
 {
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly VersionService         $versionService,
-		private readonly CronLoggerService      $cronLoggerService,
-		private readonly array                  $limas
+		private EntityManagerInterface $entityManager,
+		private VersionService         $versionService,
+		private CronLoggerService      $cronLoggerService,
+		private array                  $limas
 	)
 	{
 	}
@@ -125,7 +124,7 @@ class SystemService
 	protected function getSchemaQueries(): array
 	{
 		$metadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
-		return (new SchemaTool($this->entityManager))->getUpdateSchemaSql($metadatas, true);
+		return (new SchemaTool($this->entityManager))->getUpdateSchemaSql($metadatas);
 	}
 
 	/**
@@ -152,7 +151,7 @@ class SystemService
 	 *
 	 * Does not count temporary files
 	 */
-	public function getUsedDiskSpace(): int
+	public function getUsedDiskSpace(): float
 	{
 		if ($this->limas['filesystem']['quota'] === false) {
 			return $this->getTotalDiskSpace() - $this->getFreeDiskSpace();
@@ -184,12 +183,12 @@ class SystemService
 	/**
 	 * Filter for converting bytes to a human-readable format, as Unix command "ls -h" does
 	 *
-	 * @param string|int $number A string or integer number value to format
+	 * @param string|int|float $number A string or integer number value to format
 	 * @param bool $base2conversion Defines if the conversion has to be strictly performed as binary values or
 	 *                                    by using a decimal conversion such as 1 KByte = 1000 Bytes
 	 * @return string The number converted to human readable representation
 	 */
-	public function format_bytes(string|int $number, bool $base2conversion = true): string
+	public function format_bytes(string|int|float $number, bool $base2conversion = true): string
 	{
 		if (!$this->is_valid_value($number)) {
 			return '';
@@ -202,7 +201,7 @@ class SystemService
 		$pre = $base2conversion ? 'kMGTPE' : 'KMGTPE';
 		$pre = $pre[$exp - 1] . ($base2conversion ? '' : 'i');
 
-		return sprintf('%.1f %sB', $number / pow($unit, $exp), $pre);
+		return sprintf('%.1f %sB', $number / ($unit ** $exp), $pre);
 	}
 
 	/**

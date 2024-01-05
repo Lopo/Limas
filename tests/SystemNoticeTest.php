@@ -2,8 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use ApiPlatform\Api\IriConverterInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\SystemNoticeService;
 use Limas\Tests\DataFixtures\UserDataLoader;
@@ -16,16 +15,16 @@ class SystemNoticeTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testSystemNotices(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
-		$iri = $this->getContainer()->get(IriConverterInterface::class)->getIriFromItem($this->getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
+		$iri = self::getContainer()->get(IriConverterInterface::class)->getIriFromResource(self::getContainer()->get(SystemNoticeService::class)->createUniqueSystemNotice('FOO', 'BAR', 'DING'));
 
 		$client->request('GET', $iri);
 

@@ -2,17 +2,16 @@
 
 namespace Limas\Serializer;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\Api\ResourceClassResolverInterface;
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
-use ApiPlatform\Core\Exception\InvalidValueException;
-use ApiPlatform\Core\Exception\ItemNotFoundException;
-use ApiPlatform\Core\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
-use ApiPlatform\Core\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
-use ApiPlatform\Core\Metadata\Property\PropertyMetadata;
-use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
-use ApiPlatform\Core\Security\ResourceAccessCheckerInterface;
-use ApiPlatform\Core\Serializer\AbstractItemNormalizer;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Exception\InvalidValueException;
+use ApiPlatform\Exception\ItemNotFoundException;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
+use ApiPlatform\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
+use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Metadata\ResourceClassResolverInterface;
+use ApiPlatform\Serializer\AbstractItemNormalizer;
+use ApiPlatform\Symfony\Security\ResourceAccessCheckerInterface;
 use Limas\Annotation\UploadedFile;
 use Limas\Annotation\UploadedFileCollection;
 use Limas\Entity\Image;
@@ -35,25 +34,22 @@ class TemporaryFileDenormalizer
 
 
 	public function __construct(
-		private readonly ImageService          $imageService,
-		private readonly UploadedFileService   $uploadedFileService,
+		private readonly ImageService              $imageService,
+		private readonly UploadedFileService       $uploadedFileService,
 
-		PropertyNameCollectionFactoryInterface $propertyNameCollectionFactory,
-		PropertyMetadataFactoryInterface       $propertyMetadataFactory,
-		IriConverterInterface                  $iriConverter,
-		ResourceClassResolverInterface         $resourceClassResolver,
-		PropertyAccessorInterface              $propertyAccessor = null,
-		NameConverterInterface                 $nameConverter = null,
-		ClassMetadataFactoryInterface          $classMetadataFactory = null,
-		ItemDataProviderInterface              $itemDataProvider = null,
-		bool                                   $allowPlainIdentifiers = false,
-		array                                  $defaultContext = [],
-		iterable                               $dataTransformers = [],
-		ResourceMetadataFactoryInterface       $resourceMetadataFactory = null,
-		ResourceAccessCheckerInterface         $resourceAccessChecker = null
+		PropertyNameCollectionFactoryInterface     $propertyNameCollectionFactory,
+		PropertyMetadataFactoryInterface           $propertyMetadataFactory,
+		IriConverterInterface                      $iriConverter,
+		ResourceClassResolverInterface             $resourceClassResolver,
+		PropertyAccessorInterface                  $propertyAccessor = null,
+		NameConverterInterface                     $nameConverter = null,
+		ClassMetadataFactoryInterface              $classMetadataFactory = null,
+		array                                      $defaultContext = [],
+		ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory = null,
+		?ResourceAccessCheckerInterface            $resourceAccessChecker = null
 	)
 	{
-		parent::__construct($propertyNameCollectionFactory, $propertyMetadataFactory, $iriConverter, $resourceClassResolver, $propertyAccessor, $nameConverter, $classMetadataFactory, $itemDataProvider, $allowPlainIdentifiers, $defaultContext, $dataTransformers, $resourceMetadataFactory, $resourceAccessChecker);
+		parent::__construct($propertyNameCollectionFactory, $propertyMetadataFactory, $iriConverter, $resourceClassResolver, $propertyAccessor, $nameConverter, $classMetadataFactory, $defaultContext, $resourceMetadataCollectionFactory, $resourceAccessChecker);
 	}
 
 	public function supportsNormalization(mixed $data, $format = null, array $context = []): bool
@@ -76,14 +72,14 @@ class TemporaryFileDenormalizer
 	 * @throws ItemNotFoundException
 	 * @throws \ReflectionException
 	 */
-	protected function denormalizeRelation(string $attributeName, PropertyMetadata $propertyMetadata, string $className, $value, ?string $format, array $context): ?object
+	protected function denormalizeRelation(string $attributeName, ApiProperty $propertyMetadata, string $className, $value, ?string $format, array $context): ?object
 	{
 		if ($value !== null) {
 			if ((new \ReflectionClass($className))->isSubclassOf(\Limas\Entity\UploadedFile::class)) {
 				if (!is_array($value) || !isset($value['@id'])) {
 					throw new InvalidValueException;
 				}
-				$item = $this->iriConverter->getItemFromIri($value['@id']);
+				$item = $this->iriConverter->getResourceFromIri($value['@id']);
 				if ($item instanceof TempUploadedFile || $item instanceof TempImage) {
 					$newFile = new $className;
 					$this->replaceFile($newFile, $item);
@@ -92,7 +88,7 @@ class TemporaryFileDenormalizer
 				return $item;
 			}
 			if (is_array($value) && isset($value['@id'])) {
-				$context[AbstractNormalizer::OBJECT_TO_POPULATE] = $this->iriConverter->getItemFromIri($value['@id']);
+				$context[AbstractNormalizer::OBJECT_TO_POPULATE] = $this->iriConverter->getResourceFromIri($value['@id']);
 			}
 		}
 		return parent::denormalizeRelation($attributeName, $propertyMetadata, $className, $value, $format, $context);
@@ -111,12 +107,8 @@ class TemporaryFileDenormalizer
 
 	private function isTemporaryFile(\ReflectionProperty $property): bool
 	{
-		if (0 !== count($property->getAttributes(UploadedFileCollection::class))
-			|| 0 !== count($property->getAttributes(UploadedFile::class))
-		) {
-			return true;
-		}
-		return false;
+		return 0 !== count($property->getAttributes(UploadedFileCollection::class))
+			|| 0 !== count($property->getAttributes(UploadedFile::class));
 	}
 
 	protected function replaceFile(\Limas\Entity\UploadedFile $target, \Limas\Entity\UploadedFile $source): void

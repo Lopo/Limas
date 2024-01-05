@@ -3,7 +3,7 @@
 namespace Limas\Annotation;
 
 use Doctrine\Common\Annotations\Annotation\NamedArgumentConstructor;
-use Doctrine\ORM\Mapping\Annotation;
+use Doctrine\ORM\Mapping\MappingAttribute;
 
 
 /**
@@ -12,10 +12,10 @@ use Doctrine\ORM\Mapping\Annotation;
  * @NamedArgumentConstructor
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
-final class VirtualOneToMany
-	implements Annotation
+final readonly class VirtualOneToMany
+	implements MappingAttribute
 {
-	public function __construct(readonly string $target)
+	public function __construct(public string $target)
 	{
 	}
 }

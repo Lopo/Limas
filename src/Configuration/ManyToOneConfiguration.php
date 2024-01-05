@@ -44,11 +44,11 @@ class ManyToOneConfiguration
 	{
 		if (!property_exists($importConfiguration, 'importBehaviour')) {
 			return false;
-			throw new \Exception('The key importBehaviour does not exist!');
+			throw new \RuntimeException('The key importBehaviour does not exist!');
 		}
 
 		if (!in_array($importConfiguration->importBehaviour, self::importBehaviours, true)) {
-			throw new \Exception('The key importBehaviour contains an invalid value!');
+			throw new \RuntimeException('The key importBehaviour contains an invalid value!');
 		}
 
 		$this->importBehaviour = $importConfiguration->importBehaviour;
@@ -56,7 +56,7 @@ class ManyToOneConfiguration
 		switch ($this->importBehaviour) {
 			case self::IMPORTBEHAVIOUR_ALWAYSSETTO:
 				if (!property_exists($importConfiguration, 'setToEntity')) {
-					throw new \Exception('The key setToEntity does not exist for mode alwaysSetTo!');
+					throw new \RuntimeException('The key setToEntity does not exist for mode alwaysSetTo!');
 				}
 
 				// @todo Check if setToEntity contains a valid value
@@ -64,10 +64,10 @@ class ManyToOneConfiguration
 				break;
 			case self::IMPORTBEHAVIOUR_MATCHDATA:
 				if (!property_exists($importConfiguration, 'matchers')) {
-					throw new \Exception('No matchers defined');
+					throw new \RuntimeException('No matchers defined');
 				}
 				if (!is_array($importConfiguration->matchers)) {
-					throw new \Exception('matchers must be an array');
+					throw new \RuntimeException('matchers must be an array');
 				}
 
 				foreach ($importConfiguration->matchers as $matcher) {
@@ -75,33 +75,33 @@ class ManyToOneConfiguration
 						|| !property_exists($matcher, 'importField')
 						|| $matcher->importField === ''
 					) {
-						throw new \Exception('matcher configuration error');
+						throw new \RuntimeException('matcher configuration error');
 					}
 				}
 
 				$this->matchers = $importConfiguration->matchers;
 
 				if (!property_exists($importConfiguration, 'updateBehaviour')) {
-					throw new \Exception('The key updateBehaviour does not exist for mode copyFrom!');
+					throw new \RuntimeException('The key updateBehaviour does not exist for mode copyFrom!');
 				}
 				if (!in_array($importConfiguration->updateBehaviour, self::updateBehaviours, true)) {
-					throw new \Exception(sprintf('Invalid value for updateBehaviour: %s', $importConfiguration->updateBehaviour));
+					throw new \RuntimeException(sprintf('Invalid value for updateBehaviour: %s', $importConfiguration->updateBehaviour));
 				}
 
 				$this->updateBehaviour = $importConfiguration->updateBehaviour;
 
 				if (!property_exists($importConfiguration, 'notFoundBehaviour')) {
-					throw new \Exception('The key notFoundBehaviour does not exist for mode copyFrom!');
+					throw new \RuntimeException('The key notFoundBehaviour does not exist for mode copyFrom!');
 				}
 				if (!in_array($importConfiguration->notFoundBehaviour, self::notFoundBehaviours, true)) {
-					throw new \Exception('Invalid value for notFoundBehaviour');
+					throw new \RuntimeException('Invalid value for notFoundBehaviour');
 				}
 
 				$this->notFoundBehaviour = $importConfiguration->notFoundBehaviour;
 
 				if ($this->notFoundBehaviour === self::NOTFOUNDBEHAVIOUR_SETTOENTITY) {
 					if (!property_exists($importConfiguration, 'notFoundSetToEntity')) {
-						throw new \Exception('The key notFoundSetToEntity does not exist for mode copyFrom!');
+						throw new \RuntimeException('The key notFoundSetToEntity does not exist for mode copyFrom!');
 					}
 
 					// @todo check if notFoundSetToEntity contains a valid entity
@@ -120,14 +120,14 @@ class ManyToOneConfiguration
 		$descriptions = [];
 		switch ($this->importBehaviour) {
 			case self::IMPORTBEHAVIOUR_ALWAYSSETTO:
-				$targetEntity = $this->iriConverter->getItemFromIri($this->setToEntity);
+				$targetEntity = $this->iriConverter->getResourceFromIri($this->setToEntity);
 				$this->log(sprintf('Set %s to %s#%s', $this->associationName, $this->baseEntity, $targetEntity->getId()));
 				return $targetEntity;
 			case self::IMPORTBEHAVIOUR_MATCHDATA:
 				$configuration = [];
 
 				foreach ($this->matchers as $matcher) {
-					$foo = new \stdClass();
+					$foo = new \stdClass;
 					$foo->property = $matcher->matchField;
 					$foo->operator = '=';
 					$foo->value = $row[$matcher->importField];
@@ -162,8 +162,8 @@ class ManyToOneConfiguration
 						$this->log(sprintf('Stop import as the match %s for association %s was not found', implode(',', $descriptions), $this->getAssociationName()));
 						break;
 					case self::NOTFOUNDBEHAVIOUR_SETTOENTITY:
-						$targetEntity = $this->iriConverter->getItemFromIri($this->notFoundSetToEntity);
-						$this->log(sprintf('Set the association %s to %s, since the match %s for association %s was not found', $this->getAssociationName(), $this->notFoundSetToEntity, implode(',', $descriptions)));
+						$targetEntity = $this->iriConverter->getResourceFromIri($this->notFoundSetToEntity);
+						$this->log(sprintf('Set the association %s to %s, since the match %s for association %s was not found', $this->getAssociationName(), $this->notFoundSetToEntity, implode(',', $descriptions), $this->getAssociationName()));
 						return $targetEntity;
 					case self::NOTFOUNDBEHAVIOUR_CREATEENTITY:
 						$this->log(sprintf('Create a new entity of type %s', $this->baseEntity));

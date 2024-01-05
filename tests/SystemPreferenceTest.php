@@ -2,7 +2,6 @@
 
 namespace Limas\Tests;
 
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Exceptions\SystemPreferenceNotFoundException;
 use Limas\Service\SystemPreferenceService;
@@ -16,31 +15,33 @@ class SystemPreferenceTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testSystemPreferenceService(): void
 	{
-		$this->getContainer()->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar');
+		$container = self::getContainer();
 
-		self::assertEquals('bar', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
+		$container->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar');
 
-		$this->getContainer()->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar2');
+		self::assertEquals('bar', $container->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
 
-		self::assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
+		$container->get(SystemPreferenceService::class)->setSystemPreference('foo', 'bar2');
 
-		$preference = $this->getContainer()->get(SystemPreferenceService::class)->getPreference('foo');
+		self::assertEquals('bar2', $container->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo'));
+
+		$preference = $container->get(SystemPreferenceService::class)->getPreference('foo');
 		self::assertEquals('foo', $preference->getPreferenceKey());
 
 		$this->expectException(SystemPreferenceNotFoundException::class);
-		self::assertEquals('bar2', $this->getContainer()->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo2'));
+		self::assertEquals('bar2', $container->get(SystemPreferenceService::class)->getSystemPreferenceValue('foo2'));
 	}
 
 	public function testSystemPreferenceCreate(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		// First test: Ensure invalid auth key is returned
 		$client->request(

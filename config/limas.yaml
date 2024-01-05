@@ -46,3 +46,5 @@ parameters:
 when@test:
     parameters:
         limas.filesystem.data_directory: '%kernel.project_dir%/data_test/'
+        limas.username: admin
+        limas.password: admin

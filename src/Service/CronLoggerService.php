@@ -10,11 +10,11 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 
-class CronLoggerService
+readonly class CronLoggerService
 {
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly KernelInterface        $kernel
+		private EntityManagerInterface $entityManager,
+		private KernelInterface        $kernel
 	)
 	{
 	}

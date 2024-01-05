@@ -7,11 +7,11 @@
          colors="true"
          bootstrap="tests/bootstrap.php"
          convertDeprecationsToExceptions="false"
-         beStrictAboutTestsThatDoNotTestAnything="false"
 >
 	<php>
 		<ini name="display_errors" value="1"/>
 		<ini name="error_reporting" value="-1"/>
+		<ini name="memory_limit" value="512M"/>
 		<server name="APP_ENV" value="test" force="true"/>
 		<server name="SHELL_VERBOSITY" value="-1"/>
 		<server name="SYMFONY_PHPUNIT_REMOVE" value=""/>
@@ -20,7 +20,7 @@
 
 	<testsuites>
 		<testsuite name="Limas Test Suite">
-			<directory suffix="Test.php">tests</directory>
+			<directory>tests</directory>
 		</testsuite>
 	</testsuites>
 
@@ -37,10 +37,6 @@
 		<listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener"/>
 	</listeners>
 
-	<!-- Run `composer require symfony/panther` before enabling this extension -->
-	<!--
 	<extensions>
-		<extension class="Symfony\Component\Panther\ServerExtension" />
 	</extensions>
-	-->
 </phpunit>

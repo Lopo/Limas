@@ -2,8 +2,11 @@
 
 namespace Limas\Filter;
 
-use ApiPlatform\Core\Api\FilterInterface;
-use ApiPlatform\Core\Api\IriConverterInterface;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Metadata\Exception\ItemNotFoundException;
+use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Doctrine\ORM\Query\Expr\Composite;
 use Doctrine\ORM\Query\Expr\Func;
@@ -15,7 +18,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 
 class AdvancedSearchFilter
-	implements FilterInterface
+	implements QueryCollectionExtensionInterface
 {
 	private array $aliases = [];
 	private int $parameterCount = 0;
@@ -31,11 +34,6 @@ class AdvancedSearchFilter
 		array                                      $properties = null*/
 	)
 	{
-	}
-
-	public function getDescription(string $resourceClass): array
-	{
-		return [];
 	}
 
 	public function filter(QueryBuilder $queryBuilder, $filters, $sorters): void
@@ -67,12 +65,8 @@ class AdvancedSearchFilter
 			$items = [];
 			foreach ($value as $iri) {
 				try {
-					if ($item = $this->iriConverter->getItemFromIri($iri)) {
-						$items[] = $this->propertyAccessor->getValue($item, 'id');
-					} else {
-						$items[] = $iri;
-					}
-				} catch (\InvalidArgumentException $e) {
+					$items[] = $this->propertyAccessor->getValue($this->iriConverter->getResourceFromIri($iri), 'id');
+				} catch (\InvalidArgumentException|ItemNotFoundException $e) {
 					$items[] = $iri;
 				}
 			}
@@ -80,10 +74,8 @@ class AdvancedSearchFilter
 		}
 
 		try {
-			if ($item = $this->iriConverter->getItemFromIri($value)) {
-				return $this->propertyAccessor->getValue($item, 'id');
-			}
-		} catch (\InvalidArgumentException $e) {
+			return $this->propertyAccessor->getValue($this->iriConverter->getResourceFromIri($value), 'id');
+		} catch (\InvalidArgumentException|ItemNotFoundException $e) {
 			// Do nothing, return the raw value
 		}
 
@@ -113,7 +105,7 @@ class AdvancedSearchFilter
 	/**
 	 * Returns the expression for a specific filter
 	 *
-	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	private function getFilterExpression(QueryBuilder $queryBuilder, Filter $filter): Comparison|Func|Composite
 	{
@@ -143,7 +135,7 @@ class AdvancedSearchFilter
 
 		if (strtolower($filter->getOperator()) === Filter::OPERATOR_IN) {
 			if (!is_array($filter->getValue())) {
-				throw new \Exception('Value needs to be an array for the IN operator');
+				throw new \RuntimeException('Value needs to be an array for the IN operator');
 			}
 			return $queryBuilder->expr()->in($alias, $filter->getValue());
 		}
@@ -156,8 +148,6 @@ class AdvancedSearchFilter
 
 	/**
 	 * Returns the expression for a specific sort order
-	 *
-	 * @throws \Exception
 	 */
 	private function applyOrderByExpression(QueryBuilder $queryBuilder, Sorter $sorter): QueryBuilder
 	{
@@ -211,7 +201,7 @@ class AdvancedSearchFilter
 	/**
 	 * Extracts the filters from the JSON object
 	 *
-	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	private function extractJSONFilters($data): Filter
 	{
@@ -242,9 +232,9 @@ class AdvancedSearchFilter
 
 				return $filter;
 			}
-			throw new \Exception('The subfilters must be an array of objects');
+			throw new \RuntimeException('The subfilters must be an array of objects');
 		} else {
-			throw new \Exception('You need to set the filter property');
+			throw new \RuntimeException('You need to set the filter property');
 		}
 
 		if (property_exists($data, 'operator')) {
@@ -256,7 +246,7 @@ class AdvancedSearchFilter
 		if (property_exists($data, 'value')) {
 			$filter->setValue($this->getFilterValueFromUrl($data->value));
 		} else {
-			throw new \Exception('No value specified');
+			throw new \RuntimeException('No value specified');
 		}
 
 		return $filter;
@@ -265,7 +255,7 @@ class AdvancedSearchFilter
 	/**
 	 * Extracts the sorters from the JSON object
 	 *
-	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	private function extractJSONSorters($data): Sorter
 	{
@@ -283,7 +273,7 @@ class AdvancedSearchFilter
 				$sorter->setProperty($data->property);
 			}
 		} else {
-			throw new \Exception('You need to set the filter property');
+			throw new \RuntimeException('You need to set the filter property');
 		}
 
 		if ($data->direction) {
@@ -303,7 +293,7 @@ class AdvancedSearchFilter
 		return $sorter;
 	}
 
-	public function applyToCollection(QueryBuilder $queryBuilder/*, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null*/): void
+	public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = []): void
 	{
 		$request = $this->requestStack->getCurrentRequest();
 		if (null === $request) {
@@ -312,7 +302,7 @@ class AdvancedSearchFilter
 		$filter = $request->query->get('filter') !== null
 			? Json::decode($request->query->get('filter'))
 			: null;
-		$order = $request->query->get('order')
+		$order = $request->query->get('order') !== null
 			? Json::decode($request->query->get('order'))
 			: null;
 

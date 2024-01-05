@@ -1,7 +1,7 @@
 Dependencies
 ---
 
-* PHP 8.1 and higher
+* PHP 8.2 and higher
   * php-curl
   * php-ldap
   * php-bcmath

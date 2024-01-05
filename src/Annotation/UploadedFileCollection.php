@@ -2,7 +2,7 @@
 
 namespace Limas\Annotation;
 
-use Doctrine\ORM\Mapping\Annotation;
+use Doctrine\ORM\Mapping\MappingAttribute;
 
 
 /**
@@ -10,6 +10,6 @@ use Doctrine\ORM\Mapping\Annotation;
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 class UploadedFileCollection
-	implements Annotation
+	implements MappingAttribute
 {
 }

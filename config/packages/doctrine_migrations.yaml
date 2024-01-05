@@ -3,5 +3,6 @@ doctrine_migrations:
         # namespace is arbitrary but should be different from App\Migrations
         # as migrations classes should NOT be autoloaded
         'DoctrineMigrations': '%kernel.project_dir%/migrations'
-    enable_profiler: '%kernel.debug%'
-#    transactional: false
+    enable_profiler: false
+    services:
+        'Doctrine\Migrations\Version\MigrationFactory': 'Limas\Migrations\Factory\MigrationFactoryDecorator'

@@ -2,7 +2,7 @@
 
 namespace Limas\Bundle\Security\Factory;
 
-use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AuthenticatorFactoryInterface;
+use Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\AbstractFactory;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 
 class HttpBasicAuthenticatorFactory
-	implements AuthenticatorFactoryInterface
+	extends AbstractFactory
 {
 	public const PRIORITY = -5;
 

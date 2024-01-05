@@ -2,9 +2,10 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use ApiPlatform\Core\DataProvider\CollectionDataProviderInterface;
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
+use ApiPlatform\Metadata\GetCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\Part;
 use Limas\Entity\PartParameter;
@@ -31,11 +32,11 @@ class PartActions
 
 
 	public function __construct(
-		private readonly ItemDataProviderInterface $dataProvider,
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly PartService               $partService,
-		private readonly UserService               $userService,
-		private readonly SerializerInterface       $serializer
+		private readonly ItemProvider           $dataProvider,
+		private readonly EntityManagerInterface $entityManager,
+		private readonly PartService            $partService,
+		private readonly UserService            $userService,
+		private readonly SerializerInterface    $serializer
 	)
 	{
 	}
@@ -45,42 +46,39 @@ class PartActions
 	{
 		$removals = Json::decode($request->get('removals'));
 		if (!is_array($removals)) {
-			throw new \Exception('removals parameter must be an array');
+			throw new \RuntimeException('removals parameter must be an array');
 		}
 
 		$projects = Json::decode($request->get('projects'));
 		if (!is_array($projects)) {
-			throw new \Exception('projects parameter must be an array');
+			throw new \RuntimeException('projects parameter must be an array');
 		}
 
-		/**
-		 * @var ProjectRun[] $projectRuns
-		 */
 		$projectRuns = [];
 		foreach ($projects as $projectInfo) {
 			$projectRuns[$projectInfo->project] = (new ProjectRun)
 				->setQuantity($projectInfo->quantity)
 				->setRunDateTime(new \DateTime)
-				->setProject($iriConverter->getItemFromIri($projectInfo->project));
+				->setProject($iriConverter->getResourceFromIri($projectInfo->project));
 		}
 
 		$user = $this->getUser();
 
 		foreach ($removals as $removal) {
 			if (!property_exists($removal, 'part')) {
-				throw new \Exception('Each removal must have the part property defined');
+				throw new \RuntimeException('Each removal must have the part property defined');
 			}
 			if (!property_exists($removal, 'amount')) {
-				throw new \Exception('Each removal must have the amount property defined');
+				throw new \RuntimeException('Each removal must have the amount property defined');
 			}
 			if (!property_exists($removal, 'lotNumber')) {
-				throw new \Exception('Each removal must have the lotNumber property defined');
+				throw new \RuntimeException('Each removal must have the lotNumber property defined');
 			}
 
 			/**
 			 * @var Part $part
 			 */
-			$part = $iriConverter->getItemFromIri($removal->part);
+			$part = $iriConverter->getResourceFromIri($removal->part);
 
 			$stock = (new StockEntry)
 				->setStockLevel(0 - (int)$removal->amount)
@@ -158,9 +156,9 @@ class PartActions
 		);
 	}
 
-	public function GetPartsAction(CollectionDataProviderInterface $dataProvider): iterable
+	public function GetPartsAction(CollectionProvider $dataProvider): iterable
 	{
-		$items = $dataProvider->getCollection(Part::class);
+		$items = $dataProvider->provide(new GetCollection(class: Part::class));
 		foreach ($items as $part) {
 			if ($part->isMetaPart()) {
 				$sum = 0;
@@ -211,14 +209,14 @@ class PartActions
 
 	public function AddStockAction(Request $request, int $id): Part
 	{
-		$part = $this->entityManager->find(Part::class, $id);
+		$part = $this->getItem($this->dataProvider, Part::class, $id);
 		$stock = (new StockEntry)
 			->setUser($this->getUser())
 			->setStockLevel($request->request->getInt('quantity'));
 		if ($request->request->get('price') !== null) {
 			$stock->setPrice((float)$request->request->get('price'));
 		}
-		if ($request->request->has('comment') && $request->request->get('comment') !== null) {
+		if ($request->request->get('comment') !== null) {
 			$stock->setComment($request->request->get('comment'));
 		}
 
@@ -231,7 +229,7 @@ class PartActions
 
 	public function RemoveStockAction(Request $request, int $id): Part
 	{
-		$part = $this->entityManager->find(Part::class, $id);
+		$part = $this->getItem($this->dataProvider, Part::class, $id);
 		$stock = (new StockEntry)
 			->setUser($this->userService->getCurrentUser())
 			->setStockLevel(0 - $request->request->getInt('quantity'));
@@ -248,7 +246,7 @@ class PartActions
 
 	public function SetStockAction(Request $request, int $id): Part
 	{
-		$part = $this->entityManager->find(Part::class, $id);
+		$part = $this->getItem($this->dataProvider, Part::class, $id);
 		if (0 !== ($correctionQuantity = $request->request->getInt('quantity') - $part->getStockLevel())) {
 			$stock = (new StockEntry)
 				->setUser($this->userService->getCurrentUser())

@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Gaufrette\Exception\FileNotFound;
 use Limas\Entity\UploadedFile;
@@ -22,20 +22,21 @@ class FileActions
 
 
 	public function __construct(
-		protected readonly EntityManagerInterface    $entityManager,
-		protected readonly UploadedFileService       $uploadedFileService,
-		protected readonly MimetypeIconService       $mimetypeIconService,
-		protected readonly LoggerInterface           $logger,
-		protected readonly ItemDataProviderInterface $dataProvider,
-		protected readonly array                     $limas
+		protected readonly EntityManagerInterface $entityManager,
+		protected readonly UploadedFileService    $uploadedFileService,
+		protected readonly MimetypeIconService    $mimetypeIconService,
+		protected readonly LoggerInterface        $logger,
+		protected readonly ItemProvider           $dataProvider,
+		protected readonly array                  $limas
 	)
 	{
 	}
 
 	public function getMimeTypeIconAction(Request $request, int $id): Response
 	{
+		$entity = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
 		return new BinaryFileResponse(
-			$this->mimetypeIconService->getMimetypeIcon($this->entityManager->find($this->getEntityClass($request), $id)->getMimetype()),
+			$this->mimetypeIconService->getMimetypeIcon($entity->getMimetype()),
 			Response::HTTP_OK,
 			[],
 			false,
@@ -49,9 +50,9 @@ class FileActions
 	{
 		$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
 		try {
-			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFullFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
+			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
 		} catch (FileNotFound $e) {
-			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFullFilename(), $file->getType()));
+			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFilename(), $file->getType()));
 			return new Response('404 File not found', Response::HTTP_NOT_FOUND);
 		}
 	}
@@ -61,7 +62,7 @@ class FileActions
 		try {
 			/** @var UploadedFile $file */
 			$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
-			$this->uploadedFileService->getStorage($file)->delete($file->getFullFilename());
+			$this->uploadedFileService->getStorage($file)->delete($file->getFilename());
 			$this->entityManager->remove($file);
 			return $file;
 		} catch (\Throwable $e) {

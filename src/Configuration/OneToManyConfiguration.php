@@ -23,7 +23,7 @@ class OneToManyConfiguration
 			return false;
 		}
 		if (!in_array($importConfiguration->importBehaviour, self::importBehaviours, true)) {
-			throw new \Exception('The key importBehaviour contains an invalid value!');
+			throw new \RuntimeException('The key importBehaviour contains an invalid value!');
 		}
 
 		$this->importBehaviour = $importConfiguration->importBehaviour;
@@ -44,12 +44,12 @@ class OneToManyConfiguration
 		return null;
 	}
 
-	public function getAssociationName(): mixed
+	public function getAssociationName(): string
 	{
 		return $this->associationName;
 	}
 
-	public function setAssociationName(mixed $associationName): self
+	public function setAssociationName(string $associationName): self
 	{
 		$this->associationName = $associationName;
 		return $this;

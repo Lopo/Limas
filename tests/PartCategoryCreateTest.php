@@ -7,7 +7,7 @@ use Limas\Tests\DataFixtures\PartCategoryDataLoader;
 
 
 class PartCategoryCreateTest
-	extends AbstractCategoryCreateTest
+	extends AbstractCategoryCreateTestBase
 {
 	public function getFixtureLoaderClass(): string
 	{
@@ -22,5 +22,10 @@ class PartCategoryCreateTest
 	public function getResourceClass(): string
 	{
 		return PartCategory::class;
+	}
+
+	public function getUriBase(): string
+	{
+		return '/api/part_categories';
 	}
 }

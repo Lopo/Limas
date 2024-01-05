@@ -9,13 +9,13 @@ use Limas\Exceptions\NotAMetaPartException;
 use Limas\Filter\Filter;
 
 
-class PartService
+readonly class PartService
 {
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly FilterService          $filterService,
-		private readonly array                  $limas,
-		private readonly int|bool               $partLimit = false
+		private EntityManagerInterface $entityManager,
+		private FilterService          $filterService,
+		private array                  $limas,
+		private int|bool               $partLimit = false
 	)
 	{
 	}

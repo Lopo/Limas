@@ -26,7 +26,7 @@ Encore
 	.setOutputPath('public/build/')
 	// public path used by the web server to access the output path
 	.setPublicPath('/build')
-	// only needed for CDN's or sub-directory deploy
+	// only needed for CDN's or subdirectory deploy
 	//.setManifestKeyPrefix('build/')
 	.addAliases({
 		'@': path.resolve(__dirname, 'assets/'),
@@ -36,12 +36,8 @@ Encore
 		{
 			from: './assets/images',
 			to: 'images/[path][name].[ext]', // optional target path, relative to the output dir
-			pattern: /\.(png|jpg|jpeg)$/ // only copy files matching this pattern
-		},
-		{
-			from: './vendor/atelierspierrot/famfamfam-silk-sprite/src',
-			to: 'famfamfam-silk-sprite/[path][name].[ext]',
-			pattern: /\.(css|png)$/
+			pattern: /favicon\.(png|jpg|jpeg)$/, // only copy files matching this pattern
+			includeSubdirectories: false
 		}
 	])
 
@@ -65,14 +61,15 @@ Encore
 	// enables hashed filenames (e.g. app.abc123.css)
 	.enableVersioning(Encore.isProduction())
 
-	.configureBabel((config) => {
-		config.plugins.push('@babel/plugin-proposal-class-properties');
-	})
+	// configure Babel
+	// .configureBabel((config) => {
+	//     config.plugins.push('@babel/a-babel-plugin');
+	// })
 
-	// enables @babel/preset-env polyfills
+	// enables and configure @babel/preset-env polyfills
 	.configureBabelPresetEnv((config) => {
 		config.useBuiltIns = 'usage';
-		config.corejs = 3;
+		config.corejs = '3.23';
 	})
 
 	.addPlugin(new SpritesmithPlugin({
@@ -119,15 +116,7 @@ Encore
 	}))
 ;
 
-if (Encore.isDev()) {
-	Encore
-		.copyFiles([
-			{
-				from: './assets/limas',
-				to: 'limas/[path][name].[ext]', // optional target path, relative to the output dir
-			}
-		]);
-} else {
+if (!Encore.isDev()) {
 	Encore
 		.addPlugin(new ConcatPlugin({
 			name: 'extjs',
@@ -426,5 +415,9 @@ if (Encore.isDev()) {
 			injectType: 'none'
 		}));
 }
+// uncomment to get integrity="..." attributes on your script & link tags
+// requires WebpackEncoreBundle 1.4 or higher
+//.enableIntegrityHashes(Encore.isProduction())
+
 
 module.exports = Encore.getWebpackConfig();

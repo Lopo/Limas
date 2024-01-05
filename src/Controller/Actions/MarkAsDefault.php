@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Core\DataProvider\ItemDataProviderInterface;
+use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\GridPreset;
 use Limas\Service\GridPresetService;
@@ -19,9 +19,9 @@ class MarkAsDefault
 
 
 	public function __construct(
-		private readonly GridPresetService         $gridPresetService,
-		private readonly EntityManagerInterface    $entityManager,
-		private readonly ItemDataProviderInterface $dataProvider
+		private readonly GridPresetService      $gridPresetService,
+		private readonly EntityManagerInterface $entityManager,
+		private readonly ItemProvider           $dataProvider
 	)
 	{
 	}

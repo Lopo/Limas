@@ -5,9 +5,9 @@ namespace Limas\Service;
 use Symfony\Component\Config\FileLocator;
 
 
-class MimetypeIconService
+readonly class MimetypeIconService
 {
-	public function __construct(private readonly array $limas)
+	public function __construct(private array $limas)
 	{
 	}
 

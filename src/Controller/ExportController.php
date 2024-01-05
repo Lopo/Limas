@@ -34,7 +34,7 @@ class ExportController
 		}
 
 		if ($exporter === false) {
-			throw new \Exception('No or invalid format specified');
+			throw new \RuntimeException('No or invalid format specified');
 		}
 
 		$content = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);

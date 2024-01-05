@@ -2,24 +2,17 @@
 
 namespace Limas\Listener;
 
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Limas\Entity\AbstractCategory;
 
 
-class CategoryPath
-	implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::onFlush)]
+readonly class CategoryPath
 {
-	public function __construct(private readonly array $limas)
+	public function __construct(private array $limas)
 	{
-	}
-
-	public function getSubscribedEvents(): array
-	{
-		return [
-			Events::onFlush
-		];
 	}
 
 	public function onFlush(OnFlushEventArgs $eventArgs): void

@@ -2,17 +2,22 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Limas\Controller\Actions\PartActions;
+use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
+use Limas\Controller\Actions\PartActions;
 use Limas\Exceptions\CategoryNotAssignedException;
 use Limas\Exceptions\MinStockLevelOutOfRangeException;
 use Limas\Exceptions\StorageLocationNotAssignedException;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -20,51 +25,50 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-	collectionOperations: [
-		'get' => [
-			'controller' => PartActions::class . '::GetPartsAction'
-		],
-		'post' => [
-			'controller' => PartActions::class . '::PartPostAction'
-		],
-		'parameterNames' => [
-			'method' => 'get',
-			'path' => 'parts/getPartParameterNames',
-			'controller' => PartActions::class . '::getParameterNamesAction',
-			'deserialize' => false
-		],
-		'parameterValues' => [
-			'method' => 'get',
-			'path' => 'parts/getPartParameterValues',
-			'controller' => PartActions::class . '::getParameterValuesAction',
-			'deserialize' => false
-		]
+	operations: [
+		new GetCollection(
+			uriTemplate: 'parts/getPartParameterNames',
+			controller: PartActions::class . '::getParameterNamesAction',
+			deserialize: false
+		),
+		new GetCollection(
+			uriTemplate: 'parts/getPartParameterValues',
+			controller: PartActions::class . '::getParameterValuesAction',
+			deserialize: false
+		),
+		new GetCollection(
+			controller: PartActions::class . '::GetPartsAction',
+			name: 'PartsGet'
+		),
+		new Post(
+			controller: PartActions::class . '::PartPostAction',
+			name: 'PartPost'
+		),
+		new Get,
+		new Put(
+			controller: PartActions::class . '::PartPutAction',
+			deserialize: false,
+			name: 'PartPut'
+		),
+		new Delete,
+		new Put(
+			uriTemplate: 'parts/{id}/addStock',
+			controller: PartActions::class . '::AddStockAction',
+			name: 'PartAddStock'
+		),
+		new Put(
+			uriTemplate: 'parts/{id}/removeStock',
+			controller: PartActions::class . '::RemoveStockAction',
+			name: 'PartRemoveStock'
+		),
+		new Put(
+			uriTemplate: 'parts/{id}/setStock',
+			controller: PartActions::class . '::SetStockAction',
+			name: 'PartSetStock'
+		)
 	],
-	itemOperations: [
-		'get',
-		'put' => [
-			'controller' => PartActions::class . '::PartPutAction',
-			'deserialize' => false
-		],
-		'delete',
-		'add_stock' => [
-			'method' => 'put',
-			'path' => 'parts/{id}/addStock',
-			'controller' => PartActions::class . '::AddStockAction'
-		],
-		'remove_stock' => [
-			'method' => 'put',
-			'path' => 'parts/{id}/removeStock',
-			'controller' => PartActions::class . '::RemoveStockAction'
-		],
-		'set_stock' => [
-			'method' => 'put',
-			'path' => 'parts/{id}/setStock',
-			'controller' => PartActions::class . '::SetStockAction'
-		]
-	],
-	denormalizationContext: ['groups' => ['default', 'stock']],
-	normalizationContext: ['groups' => ['default', 'readonly']]
+	normalizationContext: ['groups' => ['default', 'readonly']],
+	denormalizationContext: ['groups' => ['default', 'stock']]
 )]
 class Part
 	extends BaseEntity
@@ -115,7 +119,7 @@ class Part
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $minStockLevel = 0;
-	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4)]
+	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4, nullable: false)]
 	#[Groups(['readonly'])]
 	private string $averagePrice = '0';
 	/** @var Collection<StockEntry> */
@@ -422,7 +426,7 @@ class Part
 		return $this;
 	}
 
-	public function getAveragePrice(): ?string
+	public function getAveragePrice(): string
 	{
 		return $this->averagePrice;
 	}

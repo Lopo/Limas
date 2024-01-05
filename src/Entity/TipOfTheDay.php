@@ -2,7 +2,11 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\TipOfTheDayActions;
@@ -11,27 +15,25 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ApiResource(
-	collectionOperations: [
-		'get',
-		'post',
-		'markAllTipsAsUnread' => [
-			'method' => 'post',
-			'path' => 'tip_of_the_days/markAllTipsAsUnread',
-			'controller' => TipOfTheDayActions::class . '::MarkAllTipsAsUnread',
-			'deserialize' => false
-		]
+	operations: [
+		new GetCollection,
+		new Post,
+		new Post(
+			uriTemplate: 'tip_of_the_days/markAllTipsAsUnread',
+			controller: TipOfTheDayActions::class . '::MarkAllTipsAsUnread',
+			deserialize: false,
+			name: 'TipMarkAllUnrad',
+		),
+		new Get,
+		new Put(
+			uriTemplate: 'tip_of_the_days/{id}/markTipRead',
+			controller: TipOfTheDayActions::class . '::MarkTipRead',
+			deserialize: false,
+			name: 'TipMarkRead'
+		)
 	],
-	itemOperations: [
-		'get',
-		'markTipRead' => [
-			'method' => 'put',
-			'path' => 'tip_of_the_days/{id}/markTipRead',
-			'controller' => TipOfTheDayActions::class . '::MarkTipRead',
-			'deserialize' => false
-		]
-	],
-	denormalizationContext: ['groups' => ['default']],
-	normalizationContext: ['groups' => ['default']]
+	normalizationContext: ['groups' => ['default']],
+	denormalizationContext: ['groups' => ['default']]
 )]
 class TipOfTheDay
 	extends BaseEntity

@@ -3,7 +3,6 @@
 namespace Limas\Tests;
 
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
 use Nette\Utils\Json;
@@ -17,14 +16,14 @@ class UserPreferenceTest
 
 	public function setUp(): void
 	{
-		$this->fixtures = $this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		$this->fixtures = self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testPreferences(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->jsonRequest(
 			'POST',
@@ -39,8 +38,8 @@ class UserPreferenceTest
 
 		self::assertIsObject($response, var_export($client->getResponse()->getContent(), true));
 
-		self::assertObjectHasAttribute('preferenceKey', $response);
-		self::assertObjectHasAttribute('preferenceValue', $response);
+		self::assertObjectHasProperty('preferenceKey', $response);
+		self::assertObjectHasProperty('preferenceValue', $response);
 		self::assertEquals('foobar', $response->preferenceKey);
 		self::assertEquals('1234', $response->preferenceValue);
 
@@ -55,8 +54,8 @@ class UserPreferenceTest
 
 		$preference = $response[0];
 
-		self::assertObjectHasAttribute('preferenceKey', $preference);
-		self::assertObjectHasAttribute('preferenceValue', $preference);
+		self::assertObjectHasProperty('preferenceKey', $preference);
+		self::assertObjectHasProperty('preferenceValue', $preference);
 		self::assertEquals('foobar', $preference->preferenceKey);
 		self::assertEquals('1234', $preference->preferenceValue);
 	}

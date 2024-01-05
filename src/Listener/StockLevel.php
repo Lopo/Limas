@@ -2,23 +2,16 @@
 
 namespace Limas\Listener;
 
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Limas\Entity\Part;
 use Limas\Entity\StockEntry;
 
 
+#[AsDoctrineListener(event: Events::onFlush)]
 class StockLevel
-	implements EventSubscriberInterface
 {
-	public function getSubscribedEvents(): array
-	{
-		return [
-			Events::onFlush
-		];
-	}
-
 	public function onFlush(OnFlushEventArgs $eventArgs): void
 	{
 		$uow = $eventArgs->getObjectManager()->getUnitOfWork();

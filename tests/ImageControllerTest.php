@@ -2,8 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use ApiPlatform\Api\IriConverterInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\ImageService;
 use Limas\Tests\DataFixtures\UserDataLoader;
@@ -17,14 +16,14 @@ class ImageControllerTest
 	protected function setUp(): void
 	{
 		parent::setUp();
-		$this->getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
+		self::getContainer()->get(DatabaseToolCollection::class)->get()->loadFixtures([
 			UserDataLoader::class
 		])->getReferenceRepository();
 	}
 
 	public function testGetImage(): void
 	{
-		$client = static::makeAuthenticatedClient();
+		$client = $this->makeAuthenticatedClient();
 
 		$client->request(
 			'POST',
@@ -53,7 +52,8 @@ class ImageControllerTest
 		self::assertEquals(51, $imageSize[0]);
 		self::assertEquals(23, $imageSize[1]);
 
-		$this->getContainer()->get(ImageService::class)->delete($this->getContainer()->get(IriConverterInterface::class)->getItemFromIri($imageId));
+		$container = self::getContainer();
+		$container->get(ImageService::class)->delete($container->get(IriConverterInterface::class)->getResourceFromIri($imageId));
 
 		$client->request('GET', $uri);
 

@@ -30,12 +30,12 @@ class SystemPreferenceActions
 		return new JsonResponse($data);
 	}
 
-	#[Route(path: '/api/system_preferences', methods: ['POST', 'PUT'])]
+	#[Route(path: '/api/system_preferences', name: 'SystemPreferenceSet', methods: ['POST', 'PUT'])]
 	public function setAction(Request $request): JsonResponse
 	{
 		$data = Json::decode($request->getContent());
 		if (!property_exists($data, 'preferenceKey') || !property_exists($data, 'preferenceValue')) {
-			throw new \Exception('Invalid format');
+			throw new \RuntimeException('Invalid format');
 		}
 		$preference = $this->service->setSystemPreference($data->preferenceKey, $data->preferenceValue);
 		return new JsonResponse([
@@ -49,7 +49,7 @@ class SystemPreferenceActions
 		if ($request->request->has('preferenceKey')) {
 			$this->service->deletePreference($request->request->get('preferenceKey'));
 		} else {
-			throw new \Exception('Invalid format');
+			throw new \RuntimeException('Invalid format');
 		}
 	}
 }

@@ -41,7 +41,7 @@ class Configuration
 			foreach ($importConfiguration->manytoone as $manyToOne => $configuration) {
 				if ($this->classMetadata->hasAssociation($manyToOne)) {
 					$targetClass = $this->classMetadata->getAssociationTargetClass($manyToOne);
-					$manyToOneconfiguration = (new ManyToOneConfiguration(
+					$manyToOneConfiguration = (new ManyToOneConfiguration(
 						$this->em->getClassMetadata($targetClass),
 						$targetClass,
 						$this->reflectionService,
@@ -51,8 +51,8 @@ class Configuration
 					))
 						->setAssociationName($manyToOne)
 						->setPath($this->getPath($manyToOne));
-					if ($manyToOneconfiguration->parseConfiguration($configuration) !== false) {
-						$this->manyToOneAssociations[] = $manyToOneconfiguration;
+					if ($manyToOneConfiguration->parseConfiguration($configuration) !== false) {
+						$this->manyToOneAssociations[] = $manyToOneConfiguration;
 					}
 				} else {
 					//throw new \Exception('Association $manyToOne not found in '.$this->baseEntity);
