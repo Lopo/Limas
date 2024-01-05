@@ -46,7 +46,8 @@ Ext.define('Limas.FileUploadDialog', {
 		this.urlField = Ext.create('Ext.form.field.Text', {
 			fieldLabel: i18n('URL'),
 			name: 'url',
-			anchor: '100%'
+			anchor: '100%',
+			vtype: 'url'
 		});
 
 		this.diskUsage = Ext.create('Ext.ProgressBar', {

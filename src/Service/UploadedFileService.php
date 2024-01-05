@@ -12,8 +12,13 @@ use Limas\Entity\UploadedFile;
 use Limas\Exceptions\DiskSpaceExhaustedException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Strings;
+use Nette\Utils\Validators;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints\Hostname;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Url;
+use Symfony\Component\Validator\Validation;
 
 
 class UploadedFileService
@@ -86,6 +91,13 @@ class UploadedFileService
 	public function replaceFromURL(UploadedFile $file, string $url): void
 	{
 		try {
+			Validators::assert($url, 'url');
+			Validation::createCallable(new Url)($url);
+			Validation::createCallable(new NotBlank, new Hostname)($host = rawurldecode(parse_url($url)['host'] ?? ''));
+			if (in_array($host, ['localhost, 127.0.0.1', '::1'], true)) {
+				throw new \InvalidArgumentException('Cannot upload files from localhost');
+			}
+
 			$data = (new Client)
 				->request('GET', $url, [
 					RequestOptions::TIMEOUT => 30,
