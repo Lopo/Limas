@@ -27,6 +27,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
 	operations: [
 		new GetCollection(
+			controller: PartActions::class . '::GetPartsAction',
+			name: 'PartsGet'
+		),
+		new GetCollection(
 			uriTemplate: 'parts/getPartParameterNames',
 			controller: PartActions::class . '::getParameterNamesAction',
 			deserialize: false
@@ -35,10 +39,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 			uriTemplate: 'parts/getPartParameterValues',
 			controller: PartActions::class . '::getParameterValuesAction',
 			deserialize: false
-		),
-		new GetCollection(
-			controller: PartActions::class . '::GetPartsAction',
-			name: 'PartsGet'
 		),
 		new Post(
 			controller: PartActions::class . '::PartPostAction',
@@ -99,10 +99,12 @@ class Part
 	private ?StorageLocation $storageLocation = null;
 	/** @var Collection<PartManufacturer> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartManufacturer::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	#[Groups(['default'])]
 	private Collection $manufacturers;
 	/** @var Collection<PartDistributor> */
 	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartDistributor::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ApiProperty(readableLink: true, writableLink: true)]
 	#[Groups(['default'])]
 	private Collection $distributors;
 	/** @var Collection<PartAttachment> */

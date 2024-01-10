@@ -34,12 +34,12 @@ class Unit
 {
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Assert\NotBlank(message: 'unit.name.not_blank')]
 	private string $name;
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Assert\NotBlank(message: 'unit.symbol.not_blank')]
 	private string $symbol;
 	/** @var Collection<SiPrefix> */

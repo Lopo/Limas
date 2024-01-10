@@ -30,20 +30,20 @@ class SiPrefix
 	extends BaseEntity
 {
 	#[ORM\Column(type: Types::STRING)]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Assert\NotBlank(message: 'siprefix.prefix.not_blank')]
 	#[Groups(['default'])]
 	private string $prefix;
 	#[ORM\Column(type: Types::STRING, length: 2)]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Groups(['default'])]
 	private string $symbol;
 	#[ORM\Column(type: Types::INTEGER)]
-	#[Assert\Type(type: 'integer')]
+	#[Assert\Type(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $exponent;
 	#[ORM\Column(type: Types::INTEGER)]
-	#[Assert\Type(type: 'integer')]
+	#[Assert\Type(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $base;
 

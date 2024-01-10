@@ -17,20 +17,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[IgnoreIds]
 #[ApiResource(
-//	collectionOperations: [
-//		'get' => [
-//			'controller' => SystemPreferenceActions::class . '::getAction',
-//			'output_formats' => [
-//				'json'
-//			]
-//		],
-//		'SystemPreferenceDelete' => [
-//			'method' => 'delete',
-//			'path' => 'system_preferences',
-//			'controller' => SystemPreferenceActions::class . '::deleteAction'
-//		]
-//	],
-//	itemOperations: [],
 	operations: [
 		new GetCollection(
 			uriTemplate: 'system_preferences',

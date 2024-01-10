@@ -18,15 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ApiResource(
-//	itemOperations: [
-//		'get',
-//		'put',
-//		'setDefault' => [
-//			'path' => 'part_measurement_units/{id}/setDefault',
-//			'method' => 'put',
-//			'controller' => SetDefaultUnit::class
-//		]
-//	],
 	operations: [
 		new GetCollection,
 		new Post,
@@ -46,12 +37,12 @@ class PartMeasurementUnit
 {
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Assert\NotBlank(message: 'partMeasurementUnit.name.not_blank')]
 	private string $name;
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
-	#[Assert\Type(type: 'string')]
+	#[Assert\Type(type: Types::STRING)]
 	#[Assert\NotBlank(message: 'partMeasurementUnit.shortName.not_blank')]
 	private string $shortName;
 	#[ORM\Column(name: 'is_default', type: Types::BOOLEAN)]

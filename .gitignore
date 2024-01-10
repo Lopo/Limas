@@ -48,7 +48,6 @@ phpstan.neon
 /public/spritesheets/
 
 /.idea/
-/install.yaml
 /phpstan.neon
 
 /data/*
