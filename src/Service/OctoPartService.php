@@ -5,7 +5,8 @@ namespace Limas\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
-use Predis\Client as PredisClient;
+use Psr\Cache\CacheItemInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 
 class OctoPartService
@@ -227,48 +228,41 @@ EOD;
 
 
 	public function __construct(
-		private readonly string $clientId,
-		private readonly string $clientSecret,
-		private readonly int    $limit = 3,
-		private readonly string $country = 'DE',
-		private readonly string $currency = 'EUR'
+		private readonly CacheInterface                $octopartCache,
+		#[\SensitiveParameter] private readonly string $clientId,
+		#[\SensitiveParameter] private readonly string $clientSecret,
+		private readonly int                           $limit = 3,
+		private readonly string                        $country = 'DE',
+		private readonly string                        $currency = 'EUR'
 	)
 	{
 	}
 
 	public function getPartByUID(string $uid): object
 	{
-		try {
-			$redisclient = new PredisClient;
-			$redisclient->connect();
-			if (null !== ($part = $redisclient->get($uid))) {
-				return Json::decode($part);
-			}
-			$redisclient->disconnect();
-		} catch (\Exception $e) {
-		}
-
-		$body = (new Client)->request(
-			'POST',
-			self::OCTOPART_ENDPOINT,
-			[
-				RequestOptions::HEADERS => [
-					'Authorization' => 'Bearer ' . $this->getToken()
-				],
-				RequestOptions::JSON => [
-					'query' => self::OCTOPART_PARTQUERY,
-					'operationName' => 'MyPartSearch',
-					'variables' => [
-						'id' => $uid,
-						'country' => $this->country,
-						'currency' => $this->currency
-					]
-				]
-			])->getBody();
-
-		$data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-
-		return $data['data']['parts'][0];
+		return Json::decode(
+			$this->octopartCache->get($uid, function (CacheItemInterface $item) use ($uid) {
+				$body = (new Client)->request(
+					'POST',
+					self::OCTOPART_ENDPOINT,
+					[
+						RequestOptions::HEADERS => [
+							'Authorization' => 'Bearer ' . $this->getToken()
+						],
+						RequestOptions::JSON => [
+							'query' => self::OCTOPART_PARTQUERY,
+							'operationName' => 'MyPartSearch',
+							'variables' => [
+								'id' => $uid,
+								'country' => $this->country,
+								'currency' => $this->currency
+							]
+						]
+					])->getBody();
+				$data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+				return $data['data']['parts'][0];
+			})
+		);
 	}
 
 	public function getPartyByQuery($q, int $startpage = 1): array
@@ -296,14 +290,10 @@ EOD;
 		$parts = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
 
 		// work around the low number of allowed accesses to octopart's api
-		try {
-			$redisclient = new PredisClient;
-			$redisclient->connect();
-			foreach ($parts['data']['supSearch']['results'] as $result) {
-				$redisclient->set($result['part']['id'], Json::encode($result['part']));
-			}
-			$redisclient->disconnect();
-		} catch (\Exception $e) {
+		foreach ($parts['data']['supSearch']['results'] as $result) {
+			$this->octopartCache->get($result['part']['id'], function (CacheItemInterface $item) use ($result) {
+				return Json::encode($result['part']);
+			});
 		}
 
 		return $parts;
@@ -311,39 +301,25 @@ EOD;
 
 	private function getToken(): string
 	{
-		try {
-			$redisclient = new PredisClient;
-			$redisclient->connect();
-			$token = $redisclient->get('nexarToken');
-			$redisclient->disconnect();
-			if ($token !== null) {
-				return $token;
-			}
-		} catch (\Exception $e) {
-		}
-		$response = (new Client)->request(
-			'POST',
-			self::NEXAR_AUTHORITY . 'connect/token',
-			[
-				RequestOptions::ALLOW_REDIRECTS => false,
-				RequestOptions::FORM_PARAMS => [
-					'grant_type' => 'client_credentials',
-					'client_id' => $this->clientId,
-					'client_secret' => $this->clientSecret
+		return $this->octopartCache->get('nexarToken', function (CacheItemInterface $item) {
+			$response = (new Client)->request(
+				'POST',
+				self::NEXAR_AUTHORITY . 'connect/token',
+				[
+					RequestOptions::ALLOW_REDIRECTS => false,
+					RequestOptions::FORM_PARAMS => [
+						'grant_type' => 'client_credentials',
+						'client_id' => $this->clientId,
+						'client_secret' => $this->clientSecret
+					]
 				]
-			]
-		);
-		if ($response->getStatusCode() !== 200) {
-			throw new \RuntimeException('Octopart/Nexus getToken');
-		}
-		$resp = Json::decode($response->getBody());
-		try {
-			$redisclient = new PredisClient;
-			$redisclient->connect();
-			$redisclient->set('nexarToken', $resp->access_token, 'EX', $resp->expires_in - 60);
-			$redisclient->disconnect();
-		} catch (\Exception $e) {
-		}
-		return $resp->access_token;
+			);
+			if ($response->getStatusCode() !== 200) {
+				throw new \RuntimeException('Octopart/Nexus getToken');
+			}
+			$resp = Json::decode($response->getBody());
+			$item->expiresAfter($resp->expires_in - 60);
+			return $resp->access_token;
+		});
 	}
 }

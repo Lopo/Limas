@@ -27,6 +27,11 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    app.cache.adapter.redis:
+        parent: cache.adapter.redis
+#        tags:
+#            - { name: 'cache.pool', namespace: '%env(REDIS_PREFIX)%'}
+
     Limas\Listener\Deserialize:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 2 }
