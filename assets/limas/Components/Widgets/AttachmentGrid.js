@@ -139,12 +139,10 @@ Ext.define('Limas.AttachmentGrid', {
 	},
 	onDeleteClick: function () {
 		let selection = this.getView().getSelectionModel().getSelection();
-		if (selection[0]) {
-			Ext.Ajax.request({
-				url: selection[0].getId(),
-				method: 'DELETE'
-			});
-		}
+		selection.forEach((el) => Ext.Ajax.request({
+			url: el.getId(),
+			method: 'DELETE',
+		}));
 		this.store.remove(selection);
 	},
 	onSelectChange: function (selModel, selections) {
