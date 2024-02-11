@@ -12,13 +12,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
+use Gedmo\Tree\Strategy;
 use Limas\Controller\Actions\CategoryActions;
 use Limas\Entity\Traits\Tree;
 
 
 #[ORM\Entity(repositoryClass: NestedTreeRepository::class)]
 #[ORM\Index(fields: ['lft']), ORM\Index(fields: ['rgt'])]
-#[Gedmo\Tree(type: 'nested')]
+#[Gedmo\Tree(type: Strategy::NESTED)]
 #[ApiResource(
 	operations: [
 		new GetCollection,

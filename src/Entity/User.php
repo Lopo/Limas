@@ -67,7 +67,7 @@ class User
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['login:write'])]
 	private ?string $password = null;
-	#[VirtualField(type: 'string')]
+	#[VirtualField(type: Types::STRING)]
 	#[Groups(['default'])]
 	private ?string $newPassword = null;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
@@ -84,7 +84,7 @@ class User
 	/** @var Collection<TipOfTheDayHistory> */
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: TipOfTheDayHistory::class, cascade: ['remove'], orphanRemoval: true)]
 	private Collection $tipHistories;
-	#[VirtualField(type: 'string')]
+	#[VirtualField(type: Types::STRING)]
 	#[Groups(['default'])]
 	private string $initialUserPreferences;
 	#[ORM\Column(type: Types::BOOLEAN)]
@@ -275,7 +275,6 @@ class User
 		$this->username = $username;
 		return $this;
 	}
-
 
 	public function setLastSeen(?\DateTimeInterface $lastSeen): self
 	{

@@ -15,15 +15,12 @@ readonly class MimetypeIconService
 	{
 		$file = str_replace('/', '-', $mimetype) . '.svg';
 
-		$iconDirectory = $this->limas['directories']['mimetype_icons'];
-
-		$fileLocator = new FileLocator($iconDirectory);
+		$fileLocator = new FileLocator($this->limas['directories']['mimetype_icons']);
 
 		try {
 			$iconFile = $fileLocator->locate($file);
 		} catch (\InvalidArgumentException $e) {
-			$file = 'empty.svg';
-			$iconFile = $fileLocator->locate($file);
+			$iconFile = $fileLocator->locate('empty.svg');
 		}
 
 		return $iconFile;
