@@ -21,22 +21,55 @@ Ext.define('Limas.FileUploadDialog', {
 				text: i18n('Upload'),
 				iconCls: 'fugue-icon drive-upload',
 				handler: Ext.bind(function () {
-					let form = this.form.getForm();
+					let form = this.form.getForm(),
+						vFile=this.fileField.getValue(),
+						vUrl=this.urlField.getValue();
 
-					if (this.fileField.getValue() === '' && this.urlField.getValue() === '') {
+					if (vFile === '' && vUrl === '') {
 						Ext.Msg.alert(i18n('Error'), i18n('Please select a file to upload or enter an URL'));
 						return;
 					}
 
 					if (form.isValid()) {
-						form.submit({
+						if (vFile !== '') {
+							// @note does not use form.submit() neither Ext.Ajax because it does not send headers (authorization) when uploading a file
+							// @see https://docs-devel.sencha.com/extjs/7.0.0/classic/Ext.form.action.Submit.html#cfg-headers
+							let fData = new FormData();
+							fData.append(this.fileField.getName(), this.fileField.fileInputEl.dom.files[0]);
+							try {
+								fetch(this.uploadURL, {
+									method: 'POST',
+									headers: Limas.Auth.AuthenticationProvider.getAuthenticationProvider().getHeaders(),
+									body: fData
+								}).then(res => {
+									if (!res.ok) {
+										Limas.ExceptionWindow.showException(res);
+									}
+									return res.json();
+								}).then((rJson) => {
+									this.fireEvent('fileUploaded', rJson.response);
+									this.close();
+								});
+							} catch (e) {
+								console.log('catch', e);
+							}
+							return;
+						}
+
+						Ext.Ajax.request({
 							url: this.uploadURL,
-							success: Ext.bind(function (fp, o) {
-								this.fireEvent('fileUploaded', o.result.response);
+							method: 'POST',
+							headers: Limas.Auth.AuthenticationProvider.getAuthenticationProvider().getHeaders(),
+							params: {
+								url: vUrl
+							},
+							scope: this,
+							success: function (response) {
+								this.fireEvent('fileUploaded', JSON.parse(response.responseText).response);
 								this.close();
-							}, this),
-							failure: function (form, action) {
-								Limas.ExceptionWindow.showException(action.response);
+							},
+							failure: function (response) {
+								Limas.ExceptionWindow.showException(response); // @todo check param
 							}
 						});
 					}
@@ -47,7 +80,23 @@ Ext.define('Limas.FileUploadDialog', {
 			fieldLabel: i18n('URL'),
 			name: 'url',
 			anchor: '100%',
-			vtype: 'url'
+			vtype: 'url',
+			listeners: {
+				change: {
+					fn: function () {
+						let ff = this.fileField,
+							fsf = this.fileSizeField;
+						if (this.urlField.getValue() !== '') {
+							ff.disable().hide();
+							fsf.hide();
+						} else {
+							ff.enable().show();
+							fsf.show();
+						}
+					}
+				},
+				scope: this
+			}
 		});
 
 		this.diskUsage = Ext.create('Ext.ProgressBar', {
@@ -79,7 +128,20 @@ Ext.define('Limas.FileUploadDialog', {
 			fieldLabel: this.fileFieldLabel,
 			msgTarget: 'side',
 			anchor: '100%',
-			buttonText: this.uploadButtonText
+			buttonText: this.uploadButtonText,
+			listeners: {
+				change: {
+					fn: function () {
+						let uf=this.urlField;
+						if (this.fileField.getValue() !== '') {
+							uf.disable().hide();
+						} else {
+							uf.enable().show();
+						}
+					}
+				},
+				scope: this
+			}
 		});
 
 		this.uploadSizeButton = Ext.create('Ext.button.Button', {
@@ -87,6 +149,27 @@ Ext.define('Limas.FileUploadDialog', {
 			iconCls: 'fugue-icon information-frame',
 			handler: this.showUploadSizeInformation,
 			scope: this
+		});
+
+		this.fileSizeField = Ext.create('Ext.form.FieldContainer', {
+			xtype: 'fieldcontainer',
+			name: 'filesizeField',
+			hideEmptyLabel: false,
+			border: false,
+			style: 'margin-bottom: 20px;',
+			layout: {
+				type: 'hbox',
+				pack: 'start',
+				align: 'middle'
+			},
+			items: [
+				{
+					html: sprintf(i18n('Maximum upload size: %s'), Limas.bytesToSize(Limas.getMaxUploadSize())),
+					style: 'margin-right: 10px;',
+					border: false
+				},
+				this.uploadSizeButton
+			]
 		});
 
 		this.form = Ext.create('Ext.form.Panel', {
@@ -100,27 +183,7 @@ Ext.define('Limas.FileUploadDialog', {
 					style: 'margin-bottom: 20px;'
 				},
 				this.fileField,
-				{
-					xtype: 'fieldcontainer',
-					hideEmptyLabel: false,
-					border: false,
-					style: 'margin-bottom: 20px;',
-					layout: {
-						type: 'hbox',
-						pack: 'start',
-						align: 'middle'
-					},
-					items: [
-						{
-							html: sprintf(i18n('Maximum upload size: %s'),
-								Limas.bytesToSize(Limas.getMaxUploadSize())
-							),
-							style: 'margin-right: 10px;',
-							border: false
-						},
-						this.uploadSizeButton
-					]
-				},
+				this.fileSizeField,
 				this.urlField
 			],
 			dockedItems: [{
