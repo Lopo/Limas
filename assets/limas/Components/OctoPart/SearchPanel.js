@@ -129,7 +129,10 @@ Ext.define('Limas.Components.OctoPart.SearchPanel', {
 			listeners: {
 				specialkey: function (field, e) {
 					if (e.getKey() === e.ENTER) {
-						this.startSearch(field.getValue());
+						let val = field.getValue();
+						if (val.trim() !== '') {
+							this.startSearch(val);
+						}
 					}
 				},
 				scope: this

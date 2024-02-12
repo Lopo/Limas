@@ -123,12 +123,12 @@ Ext.define('Limas.PartEditorWindow', {
 			this.octoPartQueryWindow.show();
 			this.octoPartQueryWindow.setPart(this.editor.record);
 			let name = this.editor.nameField.getValue();
-			if (name !== '') {
+			if (name.trim() !== '') {
 				this.octoPartQueryWindow.startSearch(name);
 			}
 			this.octoPartQueryWindow.on('refreshData', this.onRefreshData, this);
 		} else {
-			Ext.MessageBox.alert(i18n('Octopart is not configured'), i18n('Your administrator needs to configure the API key for Octopart in the parameters.php file - see parameters.php.dist for instructions'));
+			Ext.MessageBox.alert(i18n('Octopart is not configured'), i18n('Your administrator needs to configure NEXAR_ID+NEXAR_SECRET for Octopart/Nexar in .env.local file'));
 		}
 	},
 	onRefreshData: function () {
