@@ -21,7 +21,7 @@ class TemporaryImageActions
 			$imageService->replace($image, new File($file->getPathname()));
 			$image->setOriginalFilename($file->getClientOriginalName());
 		} elseif (null !== ($url = $request->request->get('url'))) {
-			$imageService->replaceFromURL($image, $url);
+			$imageService->replaceFromURL($image, $url, $request->headers);
 		} else {
 			throw new \RuntimeException('Error: No valid file given');
 		}

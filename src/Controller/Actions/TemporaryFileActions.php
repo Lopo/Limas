@@ -34,7 +34,7 @@ class TemporaryFileActions
 			$this->uploadedFileService->replace($uploadedFile, new File($file->getPathname()));
 			$uploadedFile->setOriginalFilename($file->getClientOriginalName());
 		} elseif (null !== ($url = $request->request->get('url'))) {
-			$this->uploadedFileService->replaceFromURL($uploadedFile, $url);
+			$this->uploadedFileService->replaceFromURL($uploadedFile, $url, $request->headers);
 		} else {
 			throw new \RuntimeException($translator->trans('No valid file given'));
 		}

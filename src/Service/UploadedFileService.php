@@ -15,6 +15,7 @@ use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Url;
@@ -88,7 +89,7 @@ class UploadedFileService
 		$target->setOriginalFilename($source->getOriginalFilename());
 	}
 
-	public function replaceFromURL(UploadedFile $file, string $url): void
+	public function replaceFromURL(UploadedFile $file, string $url, ?HeaderBag $headers = null): void
 	{
 		try {
 			Validators::assert($url, 'url');
@@ -106,13 +107,13 @@ class UploadedFileService
 						'referer' => true
 					],
 					RequestOptions::HEADERS => [
-						'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
-						'Accept' => 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5',
+						'User-Agent' => $headers?->get('User-Agent') ?? 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+						'Accept' => '*/*',
 						'Cache-Control' => 'max-age=0',
 						'Connection' => 'keep-alive',
 						'Keep-Alive' => '300',
-						'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-						'Accept-Language' => 'en-us,en;q=0.5',
+						'Accept-Charset' => $headers?->get('Accept-Charset') ?? 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+						'Accept-Language' => $headers?->get('Accept-Language') ?? 'en-us,en;q=0.5',
 						'Pragma' => ''
 					]
 				])
