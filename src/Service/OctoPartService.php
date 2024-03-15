@@ -260,9 +260,8 @@ EOD;
 						]
 					])->getBody();
 				$data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-				return $data['data']['parts'][0];
-			})
-		);
+				return Json::encode($data['data']['supParts'][0]);
+			}));
 	}
 
 	public function getPartyByQuery($q, int $startpage = 1): array
@@ -291,7 +290,9 @@ EOD;
 
 		// work around the low number of allowed accesses to octopart's api
 		foreach ($parts['data']['supSearch']['results'] as $result) {
-			$this->octopartCache->get($result['part']['id'], function (CacheItemInterface $item) use ($result) {
+			$id = $result['part']['id'];
+			$this->octopartCache->delete($id);
+			$this->octopartCache->get($id, function (CacheItemInterface $item) use ($result) {
 				return Json::encode($result['part']);
 			});
 		}
