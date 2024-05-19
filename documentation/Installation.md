@@ -67,7 +67,11 @@ services:
     restart: unless-stopped
 ```
 
-All Enviroment variables with their defaul values:
+Connect to the application via `http://localhost:8080` (or the corresponding hostname of your server)
+
+To add SSL, you need a reverse proxy with SSL configured, like traefik.
+
+All Environment variables with their default values:
 
 | Environment variable name | default value                                                              |
 |---------------------------|----------------------------------------------------------------------------|
