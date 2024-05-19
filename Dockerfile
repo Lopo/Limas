@@ -5,12 +5,12 @@ WORKDIR /build
 # install dependencies to build image
 RUN \
     apt update && \
-    apt install libldap2-dev wget zlib1g-dev libpng-dev libzip-dev curl libcurl4-gnutls-dev libxml2-dev -y && \
+    apt install libldap2-dev wget zlib1g-dev libpng-dev libzip-dev curl libcurl4-gnutls-dev libxml2-dev libpq-dev -y && \
     rm -rf /var/lib/apt/lists/* && \
     docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-configure pdo --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-install ldap pdo && \
-    docker-php-ext-install zip curl bcmath dom ctype iconv pdo_mysql gd
+    docker-php-ext-install zip curl bcmath dom ctype iconv pdo_mysql pdo_pgsql gd
 
 RUN pecl install --force redis \
 && rm -rf /tmp/pear \
@@ -45,12 +45,12 @@ WORKDIR /build
 # add dependencies to final runtime image
 RUN \
     apt update && \
-    apt install libldap2-dev wget zlib1g-dev libpng-dev libzip-dev curl libcurl4-gnutls-dev libxml2-dev -y && \
+    apt install libldap2-dev wget zlib1g-dev libpng-dev libzip-dev curl libcurl4-gnutls-dev libxml2-dev libpq-dev -y && \
     rm -rf /var/lib/apt/lists/* && \
     docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-configure pdo --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-install ldap pdo && \
-    docker-php-ext-install zip curl bcmath dom ctype iconv pdo_mysql gd
+    docker-php-ext-install zip curl bcmath dom ctype iconv pdo_mysql pdo_pgsql gd
 
 RUN pecl install --force redis \
 && rm -rf /tmp/pear \
