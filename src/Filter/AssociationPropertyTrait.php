@@ -6,7 +6,7 @@ namespace Limas\Filter;
 trait AssociationPropertyTrait
 {
 	private string $property;
-	private ?string $association;
+	private ?string $association = null;
 
 
 	public function getProperty(): string
