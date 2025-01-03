@@ -227,7 +227,7 @@ Ext.application({
 			pageSize: 99999999,
 			autoLoad: true
 		});
-		Ext.create('Limas.Data.Store.CurrencyStore');
+		Ext.create('Limas.Data.Store.CurrencyStore').load();
 		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Distributor',
 			storeId: 'DistributorStore',

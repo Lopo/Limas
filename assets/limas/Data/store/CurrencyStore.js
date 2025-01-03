@@ -1,6 +1,8 @@
 Ext.define('Limas.Data.Store.CurrencyStore', {
 	extend: 'Ext.data.Store',
-	autoload: true,
+	storeId: 'CurrencyStore',
+	alias: 'store.CurrencyStore',
+	autoLoad: true,
 	fields: ['code', 'name', 'symbol'],
 
 	constructor: function () {
