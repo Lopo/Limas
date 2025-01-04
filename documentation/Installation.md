@@ -23,8 +23,9 @@ Dependencies
 5. Install composer dependencies and generate autoload files: `SYMFONY_ENV=prod composer install --no-dev -o`
 6. Install client side dependencies and build it: `yarn install` and `yarn build`
 7. Create database: `php bin/console doctrine:migrations:migrate`
-8. Create superadmin account: `php bin/console limas:user:create --role super_admin admin admin@example.com admin`
+8. Init database: `php bin/console doctrine:fixtures:load --group=setup --append`
+9. Create superadmin account: `php bin/console limas:user:create --role super_admin admin admin@example.com admin`
    * _Optional_ protect it: `php bin/console limas:user:protect admin`
-9. Generate models.js asset: `php bin/console limas:extjs:models`
-10. _Optional_ generate JWT keypair: `php bin/console lexik:jwt:generate-keypair`
-11. _Optional_ (speeds up first load): Warmup cache: `php bin/console cache:warmup`
+10. Generate models.js asset: `php bin/console limas:extjs:models`
+11. _Optional_ generate JWT keypair: `php bin/console lexik:jwt:generate-keypair`
+12. _Optional_ (speeds up first load): Warmup cache: `php bin/console cache:warmup`
