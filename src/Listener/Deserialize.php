@@ -2,9 +2,9 @@
 
 namespace Limas\Listener;
 
-use ApiPlatform\Serializer\SerializerContextBuilderInterface;
+use ApiPlatform\State\SerializerContextBuilderInterface;
+use ApiPlatform\State\Util\RequestAttributesExtractor;
 use ApiPlatform\Symfony\EventListener\DeserializeListener;
-use ApiPlatform\Symfony\Util\RequestAttributesExtractor;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;

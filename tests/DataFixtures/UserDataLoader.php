@@ -12,7 +12,7 @@ use Limas\Service\UserService;
 class UserDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$builtin = new UserProvider(UserService::BUILTIN_PROVIDER, true);
 		$manager->persist($builtin);

@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\Exception\ItemNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,7 +44,8 @@ class CategoryActions
 	public function MoveAction(Request $request, int $id, IriConverterInterface $iriConverter): Response
 	{
 		$entity = $this->getItem($this->dataProvider, $this->getResourceClass($request), $id);
-		$parentId = $request->request->get('parent');
+		$data = json_decode($request->getContent(), true) ?: [];
+		$parentId = $data['parent'] ?? $request->request->get('parent');
 		try {
 			$parentEntity = $iriConverter->getResourceFromIri($parentId);
 		} catch (\InvalidArgumentException|ItemNotFoundException $e) {

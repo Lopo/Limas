@@ -50,7 +50,7 @@ Ext.define('Limas.PartsGrid', {
 	invalidateScrollerOnRefresh: true,
 	titleProperty: 'name',
 	searchFieldSystemPreference: 'limas.part.search.field',
-	searchFieldSystemPreferenceDefaults: ['name', 'description', 'comment', 'internalPartNumber'],
+	searchFieldSystemPreferenceDefaults: ['name', 'description', 'comment', 'internalPartNumber', 'distributors.sku', 'distributors.orderNumber', 'manufacturers.partNumber'],
 	splitSearchTermSystemPreference: 'limas.part.search.split',
 	splitSearchTermSystemPreferenceDefaults: true,
 

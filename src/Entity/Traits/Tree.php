@@ -14,7 +14,7 @@ trait Tree
 {
 	#[ORM\ManyToOne(targetEntity: self::class)]
 	#[Gedmo\TreeRoot]
-	private ?self $root;
+	private ?self $root = null;
 	#[Gedmo\TreeParent]
 	#[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
 	#[ORM\JoinColumn(referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
@@ -22,20 +22,20 @@ trait Tree
 	#[Groups(['default', 'tree'])]
 	protected ?self $parent = null;
 	/** @var Collection<self> */
-	#[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
+	#[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
 	#[ORM\OrderBy(['lft' => 'ASC'])]
 	#[Groups(['tree'])]
 	protected Collection $children;
 
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Gedmo\TreeLeft]
-	private int $lft;
+	private int $lft = 0;
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Gedmo\TreeRight]
-	private int $rgt;
+	private int $rgt = 0;
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Gedmo\TreeLevel]
-	private int $lvl;
+	private int $lvl = 0;
 
 
 	public function setRoot(?self $root): self

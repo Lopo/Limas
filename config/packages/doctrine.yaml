@@ -4,16 +4,14 @@ doctrine:
 
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '15'
+        #server_version: '16'
 
         profiling_collect_backtrace: '%kernel.debug%'
-        schema_filter: "~^(?!doctrine_migration_versions$)~"
     orm:
-        auto_generate_proxy_classes: true
-        enable_lazy_ghost_objects: true
-        report_fields_where_declared: true
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.default
+        identity_generation_preferences:
+            Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
             Limas:
@@ -22,6 +20,8 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'Limas\Entity'
                 alias: Limas
+        controller_resolver:
+            auto_mapping: false
 
 when@test:
     doctrine:
@@ -32,8 +32,6 @@ when@test:
 when@prod:
     doctrine:
         orm:
-            auto_generate_proxy_classes: false
-            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool

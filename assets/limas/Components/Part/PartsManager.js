@@ -455,8 +455,16 @@ Ext.define('Limas.PartManager', {
 	onEditPart: function (part) {
 		let editorWindow = Ext.create(part.get('metaPart') === true ? 'Limas.Components.Part.Editor.MetaPartEditorWindow' : 'Limas.PartEditorWindow');
 		editorWindow.editor.on('partSaved', this.onPartSaved, this);
-		editorWindow.editor.editItem(part);
-		editorWindow.show();
+		if (part._detailLoaded) {
+			editorWindow.editor.editItem(part);
+			editorWindow.show();
+		} else {
+			this.loadPart(part.getId(), function (record) {
+				record._detailLoaded = true;
+				editorWindow.editor.editItem(record);
+				editorWindow.show();
+			});
+		}
 	},
 	onNewPartSaved: function () {
 		this.grid.getStore().reload();
@@ -476,11 +484,19 @@ Ext.define('Limas.PartManager', {
 				let r = this.grid.getSelection()[0];
 
 				this.detailPanel.setActiveTab(this.detail);
-				this.detail.setValues(r);
 				this.detailPanel.expand();
 				this.stockLevel.part = r.getId();
-
 				this.tree.syncButton.enable();
+
+				// Load full part detail (with associations) via GET, skip if already loaded
+				if (r._detailLoaded) {
+					this.detail.setValues(r);
+				} else {
+					this.loadPart(r.getId(), function (record) {
+						record._detailLoaded = true;
+						this.detail.setValues(record);
+					});
+				}
 			} else {
 				this.tree.syncButton.disable();
 			}

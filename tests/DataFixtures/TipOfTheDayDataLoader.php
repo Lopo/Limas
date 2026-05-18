@@ -10,7 +10,7 @@ use Limas\Entity\TipOfTheDay;
 class TipOfTheDayDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$tipOfTheDay = (new TipOfTheDay)
 			->setName('FOO');

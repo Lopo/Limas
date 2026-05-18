@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -31,7 +32,8 @@ use Limas\Entity\Traits\Tree;
 		),
 		new Post,
 		new Get,
-		new Put,
+//		new Put,
+		new Patch,
 		new Delete,
 		new Put(
 			uriTemplate: 'footprint_categories/{id}/move',
@@ -49,7 +51,7 @@ class FootprintCategory
 	use Tree;
 
 	/** @var Collection<Footprint> */
-	#[ORM\OneToMany(mappedBy: 'category', targetEntity: Footprint::class)]
+	#[ORM\OneToMany(targetEntity: Footprint::class, mappedBy: 'category')]
 	private Collection $footprints;
 
 

@@ -2,7 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;

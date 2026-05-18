@@ -20,18 +20,14 @@ readonly class PartMeasurementUnitService
 		$qb->update(PartMeasurementUnit::class, 'pu')
 			->set('pu.default', ':default')
 			->where($qb->expr()->eq('pu.id', ':id'))
-			->setParameters([
-				'id' => $partMeasurementUnit->getId(),
-				'default' => true
-			])
+			->setParameter('id', $partMeasurementUnit->getId())
+			->setParameter('default', true)
 			->getQuery()->execute();
 		$qb->update(PartMeasurementUnit::class, 'pu')
 			->set('pu.default', ':default')
 			->where($qb->expr()->neq('pu.id', ':id'))
-			->setParameters([
-				'id' => $partMeasurementUnit->getId(),
-				'default' => false
-			])
+			->setParameter('id', $partMeasurementUnit->getId())
+			->setParameter('default', false)
 			->getQuery()->execute();
 
 		$this->entityManager->commit();

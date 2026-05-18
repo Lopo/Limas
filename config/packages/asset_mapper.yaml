@@ -4,3 +4,9 @@ framework:
         paths:
             assets/: ''
             vendor/atelierspierrot/famfamfam-silk-sprite/src/: 'famfamfam-silk'
+        missing_import_mode: strict
+
+when@prod:
+    framework:
+        asset_mapper:
+            missing_import_mode: warn

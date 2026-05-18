@@ -12,7 +12,7 @@ use Limas\Entity\ProjectPart;
 class ProjectDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$projectPart1 = (new ProjectPart)
 			->setPart($this->getReference('part.1', Part::class))

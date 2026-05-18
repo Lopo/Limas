@@ -46,7 +46,7 @@ class IndexController
 		$aParameters = [
 			'doctrine_orm_version' => InstalledVersions::getVersion('doctrine/orm'),
 			'doctrine_dbal_version' => InstalledVersions::getVersion('doctrine/dbal'),
-			'doctrine_common_version' => InstalledVersions::getVersion('doctrine/common'),
+			'doctrine_bundle_version' => InstalledVersions::getVersion('doctrine/doctrine-bundle'),
 			'php_version' => PHP_VERSION,
 			'auto_start_session' => true,
 			'maxUploadSize' => false !== ($val = $this->getLimasParameterWithDefault('upload.limit', false))

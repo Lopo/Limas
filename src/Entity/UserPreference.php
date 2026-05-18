@@ -2,7 +2,7 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Action\NotFoundAction;
+use ApiPlatform\Symfony\Action\NotFoundAction;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;

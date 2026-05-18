@@ -2,7 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\SystemNoticeService;
 use Limas\Tests\DataFixtures\UserDataLoader;
@@ -28,16 +28,22 @@ class SystemNoticeTest
 
 		$client->request('GET', $iri);
 
-		$response = Json::decode($client->getResponse()->getContent());
+		$response = Json::decode(($r1=$client->getResponse())->getContent());
 
 		self::assertEquals('FOO', $response->type);
 		self::assertEquals('BAR', $response->title);
 		self::assertEquals('DING', $response->description);
 		self::assertEquals(false, $response->acknowledged);
 
-		$client->request('PUT', $iri . '/acknowledge');
+		$client->request('PUT',
+			$iri . '/acknowledge',
+			[],
+			[],
+			['CONTENT_TYPE' => 'application/json'],
+			'{}'
+		);
 
-		$response = Json::decode($client->getResponse()->getContent());
+		$response = Json::decode(($r2=$client->getResponse())->getContent());
 		self::assertEquals(true, $response->acknowledged);
 	}
 }

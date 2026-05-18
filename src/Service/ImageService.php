@@ -47,7 +47,7 @@ class ImageService
 	public function canHandleMimetype(string $mimeType): bool
 	{
 		foreach ($this->liipImagine->getDriverInfo()->getSupportedFormats()->getAll() as $format) {
-			if ($format->getCanonicalFileExtension() === $mimeType) {
+			if ($format->getMimeType() === $mimeType) {
 				return true;
 			}
 		}

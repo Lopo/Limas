@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -30,7 +31,8 @@ use Limas\Entity\Traits\Tree;
 		),
 		new Post,
 		new Get,
-		new Put,
+//		new Put,
+		new Patch,
 		new Delete,
 		new Put(
 			uriTemplate: 'part_categories/{id}/move',

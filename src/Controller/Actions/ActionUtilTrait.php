@@ -3,7 +3,7 @@
 namespace Limas\Controller\Actions;
 
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
-use ApiPlatform\Exception\RuntimeException;
+use ApiPlatform\Metadata\Exception\RuntimeException;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use Symfony\Component\HttpFoundation\Request;

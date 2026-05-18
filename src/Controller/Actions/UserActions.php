@@ -55,8 +55,7 @@ class UserActions
 			];
 		}
 
-		$user->setInitialUserPreferences(Json::encode($arrayUserPreferences))
-			->eraseCredentials();
+		$user->setInitialUserPreferences(Json::encode($arrayUserPreferences));
 
 		return new JsonResponse($this->serializer->serialize($user, 'jsonld'), Response::HTTP_OK, ['Content-Type' => 'application/ld+json'], true);
 	}
@@ -77,7 +76,6 @@ class UserActions
 			->setNewPassword(null);
 		$this->entityManager->flush();
 
-		$data->eraseCredentials();
 		return $data;
 	}
 

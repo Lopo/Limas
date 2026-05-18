@@ -69,7 +69,7 @@ Encore
 	// enables and configure @babel/preset-env polyfills
 	.configureBabelPresetEnv((config) => {
 		config.useBuiltIns = 'usage';
-		config.corejs = '3.23';
+		config.corejs = '3.38';
 	})
 
 	.addPlugin(new SpritesmithPlugin({
@@ -245,6 +245,7 @@ if (!Encore.isDev()) {
 				'@/limas/Dialogs/FileUploadDialog.js',
 				'@/limas/Dialogs/RememberChoiceMessageBox.js',
 				'@/limas/Data/HydraProxy.js',
+				'@/limas/Data/HydraTreeProxy.js',
 				'@/limas/Data/HydraReader.js',
 				'@/limas/Data/HydraTreeReader.js',
 				'@/limas/Data/store/PartCategoryStore.js',

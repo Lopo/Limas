@@ -54,11 +54,11 @@ class StockTest
 		$client->request(
 			'PUT',
 			'/api/parts/' . $part->getId() . '/addStock',
-			['quantity' => 5],
+			[/*'quantity' => 5*/],
 			[],
-//			['CONTENT_TYPE' => 'application/json'],
-			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
-//			Json::encode(['quantity' => 5])
+			['CONTENT_TYPE' => 'application/json'],
+//			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
+			Json::encode(['quantity' => 5])
 		);
 
 		$result = Json::decode($client->getResponse()->getContent());
@@ -79,11 +79,11 @@ class StockTest
 		$client->request(
 			'PUT',
 			'/api/parts/' . $part->getId() . '/removeStock',
-			['quantity' => 7],
+			[/*'quantity' => 7*/],
 			[],
-//			['CONTENT_TYPE' => 'application/json'],
-			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
-//			Json::encode(['quantity' => 7])
+			['CONTENT_TYPE' => 'application/json'],
+//			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
+			Json::encode(['quantity' => 7])
 		);
 
 		$result = Json::decode($client->getResponse()->getContent());
@@ -103,11 +103,11 @@ class StockTest
 		$client->request(
 			'PUT',
 			'/api/parts/' . $part->getId() . '/setStock',
-			['quantity' => 33],
+			[/*'quantity' => 33*/],
 			[],
-//			['CONTENT_TYPE' => 'application/json'],
-			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
-//			Json::encode(['quantity' => 33])
+			['CONTENT_TYPE' => 'application/json'],
+//			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
+			Json::encode(['quantity' => 33])
 		);
 
 		$result = Json::decode($client->getResponse()->getContent());

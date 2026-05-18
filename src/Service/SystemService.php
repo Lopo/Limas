@@ -33,6 +33,7 @@ readonly class SystemService
 	{
 		$aData = [
 			new SystemInformationRecord('API Platform', InstalledVersions::getVersion('api-platform/core'), 'Libraries'),
+			new SystemInformationRecord('Doctrine Bundle', InstalledVersions::getVersion('doctrine/doctrine-bundle'), 'Libraries'),
 			new SystemInformationRecord('Doctrine ORM', InstalledVersions::getVersion('doctrine/orm'), 'Libraries'),
 			new SystemInformationRecord('Doctrine DBAL', InstalledVersions::getVersion('doctrine/dbal'), 'Libraries'),
 
@@ -124,7 +125,10 @@ readonly class SystemService
 	protected function getSchemaQueries(): array
 	{
 		$metadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
-		return (new SchemaTool($this->entityManager))->getUpdateSchemaSql($metadatas);
+		$queries = (new SchemaTool($this->entityManager))->getUpdateSchemaSql($metadatas);
+
+		// Apply same filter as doctrine:migrations:diff --filter-expression
+		return array_values(array_filter($queries, fn($sql) => !preg_match('~\bdoctrine_migration_versions\b~', $sql)));
 	}
 
 	/**

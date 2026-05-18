@@ -14,11 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity]
-#[ORM\Table(
-	uniqueConstraints: [
-		new ORM\UniqueConstraint(name: 'type', fields: ['type'])
-	]
-)]
+#[ORM\UniqueConstraint(name: 'type', fields: ['type'])]
 #[ApiResource(
 	operations: [
 		new GetCollection,

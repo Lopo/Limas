@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
@@ -127,18 +127,19 @@ class PartActions
 			throw new \InvalidArgumentException("The parameter 'valueType' must be given");
 		}
 
+		$name = $request->query->get('name');
+		$valueType = $request->query->get('valueType');
+
 		$qb = $this->entityManager->createQueryBuilder();
-		if ($request->query->get('valueType') === 'string') {
+		if ($valueType === 'string') {
 			return $this->json(
 				$qb->select('p.stringValue AS value')
 					->from(PartParameter::class, 'p')
 					->andWhere($qb->expr()->eq('p.name', ':name'))
 					->andWhere($qb->expr()->eq('p.valueType', ':valueType'))
 					->groupBy('p.stringValue')
-					->setParameters([
-						'name' => $request->query->get('name'),
-						'valueType' => $request->query->get('valueType'),
-					])
+					->setParameter('name', $name)
+					->setParameter('valueType', $valueType)
 					->getQuery()->getArrayResult()
 			);
 		}
@@ -148,10 +149,8 @@ class PartActions
 				->andWhere($qb->expr()->eq('p.name', ':name'))
 				->andWhere($qb->expr()->eq('p.valueType', ':valueType'))
 				->groupBy('p.value')
-				->setParameters([
-					'name' => $request->query->get('name'),
-					'valueType' => $request->query->get('valueType'),
-				])
+				->setParameter('name', $name)
+				->setParameter('valueType', $valueType)
 				->getQuery()->getArrayResult()
 		);
 	}
@@ -209,15 +208,16 @@ class PartActions
 
 	public function AddStockAction(Request $request, int $id): Part
 	{
+		$data = Json::decode($request->getContent());
 		$part = $this->getItem($this->dataProvider, Part::class, $id);
 		$stock = (new StockEntry)
 			->setUser($this->getUser())
-			->setStockLevel($request->request->getInt('quantity'));
-		if ($request->request->get('price') !== null) {
-			$stock->setPrice((float)$request->request->get('price'));
+			->setStockLevel((int)$data->quantity);
+		if (($data->price ?? null) !== null) {
+			$stock->setPrice((float)$data->price);
 		}
-		if ($request->request->get('comment') !== null) {
-			$stock->setComment($request->request->get('comment'));
+		if (($data->comment ?? null) !== null) {
+			$stock->setComment($data->comment);
 		}
 
 		$part->addStockLevel($stock);
@@ -229,12 +229,13 @@ class PartActions
 
 	public function RemoveStockAction(Request $request, int $id): Part
 	{
+		$data = Json::decode($request->getContent());
 		$part = $this->getItem($this->dataProvider, Part::class, $id);
 		$stock = (new StockEntry)
 			->setUser($this->userService->getCurrentUser())
-			->setStockLevel(0 - $request->request->getInt('quantity'));
-		if ($request->request->get('comment') !== null) {
-			$stock->setComment($request->request->get('comment'));
+			->setStockLevel(0 - (int)$data->quantity);
+		if (($data->comment ?? null) !== null) {
+			$stock->setComment($data->comment);
 		}
 
 		$part->addStockLevel($stock);
@@ -246,13 +247,14 @@ class PartActions
 
 	public function SetStockAction(Request $request, int $id): Part
 	{
+		$data = Json::decode($request->getContent());
 		$part = $this->getItem($this->dataProvider, Part::class, $id);
-		if (0 !== ($correctionQuantity = $request->request->getInt('quantity') - $part->getStockLevel())) {
+		if (0 !== ($correctionQuantity = (int)$data->quantity - $part->getStockLevel())) {
 			$stock = (new StockEntry)
 				->setUser($this->userService->getCurrentUser())
 				->setStockLevel($correctionQuantity);
-			if ($request->request->get('comment') !== null) {
-				$stock->setComment($request->request->get('comment'));
+			if (($data->comment ?? null) !== null) {
+				$stock->setComment($data->comment);
 			}
 			$part->addStockLevel($stock);
 			$this->entityManager->persist($stock);

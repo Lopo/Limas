@@ -41,6 +41,9 @@ class StockLevel
 	{
 		$entityManager = $eventArgs->getObjectManager();
 
+		// Force initialize stockLevels collection before recomputing
+		$part->getStockLevels()->count();
+
 		$part->recomputeStockLevels();
 
 		$entityManager->getUnitOfWork()->recomputeSingleEntityChangeSet(

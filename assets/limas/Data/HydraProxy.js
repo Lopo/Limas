@@ -43,6 +43,15 @@ Ext.define('Limas.Data.HydraProxy', {
 	getHeaders: function () {
 		let headers = this.callParent(arguments);
 		Ext.apply(headers, Limas.Auth.AuthenticationProvider.getAuthenticationProvider().getHeaders());
+		if (this._currentMethod === 'PATCH') {
+			Ext.apply(headers, {
+				'Content-Type': 'application/merge-patch+json'
+			});
+		} else if (this._currentMethod === 'POST' || this._currentMethod === 'PUT') {
+			Ext.apply(headers, {
+				'Content-Type': 'application/json'
+			});
+		}
 		return headers;
 	},
 	buildUrl: function (request) {
@@ -95,13 +104,17 @@ Ext.define('Limas.Data.HydraProxy', {
 		let headers = this.getHeaders();
 		if (method === 'PATCH') {
 			headers['Content-Type'] = 'application/merge-patch+json';
-			if (Ext.isObject(parameters)) {
-				request.setJsonData(parameters);
-			}
-		} else {
-			if (Ext.isObject(parameters)) {
+		} else if (method === 'PUT' || method === 'POST') {
+			headers['Content-Type'] = 'application/json';
+		}
+
+		if (method === 'GET' || method === 'DELETE') {
+			if (Ext.isObject(parameters) && !Ext.Object.isEmpty(parameters)) {
 				request.setParams(parameters);
 			}
+		} else {
+			// PUT/POST/PATCH - always send JSON body (at least empty object)
+			request.setJsonData(Ext.isObject(parameters) && !Ext.isArray(parameters) ? parameters : {});
 		}
 		request.setHeaders(headers);
 		request.setCallback(function (options, success, response) {
@@ -214,5 +227,10 @@ Ext.define('Limas.Data.HydraProxy', {
 	},
 	showException: function (response) {
 		Limas.ExceptionWindow.showException(response);
+	},
+	buildRequest: function (operation) {
+		let request = this.callParent([operation]);
+		this._currentMethod = this.getMethod(request);
+		return request;
 	}
 });

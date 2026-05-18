@@ -2,7 +2,7 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Service\ImageService;
 use Limas\Tests\DataFixtures\UserDataLoader;

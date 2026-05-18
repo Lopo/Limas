@@ -2,14 +2,13 @@
 
 namespace Limas\Service;
 
-use ApiPlatform\Api\IriConverterInterface;
-use ApiPlatform\Api\UrlGeneratorInterface;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Limas\Annotation\ByReference;
 use Limas\Annotation\IgnoreIds;
 use Limas\Annotation\VirtualField;
@@ -36,11 +35,13 @@ readonly class ReflectionService
 	{
 		$bTree = false;
 		$parentClass = 'HydraModel';
+		$proxyType = 'Hydra';
 
 		$cm = $this->em->getClassMetadata($entity);
 		if ($cm->getReflectionClass()->isSubclassOf(AbstractCategory::class)) {
 			$parentClass = 'HydraTreeModel';
 			$bTree = true;
+			$proxyType = 'HydraTree';
 		}
 
 		$fieldMappings = array_merge($this->getVirtualFieldMappings($cm), $this->getDatabaseFieldMappings($cm));
@@ -56,6 +57,7 @@ readonly class ReflectionService
 			'associations' => $associationMappings,
 			'className' => $this->convertPHPToExtJSClassName($entity),
 			'parentClass' => $parentClass,
+			'proxyType' => $proxyType
 		];
 		try {
 //			$renderParams['uri'] = $this->iriConverter->getIriFromResourceClass($entity);
@@ -119,14 +121,15 @@ readonly class ReflectionService
 			$currentMapping = $cm->getFieldMapping($field);
 			$asserts = $this->getExtJSAssertMappings($cm, $field);
 
-			if ($currentMapping['fieldName'] === 'id') {
-				$currentMapping['fieldName'] = '@id';
-				$currentMapping['type'] = 'string';
+			$fieldName = $currentMapping['fieldName'];
+			$fieldType = $currentMapping['type'];
+
+			if ($fieldName === 'id') {
+				$fieldName = '@id';
+				$fieldType = 'string';
 			}
 
-			if (!array_key_exists('nullable', $currentMapping)) {
-				$currentMapping['nullable'] = false;
-			}
+			$nullable = $currentMapping->offsetExists('nullable') ? $currentMapping['nullable'] : false;
 
 			$name = null;
 			if ($currentMapping['type'] === Types::JSON) {
@@ -136,9 +139,9 @@ readonly class ReflectionService
 				}
 			}
 			$fieldMappings[] = [
-				'name' => $currentMapping['fieldName'],
-				'type' => $this->getExtJSFieldMapping($currentMapping['type'], $name),
-				'nullable' => $currentMapping['nullable'],
+				'name' => $fieldName,
+				'type' => $this->getExtJSFieldMapping($fieldType, $name),
+				'nullable' => $nullable,
 				'validators' => Json::encode($asserts),
 				'persist' => $this->allowPersist($cm, $field)
 			];
@@ -190,18 +193,18 @@ readonly class ReflectionService
 			$associationType = $association['type'];
 
 			switch ($association['type']) {
-				case ClassMetadataInfo::MANY_TO_MANY:
+				case ClassMetadata::MANY_TO_MANY:
 					$associationType = 'MANY_TO_MANY';
 					$getterPlural = true;
 					break;
-				case ClassMetadataInfo::MANY_TO_ONE:
+				case ClassMetadata::MANY_TO_ONE:
 					$associationType = 'MANY_TO_ONE';
 					break;
-				case ClassMetadataInfo::ONE_TO_MANY:
+				case ClassMetadata::ONE_TO_MANY:
 					$associationType = 'ONE_TO_MANY';
 					$getterPlural = true;
 					break;
-				case ClassMetadataInfo::ONE_TO_ONE:
+				case ClassMetadata::ONE_TO_ONE:
 					$associationType = 'ONE_TO_ONE';
 					break;
 			}

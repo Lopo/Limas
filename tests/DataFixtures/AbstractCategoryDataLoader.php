@@ -9,7 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 abstract class AbstractCategoryDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$entityClass = $this->getEntityClass();
 		$separator = ' ➤ ';

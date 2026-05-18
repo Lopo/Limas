@@ -60,6 +60,12 @@ class OctoPartService
             group
           }
           displayValue
+          value
+          siValue
+          valueType
+          units
+          unitsName
+          unitsSymbol
         }
         documentCollections {
           name
@@ -160,6 +166,12 @@ EOD;
         group
       }
       displayValue
+      value
+      siValue
+      valueType
+      units
+      unitsName
+      unitsSymbol
     }
     documentCollections {
       name

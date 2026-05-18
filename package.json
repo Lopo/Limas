@@ -2,12 +2,13 @@
     "devDependencies": {
         "@babel/core": "^7.17.0",
         "@babel/preset-env": "^7.16.0",
-        "@symfony/webpack-encore": "^4.0.0",
-        "core-js": "^3.23.0",
-        "file-loader": "^6.0.0",
+        "@playwright/test": "^1.57.0",
+        "@symfony/webpack-encore": "^5.1.0",
+        "core-js": "^3.38.0",
+        "file-loader": "^6.2.0",
         "regenerator-runtime": "^0.13.9",
         "webpack": "^5.74.0",
-        "webpack-cli": "^4.10.0",
+        "webpack-cli": "^5.1.0",
         "webpack-notifier": "^1.15.0",
         "webpack-spritesmith": "^1.1.0"
     },
@@ -17,10 +18,14 @@
         "dev-server": "encore dev-server",
         "dev": "encore dev",
         "watch": "encore dev --watch",
-        "build": "encore production --progress"
+        "build": "encore production --progress",
+        "test:e2e": "playwright test",
+        "test:e2e:headed": "playwright test --headed",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:debug": "playwright test --debug"
     },
     "dependencies": {
-        "@mcler/webpack-concat-plugin": "^4.1.5",
-        "html-webpack-plugin": "^5.6.0"
+        "@mcler/webpack-concat-plugin": "^4.1.6",
+        "html-webpack-plugin": "^5.6.5"
     }
 }

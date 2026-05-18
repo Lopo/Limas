@@ -58,6 +58,7 @@ class JsonAuthenticatorFactory
 
 	public function addConfiguration(NodeDefinition $node): void
 	{
+		/** @var \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $node */
 		parent::addConfiguration($node);
 
 		$node

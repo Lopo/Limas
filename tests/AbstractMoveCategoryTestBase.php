@@ -2,10 +2,11 @@
 
 namespace Limas\Tests;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Limas\Tests\DataFixtures\UserDataLoader;
+use Nette\Utils\Json;
 
 
 abstract class AbstractMoveCategoryTestBase
@@ -31,15 +32,14 @@ abstract class AbstractMoveCategoryTestBase
 		$rootCategory = $this->fixtures->getReference($this->getReferencePrefix() . '.root', $this->getResourceClass());
 
 		$iriConverter = self::getContainer()->get(IriConverterInterface::class);
-		$iri = $iriConverter->getIriFromResource($secondCategory) . '/move';
-		$targetIri = $iriConverter->getIriFromResource($rootCategory);
 
 		$client->request(
 			'PUT',
-			$iri,
-			['parent' => $targetIri],
+			$iriConverter->getIriFromResource($secondCategory) . '/move',
 			[],
-			['CONTENT_TYPE' => 'application/x-www-form-urlencoded']
+			[],
+			['CONTENT_TYPE' => 'application/json'],
+			Json::encode(['parent' => $iriConverter->getIriFromResource($rootCategory)])
 		);
 
 		self::assertEquals($rootCategory->getId(), $secondCategory->getParent()->getId());

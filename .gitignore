@@ -25,7 +25,7 @@ yarn-error.log
 
 ###> phpunit/phpunit ###
 /phpunit.xml
-.phpunit.result.cache
+/.phpunit.cache/
 ###< phpunit/phpunit ###
 
 ###> symfony/phpunit-bridge ###
@@ -35,7 +35,7 @@ yarn-error.log
 
 ###> symfony/asset-mapper ###
 /public/assets/
-/assets/vendor
+/assets/vendor/
 ###< symfony/asset-mapper ###
 
 ###> phpstan/phpstan ###
@@ -57,3 +57,4 @@ phpstan.neon
 
 /data_test
 /reports
+/test-results

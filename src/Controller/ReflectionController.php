@@ -17,6 +17,7 @@ class ReflectionController
 	}
 
 	#[Route('/entity/{cls}', name: 'app_reflection')]
+	#[Route('/Limas/Entity/{cls}.js', name: 'app_reflection2')]
 	public function index(string $cls): Response
 	{
 		if (Strings::match($cls, '/^[A-Z][a-zA-Z]+$/') === null) {

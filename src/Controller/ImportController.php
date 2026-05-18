@@ -2,7 +2,7 @@
 
 namespace Limas\Controller;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use Limas\Service\ImporterService;
 use Limas\Service\UploadedFileService;
 use Nette\Utils\Json;

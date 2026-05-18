@@ -47,7 +47,7 @@ class ProjectPart
 	#[ORM\Column(type: Types::INTEGER)]
 	#[Groups(['default'])]
 	private int $quantity;
-	#[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'parts')]
+	#[ORM\ManyToOne(targetEntity: Project::class, cascade: ['persist'], inversedBy: 'parts')]
 	#[Assert\NotNull]
 	private ?Project $project;
 	#[ORM\Column(type: Types::STRING, nullable: true)]

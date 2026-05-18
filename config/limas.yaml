@@ -26,7 +26,7 @@ parameters:
         octopart:
             nexarId: '%env(NEXAR_ID)%'
             nexarSecret: '%env(NEXAR_SECRET)%'
-            limit: 3
+            limit: 5
         filesystem:
             data_directory: '%limas.filesystem.data_directory%'
             quota: false
@@ -34,8 +34,8 @@ parameters:
             path_separator: ' ➤ '
         cronjob:
             check: true
-        required_cronjobs:
-            - 'limas:cron:synctips'
+        required_cronjobs: []
+#            - 'limas:cron:synctips'
         parts:
 #            internalpartnumberunique: false
             internalpartnumberunique: '%env(bool:APP_DEBUG)%'

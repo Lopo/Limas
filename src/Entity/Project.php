@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
+use Limas\State\ProjectProcessor;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
@@ -23,7 +24,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 		new GetCollection,
 		new Post,
 		new Get,
-		new Put,
+		new Put(processor: ProjectProcessor::class),
 		new Delete
 	],
 	normalizationContext: ['groups' => ['default']],
@@ -36,9 +37,9 @@ class Project
 	#[Groups(['default'])]
 	private string $name;
 	#[ORM\ManyToOne(targetEntity: User::class)]
-	private ?User $user;
+	private ?User $user = null;
 	/** @var Collection<ProjectPart> */
-	#[ORM\OneToMany(mappedBy: 'project', targetEntity: ProjectPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ProjectPart::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private Collection $parts;
@@ -46,7 +47,7 @@ class Project
 	#[Groups(['default'])]
 	private ?string $description;
 	/** @var Collection<ProjectAttachment> */
-	#[ORM\OneToMany(mappedBy: 'project', targetEntity: ProjectAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ProjectAttachment::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
@@ -92,9 +93,23 @@ class Project
 		return $this;
 	}
 
-	public function getParts(): Collection
+	/** @return array<ProjectPart> */
+	public function getParts(): array
 	{
-		return $this->parts;
+		return $this->parts->getValues();
+	}
+
+	public function setParts(iterable $parts): self
+	{
+		// Odstráň staré parts (orphanRemoval ich zmaže)
+		foreach ($this->parts->toArray() as $existingPart) {
+			$this->removePart($existingPart);
+		}
+		// Pridaj nové
+		foreach ($parts as $part) {
+			$this->addPart($part);
+		}
+		return $this;
 	}
 
 	public function addPart(ProjectPart $projectPart): self

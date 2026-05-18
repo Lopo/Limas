@@ -17,7 +17,7 @@ use Limas\Entity\Unit;
 class PartDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$partUnit = (new PartMeasurementUnit)
 			->setName('pieces')

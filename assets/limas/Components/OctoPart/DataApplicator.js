@@ -62,27 +62,39 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 
 		if (this.import.parameters) {
 			for (i in this.data['specs']) {
-				let q_value, q_unit, q_unit2, q_siPrefix;
-				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].displayValue);
-				[q_value, q_unit2, q_siPrefix] = this.SIUnitPrefix(q_value, q_unit);
-				if (q_unit2 === null && q_unit) {
-					// there is a unit (q_unit), but we do not know about it or the prefix of the unit is disabled
-					unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit, 0, false, true, true);
-					if (unit === null) {
-						this.displayWaitWindow(i18n('Creating Unit…'), q_unit);
-						unit = Ext.create('Limas.Entity.Unit');
-						unit.set('name', q_unit); // v4 API does not have that anymore
-						unit.set('symbol', q_unit);
-						unit.save({
-							success: function () {
-								Ext.data.StoreManager.lookup('UnitStore').load({
-									callback: this.applyData,
-									scope: this
-								});
-							},
-							scope: this
-						});
-						return false;
+				let specData = this.data.specs[i],
+					q_unit, q_unit2, q_siPrefix;
+
+				// Use valueType from API if available, otherwise fall back to heuristics
+				if (specData.valueType) {
+					q_unit = (specData.valueType !== 'text' && specData.units) ? specData.units : null;
+				} else if (specData.unitsSymbol) {
+					q_unit = specData.unitsSymbol;
+				} else {
+					let q_value;
+					[q_value, q_unit] = this.parseQuantity(specData.displayValue);
+				}
+
+				if (q_unit) {
+					[, q_unit2, q_siPrefix] = this.SIUnitPrefix(0, q_unit);
+					if (q_unit2 === null && q_unit) {
+						unit = Ext.data.StoreManager.lookup('UnitStore').findRecord('symbol', q_unit, 0, false, true, true);
+						if (unit === null) {
+							this.displayWaitWindow(i18n('Creating Unit…'), q_unit);
+							unit = Ext.create('Limas.Entity.Unit');
+							unit.set('name', q_unit);
+							unit.set('symbol', q_unit);
+							unit.save({
+								success: function () {
+									Ext.data.StoreManager.lookup('UnitStore').load({
+										callback: this.applyData,
+										scope: this
+									});
+								},
+								scope: this
+							});
+							return false;
+						}
 					}
 				}
 			}
@@ -277,18 +289,30 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		if (this.import.parameters) {
 			let q_value, q_unit;
 			for (i in this.data['specs']) {
+				let specData = this.data.specs[i];
 				spec = Ext.create('Limas.Entity.PartParameter');
-				spec.set('name', this.data.specs[i].attribute.name);
+				spec.set('name', specData.attribute.name);
 
-				[q_value, q_unit] = this.parseQuantity(this.data.specs[i].displayValue);
-
-				// some fields need to be treated as strings
-				if (this.data.specs[i].attribute.name === 'Case/Package' || this.data.specs[i].attribute.name === 'Case Code (Imperial)' || this.data.specs[i].attribute.name === 'Case Code (Metric)') {
-					q_value = null; // force string interpretation
-					q_unit = null; // force string interpretation
+				// Use valueType from API if available
+				if (specData.valueType) {
+					if (specData.valueType === 'text') {
+						q_value = null;
+						q_unit = null;
+					} else {
+						// float or integer
+						q_value = parseFloat(specData.value);
+						q_unit = specData.units || null;
+						if (isNaN(q_value)) {
+							q_value = null;
+							q_unit = null;
+						}
+					}
+				} else {
+					// Fallback for old cached data without valueType
+					[q_value, q_unit] = this.parseQuantity(specData.displayValue);
 				}
 
-				if (q_value != null && q_unit != null) {
+				if (q_value != null && q_unit) {
 					[value, unit, siPrefix] = this.SIUnitPrefix(q_value, q_unit);
 					if (value && unit && siPrefix) {
 						spec.setUnit(unit);
@@ -307,7 +331,11 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 					spec.set('value', q_value);
 				} else {
 					spec.set('valueType', 'string');
-					spec.set('stringValue', this.data.specs[i].displayValue);
+					let sv = specData.displayValue;
+					if (sv && sv.indexOf('|') !== -1) {
+						sv = [...new Set(sv.split(/[,|]/).map(s => s.trim()).filter(s => s))].join(', ');
+					}
+					spec.set('stringValue', sv);
 				}
 
 				found = null;

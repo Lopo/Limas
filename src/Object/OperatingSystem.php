@@ -73,9 +73,7 @@ class OperatingSystem
 	/**
 	 * Tries to detect the distribution
 	 *
-	 * Currently, we only execute lsb_release to find out the version number.
-	 * As I don't have any other distributions at hand to test with, I rely on user feedback which distributions don't
-	 * have lsb_release.
+	 * As I don't have any other distributions at hand to test with, I rely on user feedback which distributions don't have lsb_release.
 	 */
 	public function getLinuxDistribution(): string
 	{

@@ -94,10 +94,10 @@ class TemporaryFileControllerTest
 		$client->request(
 			'POST',
 			'/api/temp_uploaded_files/upload',
-			['url' => 'https://partkeepr.org/images/partkeepr-banner.png']
+			['url' => 'https://httpbin.org/image/png']
 		);
 
-		$response = Json::decode($client->getResponse()->getContent());
+		$response = Json::decode(($resp=$client->getResponse())->getContent());
 
 		self::assertObjectHasProperty('success', $response);
 		self::assertObjectHasProperty('image', $response);

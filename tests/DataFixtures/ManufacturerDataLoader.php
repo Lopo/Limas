@@ -10,7 +10,7 @@ use Limas\Entity\Manufacturer;
 class ManufacturerDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$manufacturer = (new Manufacturer)
 			->setName('TEST');

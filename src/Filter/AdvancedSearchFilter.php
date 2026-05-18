@@ -2,10 +2,10 @@
 
 namespace Limas\Filter;
 
-use ApiPlatform\Api\IriConverterInterface;
 use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Exception\ItemNotFoundException;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Doctrine\ORM\Query\Expr\Composite;
@@ -23,6 +23,7 @@ class AdvancedSearchFilter
 	private array $aliases = [];
 	private int $parameterCount = 0;
 	private array $joins = [];
+	private int $subFilterGroupCount = 0;
 
 
 	public function __construct(
@@ -40,6 +41,7 @@ class AdvancedSearchFilter
 	{
 		$this->joins = $this->aliases = [];
 		$this->parameterCount = 0;
+		$this->subFilterGroupCount = 0;
 
 		foreach ($filters as $filter) {
 			$queryBuilder->andWhere(
@@ -111,6 +113,32 @@ class AdvancedSearchFilter
 	{
 		if ($filter->hasSubFilters()) {
 			$subFilterExpressions = [];
+
+			// Collect associations used by subfilters in this group
+			$groupAssociations = [];
+			foreach ($filter->getSubFilters() as $subFilter) {
+				if ($subFilter->getAssociation() !== null && !in_array($subFilter->getAssociation(), $groupAssociations, true)) {
+					$groupAssociations[] = $subFilter->getAssociation();
+				}
+			}
+
+			// For associations already joined by a previous group, create new join aliases
+			// so each subfilter group gets its own JOIN (e.g. parameters filtered by Diameter
+			// and parameters filtered by Capacitance need separate JOINs)
+			foreach ($groupAssociations as $assoc) {
+				if (in_array($assoc, $this->joins, true)) {
+					$this->joins = array_values(array_diff($this->joins, [$assoc]));
+
+					$prefix = 'o.' . $assoc;
+					foreach ($this->aliases as $k => $v) {
+						if ($k === $prefix || str_starts_with($k, $prefix . '.')) {
+							unset($this->aliases[$k]);
+							$this->aliases[$k . '#' . $this->subFilterGroupCount] = $v;
+						}
+					}
+					$this->subFilterGroupCount++;
+				}
+			}
 
 			foreach ($filter->getSubFilters() as $subFilter) {
 				if ($subFilter->getAssociation() !== null) {
@@ -293,7 +321,7 @@ class AdvancedSearchFilter
 		return $sorter;
 	}
 
-	public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = []): void
+	public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
 	{
 		$request = $this->requestStack->getCurrentRequest();
 		if (null === $request) {

@@ -86,7 +86,7 @@ class User
 	private Collection $tipHistories;
 	#[VirtualField(type: Types::STRING)]
 	#[Groups(['default'])]
-	private string $initialUserPreferences;
+	private string $initialUserPreferences = '[]';
 	#[ORM\Column(type: Types::BOOLEAN)]
 	#[Groups(['default'])]
 	private bool $active = true;
@@ -249,6 +249,14 @@ class User
 		return array_unique($roles);
 	}
 
+	public function __serialize(): array
+	{
+		$data = (array)$this;
+		$data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
+		return $data;
+	}
+
+	#[\Deprecated(message: 'Credentials are erased automatically via __serialize()')]
 	public function eraseCredentials(): void
 	{
 		$this->newPassword = null;

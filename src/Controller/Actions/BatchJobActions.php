@@ -2,7 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;

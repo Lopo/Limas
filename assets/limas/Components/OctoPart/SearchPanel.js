@@ -12,7 +12,8 @@ Ext.define('Limas.Components.OctoPart.SearchPanel', {
 				{name: 'title', type: 'string'},
 				{name: 'url', type: 'string'},
 				{name: 'mpn', type: 'string'},
-				{name: 'numOffers', type: 'int'},
+				{name: 'numSellers', type: 'int'},
+			{name: 'numOffers', type: 'int'},
 				{name: 'numDatasheets', type: 'int'},
 				{name: 'numSpecs', type: 'int'}
 			],
@@ -45,6 +46,10 @@ Ext.define('Limas.Components.OctoPart.SearchPanel', {
 			}, {
 				text: i18n('MPN'),
 				dataIndex: 'mpn',
+				flex: 1
+			}, {
+				text: i18n('Sellers'),
+				dataIndex: 'numSellers',
 				flex: 1
 			}, {
 				text: i18n('Offers'),

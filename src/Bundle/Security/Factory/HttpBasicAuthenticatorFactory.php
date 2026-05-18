@@ -43,6 +43,7 @@ class HttpBasicAuthenticatorFactory
 
 	public function addConfiguration(NodeDefinition $node): void
 	{
+		/** @var \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition $node */
 		$node
 			->children()
 				->scalarNode('provider')->end()

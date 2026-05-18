@@ -10,7 +10,7 @@ use Limas\Entity\Distributor;
 class DistributorDataLoader
 	extends AbstractFixture
 {
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$distributor = (new Distributor)
 			->setName('TEST');

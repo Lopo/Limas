@@ -1,4 +1,5 @@
 api_platform:
+    use_symfony_listeners: true
     enable_swagger: false
     enable_swagger_ui: false
     enable_re_doc: false
@@ -18,9 +19,14 @@ api_platform:
         force_eager: false
         fetch_partial: true
     defaults:
+#        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
         pagination_client_items_per_page: true
         pagination_enabled: true
         pagination_client_enabled: true
+    serializer:
+        hydra_prefix: true
 
 when@dev:
     api_platform:

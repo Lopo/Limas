@@ -24,7 +24,7 @@ class SetupFixtures
 		return ['setup', 'pk'];
 	}
 
-	public function load(ObjectManager $manager)
+	public function load(ObjectManager $manager): void
 	{
 		$root = (new FootprintCategory)
 			->setName('Root Category')

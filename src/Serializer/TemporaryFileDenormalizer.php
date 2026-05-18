@@ -2,16 +2,15 @@
 
 namespace Limas\Serializer;
 
-use ApiPlatform\Api\IriConverterInterface;
-use ApiPlatform\Exception\InvalidValueException;
-use ApiPlatform\Exception\ItemNotFoundException;
+use ApiPlatform\Metadata\IriConverterInterface;
+use ApiPlatform\Metadata\Exception\ItemNotFoundException;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Property\Factory\PropertyMetadataFactoryInterface;
 use ApiPlatform\Metadata\Property\Factory\PropertyNameCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
+use ApiPlatform\Metadata\ResourceAccessCheckerInterface;
 use ApiPlatform\Metadata\ResourceClassResolverInterface;
 use ApiPlatform\Serializer\AbstractItemNormalizer;
-use ApiPlatform\Symfony\Security\ResourceAccessCheckerInterface;
 use Limas\Annotation\UploadedFile;
 use Limas\Annotation\UploadedFileCollection;
 use Limas\Entity\Image;
@@ -41,11 +40,11 @@ class TemporaryFileDenormalizer
 		PropertyMetadataFactoryInterface           $propertyMetadataFactory,
 		IriConverterInterface                      $iriConverter,
 		ResourceClassResolverInterface             $resourceClassResolver,
-		PropertyAccessorInterface                  $propertyAccessor = null,
-		NameConverterInterface                     $nameConverter = null,
-		ClassMetadataFactoryInterface              $classMetadataFactory = null,
+		?PropertyAccessorInterface                 $propertyAccessor = null,
+		?NameConverterInterface                     $nameConverter = null,
+		?ClassMetadataFactoryInterface              $classMetadataFactory = null,
 		array                                      $defaultContext = [],
-		ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory = null,
+		?ResourceMetadataCollectionFactoryInterface $resourceMetadataCollectionFactory = null,
 		?ResourceAccessCheckerInterface            $resourceAccessChecker = null
 	)
 	{
@@ -77,7 +76,7 @@ class TemporaryFileDenormalizer
 		if ($value !== null) {
 			if ((new \ReflectionClass($className))->isSubclassOf(\Limas\Entity\UploadedFile::class)) {
 				if (!is_array($value) || !isset($value['@id'])) {
-					throw new InvalidValueException;
+					throw new UnexpectedValueException('The input data is misformatted.');
 				}
 				$item = $this->iriConverter->getResourceFromIri($value['@id']);
 				if ($item instanceof TempUploadedFile || $item instanceof TempImage) {

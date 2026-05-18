@@ -42,33 +42,40 @@ use Symfony\Component\Validator\Constraints as Assert;
 		),
 		new Post(
 			controller: PartActions::class . '::PartPostAction',
+			normalizationContext: ['groups' => ['default', 'readonly', 'detail']],
 			name: 'PartPost'
 		),
-		new Get,
+		new Get(
+			normalizationContext: ['groups' => ['default', 'readonly', 'detail']]
+		),
 		new Put(
 			controller: PartActions::class . '::PartPutAction',
 			deserialize: false,
+			normalizationContext: ['groups' => ['default', 'readonly', 'detail']],
 			name: 'PartPut'
 		),
 		new Delete,
 		new Put(
 			uriTemplate: 'parts/{id}/addStock',
 			controller: PartActions::class . '::AddStockAction',
+			deserialize: false,
 			name: 'PartAddStock'
 		),
 		new Put(
 			uriTemplate: 'parts/{id}/removeStock',
 			controller: PartActions::class . '::RemoveStockAction',
+			deserialize: false,
 			name: 'PartRemoveStock'
 		),
 		new Put(
 			uriTemplate: 'parts/{id}/setStock',
 			controller: PartActions::class . '::SetStockAction',
+			deserialize: false,
 			name: 'PartSetStock'
 		)
 	],
 	normalizationContext: ['groups' => ['default', 'readonly']],
-	denormalizationContext: ['groups' => ['default', 'stock']]
+	denormalizationContext: ['groups' => ['default', 'detail', 'stock']]
 )]
 class Part
 	extends BaseEntity
@@ -98,18 +105,18 @@ class Part
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?StorageLocation $storageLocation = null;
 	/** @var Collection<PartManufacturer> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartManufacturer::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: PartManufacturer::class, mappedBy: 'part', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[ApiProperty(readableLink: true, writableLink: true)]
-	#[Groups(['default'])]
+	#[Groups(['detail'])]
 	private Collection $manufacturers;
 	/** @var Collection<PartDistributor> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartDistributor::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: PartDistributor::class, mappedBy: 'part', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[ApiProperty(readableLink: true, writableLink: true)]
-	#[Groups(['default'])]
+	#[Groups(['detail'])]
 	private Collection $distributors;
 	/** @var Collection<PartAttachment> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-	#[Groups(['default'])]
+	#[ORM\OneToMany(targetEntity: PartAttachment::class, mappedBy: 'part', cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[Groups(['detail'])]
 	#[UploadedFileCollection]
 	private Collection $attachments;
 	#[ORM\Column(type: Types::TEXT)]
@@ -125,17 +132,18 @@ class Part
 	#[Groups(['readonly'])]
 	private string $averagePrice = '0';
 	/** @var Collection<StockEntry> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: StockEntry::class, cascade: ['persist', 'remove'])]
+	#[ORM\OneToMany(targetEntity: StockEntry::class, mappedBy: 'part', cascade: ['persist', 'remove'])]
 	#[Groups(['stock'])]
+	#[ApiProperty(writableLink: true)]
 	private Collection $stockLevels;
 	/** @var Collection<PartParameter> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: PartParameter::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-	#[Groups(['default'])]
+	#[ORM\OneToMany(targetEntity: PartParameter::class, mappedBy: 'part', cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[Groups(['detail'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private Collection $parameters;
 	/** @var Collection<MetaPartParameterCriteria> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: MetaPartParameterCriteria::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-	#[Groups(['default'])]
+	#[ORM\OneToMany(targetEntity: MetaPartParameterCriteria::class, mappedBy: 'part', cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[Groups(['detail'])]
 	private Collection $metaPartParameterCriterias;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
@@ -153,7 +161,7 @@ class Part
 	#[Groups(['readonly'])]
 	private ?\DateTimeInterface $createDate = null;
 	/** @var Collection<ProjectPart> */
-	#[ORM\OneToMany(mappedBy: 'part', targetEntity: ProjectPart::class)]
+	#[ORM\OneToMany(targetEntity: ProjectPart::class, mappedBy: 'part')]
 	private Collection $projectParts;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['default'])]
@@ -168,7 +176,7 @@ class Part
 	#[Groups(['default'])]
 	private bool $metaPart = false;
 	#[Groups(['default'])]
-	private array $metaPartMatches;
+	private array $metaPartMatches = [];
 
 
 	public function __construct()

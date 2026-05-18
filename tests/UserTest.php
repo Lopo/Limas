@@ -82,7 +82,7 @@ class UserTest
 			$iri,
 			[],
 			[],
-			[],
+			['CONTENT_TYPE' => 'application/json'],
 			Json::encode($response)
 		);
 
@@ -165,7 +165,7 @@ class UserTest
 			$iri,
 			[],
 			[],
-			[],
+			['CONTENT_TYPE' => 'application/json'],
 			Json::encode([
 				'username' => 'foo',
 			])

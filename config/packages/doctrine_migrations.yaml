@@ -6,3 +6,7 @@ doctrine_migrations:
     enable_profiler: false
     services:
         'Doctrine\Migrations\Version\MigrationFactory': 'Limas\Migrations\Factory\MigrationFactoryDecorator'
+    storage:
+        table_storage:
+            table_name: 'doctrine_migration_versions'
+    transactional: false
