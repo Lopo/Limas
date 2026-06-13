@@ -18,7 +18,7 @@ use Limas\Controller\Actions\PartActions;
 use Limas\Exceptions\CategoryNotAssignedException;
 use Limas\Exceptions\MinStockLevelOutOfRangeException;
 use Limas\Exceptions\StorageLocationNotAssignedException;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -50,8 +50,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 		),
 		new Put(
 			controller: PartActions::class . '::PartPutAction',
-			deserialize: false,
 			normalizationContext: ['groups' => ['default', 'readonly', 'detail']],
+			deserialize: false,
 			name: 'PartPut'
 		),
 		new Delete,
@@ -587,7 +587,7 @@ class Part
 		}
 
 		$this->setStockLevel($currentStock);
-		$this->setAveragePrice($avgPrice);
+		$this->setAveragePrice((string)$avgPrice);
 		$this->setLowStock($currentStock < $this->getMinStockLevel());
 
 		return $this;

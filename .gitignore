@@ -58,3 +58,5 @@ phpstan.neon
 /data_test
 /reports
 /test-results
+/surveys
+/playwright-report

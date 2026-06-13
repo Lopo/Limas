@@ -34,7 +34,18 @@ class TemporaryFileActions
 			$this->uploadedFileService->replace($uploadedFile, new File($file->getPathname()));
 			$uploadedFile->setOriginalFilename($file->getClientOriginalName());
 		} elseif (null !== ($url = $request->request->get('url'))) {
-			$this->uploadedFileService->replaceFromURL($uploadedFile, $url, $request->headers);
+			try {
+				$this->uploadedFileService->replaceFromURL($uploadedFile, $url, $request->headers);
+			} catch (\RuntimeException $e) {
+				// Only stash URL-only fallbacks for transient/anti-bot
+				// failures — 404 / 410 / 401 / etc. won't get better with a
+				// daily cron retry, surface those as real errors so the user
+				// notices the dead URL and the queue doesn't fill with junk.
+				if (!$this->uploadedFileService->isRecoverableDownloadError($e)) {
+					throw $e;
+				}
+				$this->uploadedFileService->saveUrlOnly($uploadedFile, $url);
+			}
 		} else {
 			throw new \RuntimeException($translator->trans('No valid file given'));
 		}

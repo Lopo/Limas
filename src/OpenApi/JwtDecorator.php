@@ -52,16 +52,16 @@ final readonly class JwtDecorator
 				operationId: 'postCredentialsItem',
 				tags: ['Token'],
 				responses: [
-					'200' => [
-						'description' => 'Get JWT token',
-						'content' => [
+					'200' => new Model\Response(
+						description: 'Get JWT token',
+						content: new \ArrayObject([
 							'application/json' => [
 								'schema' => [
 									'$ref' => '#/components/schemas/Token',
-								]
-							]
-						]
-					]
+								],
+							],
+						]),
+					),
 				],
 				summary: 'Get JWT token to login.',
 				requestBody: new Model\RequestBody(

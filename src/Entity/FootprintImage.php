@@ -28,7 +28,7 @@ use Limas\Controller\Actions\ImageActions;
 class FootprintImage
 	extends Image
 {
-	#[ORM\OneToOne(inversedBy: 'image', targetEntity: Footprint::class)]
+	#[ORM\OneToOne(targetEntity: Footprint::class, inversedBy: 'image')]
 	private ?Footprint $footprint;
 
 

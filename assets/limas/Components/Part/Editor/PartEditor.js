@@ -189,8 +189,8 @@ Ext.define('Limas.PartEditor', {
 						},
 						itemId: 'idField',
 						name: '@id',
+						cls: 'limas-text-link',
 						fieldStyle: {
-							color: 'blue',
 							'text-decoration': 'underline',
 						},
 						renderer: function (value) {

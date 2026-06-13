@@ -13,7 +13,7 @@ class StatisticSnapshotUnit
 	#[ORM\Column(type: Types::INTEGER)]
 	#[ORM\GeneratedValue(strategy: 'AUTO')]
 	private int $id;
-	#[ORM\ManyToOne(targetEntity: StatisticSnapshot::class)]
+	#[ORM\ManyToOne(targetEntity: StatisticSnapshot::class, inversedBy: 'units')]
 	private ?StatisticSnapshot $statisticSnapshot;
 	#[ORM\ManyToOne(targetEntity: PartMeasurementUnit::class)]
 	private ?PartMeasurementUnit $partUnit;

@@ -43,11 +43,16 @@ class RootCategory
 			return;
 		}
 
-		$roots = $entityManager->getRepository($category::class)->getRootNodes();
+		$repo = $entityManager->getRepository($category::class);
+		assert($repo instanceof \Gedmo\Tree\Entity\Repository\NestedTreeRepository);
+		$roots = $repo->getRootNodes();
 		if (count($roots) === 0) {
 			return;
 		}
 		$rootNode = reset($roots);
+		// `count($roots) > 0` guarantees reset() returns an entity, but
+		// phpstan can't carry that narrowing across reset's array|false.
+		assert($rootNode !== false);
 
 		if ($rootNode->getId() !== $category->getId()) {
 			throw new OnlySingleRootNodeAllowedException;

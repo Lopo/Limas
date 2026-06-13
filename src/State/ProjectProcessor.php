@@ -86,7 +86,7 @@ final readonly class ProjectProcessor
 				$pp->setProject($project);
 				return $pp;
 			},
-			removeCallback: static fn(ProjectPart $pp) => $project->removePart($pp)
+			removeCallback: static function(ProjectPart $pp) use ($project): void { $project->removePart($pp); }
 		);
 	}
 
@@ -99,8 +99,8 @@ final readonly class ProjectProcessor
 			existingItems: $project->getAttachments(),
 			newItems: $newAttachments,
 			getIdCallback: static fn(ProjectAttachment $a) => $a->getId(),
-			setupNewCallback: static fn(ProjectAttachment $a) => $a->setProject($project),
-			removeCallback: static fn(ProjectAttachment $a) => $project->removeAttachment($a)
+			setupNewCallback: static function(ProjectAttachment $a) use ($project): void { $a->setProject($project); },
+			removeCallback: static function(ProjectAttachment $a) use ($project): void { $project->removeAttachment($a); }
 		);
 	}
 }

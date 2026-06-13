@@ -22,7 +22,7 @@ class StatisticSnapshot
 	#[ORM\Column(type: Types::INTEGER)]
 	private int $categories;
 	/** @var Collection<StatisticSnapshotUnit> */
-	#[ORM\OneToMany(mappedBy: 'statisticSnapshot', targetEntity: StatisticSnapshotUnit::class, cascade: ['persist', 'remove'])]
+	#[ORM\OneToMany(targetEntity: StatisticSnapshotUnit::class, mappedBy: 'statisticSnapshot', cascade: ['persist', 'remove'])]
 	private Collection $units;
 
 

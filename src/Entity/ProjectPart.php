@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\ByReference;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -31,9 +31,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 class ProjectPart
 	extends BaseEntity
 {
-	public const OVERAGE_TYPE_ABSOLUTE = 'absolute';
-	public const OVERAGE_TYPE_PERCENT = 'percent';
-	protected const OVERAGE_TYPES = [
+	public const string OVERAGE_TYPE_ABSOLUTE = 'absolute';
+	public const string OVERAGE_TYPE_PERCENT = 'percent';
+	protected const array OVERAGE_TYPES = [
 		self::OVERAGE_TYPE_ABSOLUTE,
 		self::OVERAGE_TYPE_PERCENT
 	];
@@ -62,10 +62,9 @@ class ProjectPart
 	#[ORM\Column(type: Types::TEXT, options: ['default' => ''])]
 	#[Groups(['default'])]
 	private string $lotNumber = '';
+
+
 	#[Groups(['default'])]
-	private int $totalQuantity;
-
-
 	public function getTotalQuantity(): int
 	{
 		return match ($this->getOverageType()) {

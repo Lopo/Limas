@@ -8,24 +8,24 @@ use Doctrine\ORM\QueryBuilder;
 class ManyToOneConfiguration
 	extends Configuration
 {
-	private const IMPORTBEHAVIOUR_DONTSET = 'dontSet';
-	private const IMPORTBEHAVIOUR_ALWAYSSETTO = 'alwaysSetTo';
-	private const IMPORTBEHAVIOUR_MATCHDATA = 'matchData';
-	private const importBehaviours = [
+	private const string IMPORTBEHAVIOUR_DONTSET = 'dontSet';
+	private const string IMPORTBEHAVIOUR_ALWAYSSETTO = 'alwaysSetTo';
+	private const string IMPORTBEHAVIOUR_MATCHDATA = 'matchData';
+	private const array importBehaviours = [
 		self::IMPORTBEHAVIOUR_DONTSET,
 		self::IMPORTBEHAVIOUR_ALWAYSSETTO,
 		self::IMPORTBEHAVIOUR_MATCHDATA
 	];
-	private const UPDATEBEHAVIOUR_DONTUPDATE = 'dontUpdate';
-	private const UPDATEBEHAVIOUR_UPDATEDATA = 'updateData';
-	private const updateBehaviours = [
+	private const string UPDATEBEHAVIOUR_DONTUPDATE = 'dontUpdate';
+	private const string UPDATEBEHAVIOUR_UPDATEDATA = 'updateData';
+	private const array updateBehaviours = [
 		self::UPDATEBEHAVIOUR_DONTUPDATE,
 		self::UPDATEBEHAVIOUR_UPDATEDATA
 	];
-	private const NOTFOUNDBEHAVIOUR_STOPIMPORT = 'stopImport';
-	private const NOTFOUNDBEHAVIOUR_SETTOENTITY = 'setToEntity';
-	private const NOTFOUNDBEHAVIOUR_CREATEENTITY = 'createEntity';
-	private const notFoundBehaviours = [
+	private const string NOTFOUNDBEHAVIOUR_STOPIMPORT = 'stopImport';
+	private const string NOTFOUNDBEHAVIOUR_SETTOENTITY = 'setToEntity';
+	private const string NOTFOUNDBEHAVIOUR_CREATEENTITY = 'createEntity';
+	private const array notFoundBehaviours = [
 		self::NOTFOUNDBEHAVIOUR_CREATEENTITY,
 		self::NOTFOUNDBEHAVIOUR_SETTOENTITY,
 		self::NOTFOUNDBEHAVIOUR_STOPIMPORT
@@ -43,7 +43,6 @@ class ManyToOneConfiguration
 	public function parseConfiguration($importConfiguration): bool
 	{
 		if (!property_exists($importConfiguration, 'importBehaviour')) {
-			return false;
 			throw new \RuntimeException('The key importBehaviour does not exist!');
 		}
 

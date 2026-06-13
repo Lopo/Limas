@@ -11,8 +11,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 
 class OctoPartService
 {
-	private const OCTOPART_ENDPOINT = 'https://api.nexar.com/graphql/';
-	private const OCTOPART_QUERY = <<<'EOD'
+	private const string OCTOPART_ENDPOINT = 'https://api.nexar.com/graphql/';
+	private const string OCTOPART_QUERY = <<<'EOD'
     query MyPartSearch(
   $q: String!
   $filters: Map
@@ -132,7 +132,7 @@ class OctoPartService
   }
 }
 EOD;
-	private const OCTOPART_PARTQUERY = <<<'EOD'
+	private const string OCTOPART_PARTQUERY = <<<'EOD'
     query MyPartSearch(
   $id: String!
   $country: String!
@@ -236,7 +236,7 @@ EOD;
   }
 }
 EOD;
-	private const NEXAR_AUTHORITY = 'https://identity.nexar.com/';
+	private const string NEXAR_AUTHORITY = 'https://identity.nexar.com/';
 
 
 	public function __construct(

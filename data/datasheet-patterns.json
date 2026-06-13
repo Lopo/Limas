@@ -1,0 +1,93 @@
+{
+    "_comment": "Manufacturer-direct datasheet URL patterns. Used by DatasheetUrlResolver as a fallback when no distributor provided a datasheet URL or the chosen URL failed. Placeholders: {mpn}, {mpn_lower}, {mpn_upper}. Manufacturer matching is case-insensitive + whitespace-collapsed against ManufacturerAlias-canonical name + the listed aliases.",
+
+    "patterns": [
+        {
+            "manufacturer": "Texas Instruments",
+            "aliases": ["ti", "ti inc", "texas instruments inc", "burr brown", "burr-brown", "burr brown corporation"],
+            "urls": [
+                "https://www.ti.com/lit/ds/symlink/{mpn_lower}.pdf",
+                "https://www.ti.com/lit/gpn/{mpn_lower}"
+            ]
+        },
+        {
+            "manufacturer": "STMicroelectronics",
+            "aliases": ["st", "stmicro", "stm", "stmicroelectronics nv"],
+            "urls": [
+                "https://www.st.com/resource/en/datasheet/{mpn_lower}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "onsemi",
+            "aliases": ["on semiconductor", "on semi", "onsemiconductor", "fairchild semiconductor", "fairchild"],
+            "urls": [
+                "https://www.onsemi.com/pdf/datasheet/{mpn_lower}-d.pdf",
+                "https://www.onsemi.com/pub/Collateral/{mpn_upper}-D.PDF"
+            ]
+        },
+        {
+            "manufacturer": "Microchip Technology",
+            "aliases": ["microchip", "atmel", "atmel corporation"],
+            "urls": [
+                "https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/{mpn}-DataSheet.pdf",
+                "https://ww1.microchip.com/downloads/en/DeviceDoc/{mpn}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "NXP",
+            "aliases": ["nxp semiconductors", "nxp usa", "nxp usa inc.", "nxp b.v.", "philips semiconductors"],
+            "urls": [
+                "https://www.nxp.com/docs/en/data-sheet/{mpn}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Nexperia",
+            "aliases": ["nexperia b.v.", "nexperia usa inc."],
+            "urls": [
+                "https://assets.nexperia.com/documents/data-sheet/{mpn}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Diodes Incorporated",
+            "aliases": ["diodes", "diodes inc", "diodes inc.", "zetex"],
+            "urls": [
+                "https://www.diodes.com/assets/Datasheets/{mpn}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Diotec Semiconductor",
+            "aliases": ["diotec", "diotec semiconductor ag"],
+            "urls": [
+                "https://diotec.com/request/datasheet/{mpn_lower}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Analog Devices",
+            "aliases": ["adi", "analog devices inc", "maxim integrated", "linear technology", "linear tech"],
+            "urls": [
+                "https://www.analog.com/media/en/technical-documentation/data-sheets/{mpn}.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Infineon",
+            "aliases": ["infineon technologies", "infineon technologies ag", "international rectifier", "irf"],
+            "urls": [
+                "https://www.infineon.com/dgdl/Infineon-{mpn}-DataSheet-v01_00-EN.pdf"
+            ]
+        },
+        {
+            "manufacturer": "Renesas",
+            "aliases": ["renesas electronics", "intersil", "idt", "integrated device technology", "dialog semiconductor"],
+            "urls": [
+                "https://www.renesas.com/document/dst/{mpn_lower}-datasheet"
+            ]
+        },
+        {
+            "manufacturer": "Vishay",
+            "aliases": ["vishay intertechnology", "vishay semiconductors", "vishay general semiconductor", "vishay siliconix"],
+            "urls": [
+                "https://www.vishay.com/docs/{mpn}.pdf"
+            ]
+        }
+    ]
+}

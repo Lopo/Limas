@@ -13,7 +13,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\ProjectReportActions;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -44,11 +44,11 @@ class Report
 	#[Groups(['default'])]
 	private \DateTimeInterface $createDateTime;
 	/** @var Collection<ReportProject> */
-	#[ORM\OneToMany(mappedBy: 'report', targetEntity: ReportProject::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ReportProject::class, mappedBy: 'report', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $reportProjects;
 	/** @var Collection<ReportPart> */
-	#[ORM\OneToMany(mappedBy: 'report', targetEntity: ReportPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ReportPart::class, mappedBy: 'report', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $reportParts;
 

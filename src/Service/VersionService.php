@@ -12,7 +12,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class VersionService
 {
 	private string $version = LimasVersion::LIMAS_VERSION;
-	private string $versionURI = 'http://www.partkeepr.org/versions.json';
+	// GitHub Releases API. Single-object response (the `latest` release),
+	// rate-limited to 60 unauthenticated requests/hour per IP — plenty for
+	// a per-startup check from one Limas instance. User-Agent header is
+	// mandatory for github.com/api/v3.
+	private string $versionURI = 'https://api.github.com/repos/Lopo/Limas/releases/latest';
 
 
 	public function __construct(
@@ -77,9 +81,11 @@ class VersionService
 	}
 
 	/**
-	 * Checks against the versions at partkeepr.org
+	 * Checks against the latest GitHub release.
 	 *
-	 * If a newer version was found, create a system notice entry
+	 * If a newer version was found, create a system notice entry.
+	 * Network errors / API hiccups never propagate — version check is a
+	 * niceness, not a critical path.
 	 */
 	public function doVersionCheck(): void
 	{
@@ -111,34 +117,62 @@ class VersionService
 	}
 
 	/**
-	 * Returns the latest version information from partkeepr.org
+	 * Fetches the latest GitHub release and projects it onto the
+	 * {version, changelog} shape the version-check loop expects.
+	 *
+	 * Accepts either:
+	 *  - the canonical GitHub Releases API endpoint (single-object response)
+	 *  - a local file path (test fixtures override `versionURI` to a
+	 *    bundled versions.json — kept for back-compat with existing tests)
+	 *
+	 * Returns `false` on every kind of failure (network, JSON parse, missing
+	 * `tag_name`, file missing) so the caller can no-op cleanly.
 	 */
 	public function getLatestVersion(): array|false
 	{
-		$versions = json_decode(
-			is_file($this->versionURI)
+		try {
+			$body = is_file($this->versionURI)
 				? file_get_contents($this->versionURI)
-				: (new Client)->request('GET', $this->versionURI)->getBody()
-			, true, 512, JSON_THROW_ON_ERROR);
-		if (!is_array($versions)) {
+				: (new Client)->request('GET', $this->versionURI, [
+					'headers' => [
+						// GitHub API mandates User-Agent on every call.
+						'User-Agent' => 'Limas-VersionCheck',
+						'Accept' => 'application/vnd.github+json',
+					],
+					'connect_timeout' => 3,
+					'timeout' => 5,
+				])->getBody();
+			$payload = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+		} catch (\Throwable) {
+			// Network down, GitHub rate-limited, JSON malformed, file
+			// missing — every failure short-circuits to "we just don't
+			// know what's latest right now".
 			return false;
 		}
 
-		$latestVersionEntry = $versions[0];
-
-		if (!array_key_exists('version', $latestVersionEntry)) {
+		// Legacy versions.json shape (test fixtures): list of release
+		// objects, newest first. Keep the [0]-of-list compatibility so
+		// existing tests don't need adjusting.
+		if (is_array($payload) && array_is_list($payload)) {
+			$payload = $payload[0] ?? null;
+		}
+		if (!is_array($payload)) {
 			return false;
 		}
 
-		if (!array_key_exists('changelog', $latestVersionEntry)) {
-			return [
-				'version' => $latestVersionEntry['version'],
-				'changelog' => ''
-			];
+		// GitHub shape: `tag_name`, `body`. Strip a leading `v` so
+		// `version_compare('2.0.0', 'v2.0.0', '<')` doesn't false-positive.
+		// Legacy shape: `version`, `changelog`.
+		$tag = $payload['tag_name'] ?? $payload['version'] ?? null;
+		if (!is_string($tag) || $tag === '') {
+			return false;
 		}
+		$version = ltrim($tag, 'vV');
+		$changelog = $payload['body'] ?? $payload['changelog'] ?? '';
+
 		return [
-			'version' => $latestVersionEntry['version'],
-			'changelog' => $latestVersionEntry['changelog']
+			'version' => $version,
+			'changelog' => is_string($changelog) ? $changelog : '',
 		];
 	}
 }

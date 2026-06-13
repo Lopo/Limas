@@ -40,9 +40,14 @@ class UpdateCategoryPathsCommand
 		return Command::SUCCESS;
 	}
 
+	/**
+	 * @param class-string<\Limas\Entity\AbstractCategory> $entity
+	 */
 	private function regenerateCategoryPaths(string $entity): void
 	{
-		$rootNodes = $this->entityManager->getRepository($entity)->getRootNodes();
+		$repo = $this->entityManager->getRepository($entity);
+		assert($repo instanceof \Gedmo\Tree\Entity\Repository\NestedTreeRepository);
+		$rootNodes = $repo->getRootNodes();
 
 		$pathSeparator = $this->limas['category']['path_separator'];
 

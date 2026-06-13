@@ -1,0 +1,24 @@
+framework:
+    messenger:
+        # Failed messages park in `failed` queue instead of dying silently —
+        # inspect via `bin/console messenger:failed:show`.
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    max_retries: 3
+                    multiplier: 2
+            failed: 'doctrine://default?queue_name=failed'
+            sync: 'sync://'
+
+        routing:
+            Limas\Message\BulkImportJobMessage: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'
+                failed: 'in-memory://'

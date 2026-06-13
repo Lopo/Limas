@@ -21,6 +21,13 @@ Ext.define('Limas.EditorComponent', {
 	 */
 	navigationClass: null,
 	/**
+	 * Width of the navigation (west region) in pixels. Subclasses with
+	 * grid-heavy navigation (many columns, filters, bulk actions —
+	 * ParameterAliasEditorComponent) override this to claim most of the
+	 * window; form-light editors leave the default.
+	 */
+	navigationWidth: 300,
+	/**
 	 * Specifies the class name of the editor
 	 */
 	editorClass: null,
@@ -52,7 +59,7 @@ Ext.define('Limas.EditorComponent', {
 	initComponent: function () {
 		this.navigation = Ext.create(this.navigationClass, {
 			region: 'west',
-			width: 300,
+			width: this.navigationWidth,
 			split: true,
 			store: this.store,
 			titleProperty: this.titleProperty

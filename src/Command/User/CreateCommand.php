@@ -81,19 +81,16 @@ class CreateCommand
 			return Command::FAILURE;
 		}
 
-		if ($input->hasOption('role')) {
-			$role = $input->getOption('role');
-			if (!in_array($role, $this->roles, true)) {
-				$io->error("Invalid role '$role', allowed one of [" . implode(', ', $this->roles) . ']');
-				return Command::INVALID;
-			}
-			$role = 'ROLE_' . Strings::upper($role);
-		} else {
-			$role = 'ROLE_USER';
+		// --role has a default value of 'user' configured, so getOption()
+		// always returns a non-null string. Validate against the whitelist
+		// and prefix to the Symfony role name.
+		$role = $input->getOption('role');
+		if (!in_array($role, $this->roles, true)) {
+			$io->error("Invalid role '$role', allowed one of [" . implode(', ', $this->roles) . ']');
+			return Command::INVALID;
 		}
-		$password = $input->hasArgument('password')
-			? $input->getArgument('password')
-			: Random::generate(10, '0-9a-z');
+		$role = 'ROLE_' . Strings::upper($role);
+		$password = $input->getArgument('password') ?? Random::generate(10, '0-9a-z');
 
 		$io->comment('Creating user account');
 		$admin = (new User($input->getArgument('username'), $this->userService->getBuiltinProvider()))
@@ -105,7 +102,7 @@ class CreateCommand
 
 		$this->manager->flush();
 
-		if (!$input->hasArgument('password')) {
+		if ($input->getArgument('password') === null) {
 			$io->note("Generated password: '$password'");
 		}
 		$io->success('account created');

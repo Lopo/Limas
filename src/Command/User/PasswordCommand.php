@@ -83,7 +83,7 @@ class PasswordCommand
 		$user->setPassword($this->hasher->hashPassword($user, $password));
 		$this->entityManager->flush();
 
-		if (!$input->getArgument('password')) {
+		if ($input->getArgument('password') === null) {
 			$io->note("Generated password: '$password'");
 		}
 		$io->success(sprintf('Password for user %s (%s) has been updated', $username, $user->getProvider()->getType()));

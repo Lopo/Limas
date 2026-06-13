@@ -13,7 +13,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\BatchJobActions;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -40,11 +40,11 @@ class BatchJob
 	#[Groups(['default'])]
 	private string $name;
 	/** @var Collection<BatchJobQueryField> */
-	#[ORM\OneToMany(mappedBy: 'batchJob', targetEntity: BatchJobQueryField::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: BatchJobQueryField::class, mappedBy: 'batchJob', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $batchJobQueryFields;
 	/** @var Collection<BatchJobUpdateField> */
-	#[ORM\OneToMany(mappedBy: 'batchJob', targetEntity: BatchJobUpdateField::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: BatchJobUpdateField::class, mappedBy: 'batchJob', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $batchJobUpdateFields;
 	#[ORM\Column(type: Types::STRING)]

@@ -28,7 +28,7 @@ use Limas\Controller\Actions\ImageActions;
 class StorageLocationImage
 	extends Image
 {
-	#[ORM\OneToOne(inversedBy: 'image', targetEntity: StorageLocation::class)]
+	#[ORM\OneToOne(targetEntity: StorageLocation::class, inversedBy: 'image')]
 	private ?StorageLocation $storageLocation = null;
 
 

@@ -10,12 +10,12 @@ use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\Migrations\Configuration\Migration\ExistingConfiguration;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Knp\Bundle\GaufretteBundle\FilesystemMap;
+use League\Flysystem\FilesystemOperator;
+use Limas\DataFixtures\ParameterAliasFixtures;
 use Limas\Entity\BatchJob;
 use Limas\Entity\BatchJobQueryField;
 use Limas\Entity\BatchJobUpdateField;
 use Limas\Entity\CachedImage;
-use Limas\Entity\CronLogger;
 use Limas\Entity\Distributor;
 use Limas\Entity\Footprint;
 use Limas\Entity\FootprintAttachment;
@@ -56,6 +56,10 @@ use Limas\Entity\Unit;
 use Limas\Entity\User;
 use Limas\Entity\UserPreference;
 use Limas\Entity\UserProvider;
+use Limas\Service\Integration\InfoProvider\ParameterNormalizer;
+use Limas\Service\Integration\InfoProvider\ParameterValueParser;
+use Limas\Service\Integration\InfoProvider\Dto\Parameter as InfoProviderParameter;
+use Limas\Service\ManufacturerCanonicalizer;
 use Limas\Service\UserService;
 use Nette\Utils\FileSystem as NFileSystem;
 use Nette\Utils\Json;
@@ -81,13 +85,58 @@ class ImportPartKeeprCommand
 
 
 	public function __construct(
-		private readonly EntityManagerInterface $entityManager,
-		private readonly FilesystemMap          $filesystemMap,
-		private readonly UserService            $userService
+		private readonly EntityManagerInterface  $entityManager,
+		private readonly FilesystemOperator      $blobStorage,
+		private readonly UserService             $userService,
+		private readonly ManufacturerCanonicalizer $manufacturerCanonicalizer,
+		private readonly ParameterNormalizer     $parameterNormalizer,
+		private readonly ParameterValueParser    $parameterValueParser
 	)
 	{
 		parent::__construct();
 		$this->connect = $this->entityManager->getConnection();
+	}
+
+	/**
+	 * Read a PartKeepr attachment payload from disk and compute its
+	 * SHA-256 content hash in the same pass. Used by the attachment
+	 * import methods so each row gets its `sha256` column populated
+	 * inline — avoids needing a separate `limas:attachments:hash
+	 * --backfill` run after import. Returned bytes feed straight into
+	 * the Gaufrette storage write below.
+	 *
+	 * @return array{0: string, 1: string}  [bytes, sha256 hex]
+	 */
+	private function readBytesAndHash(string $sourcePath): array
+	{
+		$bytes = NFileSystem::read($sourcePath);
+		return [$bytes, hash('sha256', $bytes)];
+	}
+
+	/**
+	 * Ensure a Blob row exists for these bytes; write the file into the
+	 * blob CAS pool if needed. Returns the Blob's id so the attachment
+	 * insert can set blob_id. Idempotent — re-running the import won't
+	 * duplicate Blob rows or rewrite identical files.
+	 *
+	 * Used by every attachment-import method as the post-CAS replacement
+	 * for the old per-type pool write.
+	 */
+	private function ensureBlobForImport(string $bytes, string $sha, string $mimetype, int $size): int
+	{
+		$existing = $this->connect->fetchOne('SELECT id FROM `attachment_blob` WHERE sha256 = ? AND size = ?', [$sha, $size]);
+		if ($existing !== false) {
+			return (int)$existing;
+		}
+		$blobFilename = substr($sha, 0, 2) . '/' . $sha;
+		if (!$this->blobStorage->fileExists($blobFilename)) {
+			$this->blobStorage->write($blobFilename, $bytes);
+		}
+		$this->connect->executeStatement(
+			'INSERT INTO `attachment_blob` (sha256, size, filename, mimetype, createdAt) VALUES (?, ?, ?, ?, NOW())',
+			[$sha, $size, $blobFilename, $mimetype]
+		);
+		return (int)$this->connect->lastInsertId();
 	}
 
 	protected function configure(): void
@@ -95,7 +144,11 @@ class ImportPartKeeprCommand
 		$this
 			->addOption('pkdsn', null, InputOption::VALUE_REQUIRED, 'PK DB hostname', 'mysql://root:root@localhost:3306/partkeepr')
 			->addOption('pkroot', null, InputOption::VALUE_REQUIRED, 'PK root dir')
-			->addOption('lowercase', null, InputOption::VALUE_NONE, 'Lowercase source PK table names');
+			->addOption('lowercase', null, InputOption::VALUE_NONE, 'Lowercase source PK table names')
+			->addOption('prepare-aggregator', null, InputOption::VALUE_NONE,
+				'Also seed Manufacturer self-aliases, load the Octopart ParameterAlias taxonomy, '
+				. 'and backfill canonical/numeric fields on imported PartParameters. '
+				. 'Skip if you only want a plain PartKeepr → Limas data copy without aggregator preparation.');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -148,7 +201,10 @@ class ImportPartKeeprCommand
 		$this->importSiPrefix($io, $pk);
 		$this->importUnit($io, $pk);
 		$this->importUserProvider($io, $pk);
-		$this->importCronLogger($io, $pk);
+		// CronLogger entity dropped — recurring jobs migrated to
+		// Symfony Scheduler. PartKeepr's `CronLogger` rows have no
+		// landing place; the data was bookkeeping for the legacy
+		// cron pipeline and is meaningless after migration.
 		$this->importBatchJob($io, $pk);
 		$this->importBatchJobUpdateField($io, $pk);
 		$this->importBatchJobQueryField($io, $pk);
@@ -188,7 +244,211 @@ class ImportPartKeeprCommand
 		$this->importSystemNotice($io, $pk);
 		$this->importSystemPreference($io, $pk);
 
+		$prepareAggregator = $input->getOption('prepare-aggregator') === true;
+		if ($prepareAggregator) {
+			// Aggregator-readiness backfill — pre-populates the
+			// ManufacturerAlias + ParameterAlias tables so the aggregator's
+			// canonicalizers don't have to learn from scratch on first use.
+			// Order matters: param taxonomy seed BEFORE PartParameter alias
+			// auto-creation so the normalizer's lookup finds Octopart
+			// canonicals first; numeric backfill last because it depends
+			// on the alias rows existing.
+			$this->seedManufacturerSelfAliases($io);
+			$this->seedParameterTaxonomy($io);
+			$this->backfillParameterAliases($io);
+			$this->backfillPartParameterNumerics($io);
+		}
+
+		$io->success('PartKeepr import finished.');
+		$io->section('Next steps');
+		$nextSteps = [];
+		if (!$prepareAggregator) {
+			$nextSteps[] = '(Optional) Prepare InfoProvider aggregator data — load Octopart taxonomy, seed Manufacturer aliases, backfill parameter canonicals + numerics over imported data. Re-run import with `--prepare-aggregator`, OR (if you don\'t want to re-import) load just the taxonomy by hand:' . PHP_EOL
+				. '    php bin/console doctrine:fixtures:load --group=parameter-taxonomy --append';
+		}
+		$nextSteps[] = 'Set distributor API credentials in .env.local — DigiKey, Farnell/element14, TME, OEMSecrets, etc. (see .env.example.distributors).' . PHP_EOL
+			. '    Adapters with missing keys stay invisible; the aggregator picks up the rest automatically.';
+		$nextSteps[] = 'LCSC needs no key — set `LCSC_ENABLED=1` in .env.local and it lights up via the unauthenticated jlcsearch + wmsc endpoints.';
+		$nextSteps[] = '(Optional) Generate JWT keypair if you haven\'t already:' . PHP_EOL
+			. '    php bin/console lexik:jwt:generate-keypair';
+		$io->listing($nextSteps);
+		if ($prepareAggregator) {
+			$io->note('Attachment sha256 hashes, Manufacturer self-aliases, Octopart parameter taxonomy, and PartParameter numeric backfill were all populated automatically during this import.');
+		} else {
+			$io->note('Attachment sha256 hashes were computed inline during this import — no need to run `limas:attachments:hash --backfill` afterwards.');
+		}
+
 		return Command::SUCCESS;
+	}
+
+	/**
+	 * Register each imported Manufacturer as a self-alias in the
+	 * ManufacturerAlias table. The aggregator's canonicalizer has a
+	 * direct-name fallback when no alias matches, but seeding self-aliases
+	 * here gives the lookup a uniform path and makes the alias table
+	 * useful to the user as an editable mapping of "all vendor name spellings".
+	 */
+	private function seedManufacturerSelfAliases(OutputStyle $io): void
+	{
+		$io->note('Seeding ManufacturerAlias self-aliases');
+		$manufacturers = $this->entityManager->getRepository(Manufacturer::class)->findAll();
+		$bar = $io->createProgressBar(count($manufacturers));
+		$bar->start();
+		$skipped = 0;
+		foreach ($manufacturers as $manufacturer) {
+			try {
+				$this->manufacturerCanonicalizer->registerAlias($manufacturer, $manufacturer->getName());
+			} catch (\Throwable) {
+				// Alias for that normalized form already exists pointing
+				// elsewhere — rare on a fresh import (two manufacturers
+				// only differing in casing), skip and let the user resolve.
+				$skipped++;
+			}
+			$bar->advance();
+		}
+		$this->entityManager->flush();
+		$bar->finish();
+		$bar->clear();
+		if ($skipped > 0) {
+			$io->warning(sprintf('%d manufacturer(s) skipped due to alias conflicts.', $skipped));
+		}
+	}
+
+	/**
+	 * Load the Octopart-seeded ParameterAlias taxonomy + per-vendor
+	 * mappings inline so the user doesn't have to remember the separate
+	 * `doctrine:fixtures:load --group=parameter-taxonomy --append`
+	 * command after import. Same data the fixture would produce, just
+	 * invoked directly from PHP.
+	 */
+	private function seedParameterTaxonomy(OutputStyle $io): void
+	{
+		$io->note('Seeding ParameterAlias taxonomy (Octopart 757 attributes + per-vendor mappings)');
+		$fixture = new ParameterAliasFixtures();
+		$fixture->load($this->entityManager);
+		// `load()` already flushes; nothing extra to do here.
+	}
+
+	/**
+	 * Walk every imported PartParameter and run its `name` through the
+	 * ParameterNormalizer. The normalizer auto-creates an unverified
+	 * ParameterAlias row when none exists, so post-import the alias
+	 * table covers BOTH the Octopart canonicals (from seedParameterTaxonomy)
+	 * AND every parameter name the user actually had in their PartKeepr
+	 * data — ready for the aggregator to match against on first query.
+	 */
+	private function backfillParameterAliases(OutputStyle $io): void
+	{
+		$io->note('Backfilling ParameterAlias rows for imported PartParameter names');
+		$distinct = $this->connect
+			->executeQuery('SELECT DISTINCT name FROM PartParameter WHERE name IS NOT NULL AND name <> \'\'')
+			->fetchFirstColumn();
+		$bar = $io->createProgressBar(count($distinct));
+		$bar->start();
+		foreach ($distinct as $name) {
+			// `canonicalize()` is idempotent — returns the canonical name
+			// for known rawNames (no DB write), creates an auto/unverified
+			// alias row when not. We ignore the return value; what matters
+			// is that the side-effect (alias row creation) happens.
+			$this->parameterNormalizer->canonicalize((string)$name);
+			$bar->advance();
+		}
+		$this->entityManager->flush();
+		$bar->finish();
+		$bar->clear();
+	}
+
+	/**
+	 * Stage-2 backfill: for every PartParameter that has a non-empty
+	 * `stringValue` but EMPTY numeric columns (value / minimumValue /
+	 * maximumValue all null), run the value parser to extract numeric
+	 * value + unit + SI prefix from the string. PartKeepr usually fills
+	 * these from its own UI, but partial / pre-PartKeepr-2 imports may
+	 * have stringValue-only rows; this lifts those into searchable
+	 * numeric form.
+	 *
+	 * Unit + SI prefix lookup is by symbol — same approach as the
+	 * frontend's `applyParameters` after aggregator Apply Data. Falls
+	 * back to leaving the FK null when the symbol isn't in the seeded
+	 * Unit/SiPrefix tables.
+	 */
+	private function backfillPartParameterNumerics(OutputStyle $io): void
+	{
+		$io->note('Backfilling PartParameter numeric values from stringValue');
+		$repo = $this->entityManager->getRepository(PartParameter::class);
+		// Eligible: any row where all three numeric columns are null but
+		// the string carries something we can parse. We page through
+		// repositories with iterateToFlush for large catalogs.
+		$qb = $repo->createQueryBuilder('p')
+			->where('p.value IS NULL')
+			->andWhere('p.minValue IS NULL')
+			->andWhere('p.maxValue IS NULL')
+			->andWhere('p.stringValue IS NOT NULL')
+			->andWhere('p.stringValue <> :empty')
+			->setParameter('empty', '');
+		$candidates = $qb->getQuery()->getResult();
+		$bar = $io->createProgressBar(count($candidates));
+		$bar->start();
+		$unitRepo = $this->entityManager->getRepository(Unit::class);
+		$siPrefixRepo = $this->entityManager->getRepository(SiPrefix::class);
+		// In-process lookup cache so we don't hammer the DB per row when
+		// the same unit/prefix symbol repeats across thousands of params.
+		$unitBySymbol = [];
+		$siPrefixBySymbol = [];
+		$updated = 0;
+		foreach ($candidates as $pp) {
+			/** @var PartParameter $pp */
+			$dto = new InfoProviderParameter(rawName: $pp->getName(), rawValue: $pp->getStringValue());
+			$this->parameterValueParser->parse($dto);
+			$hasNumeric = $dto->numericValue !== null
+				|| $dto->numericMin !== null
+				|| $dto->numericMax !== null;
+			if (!$hasNumeric) {
+				$bar->advance();
+				continue;
+			}
+			if ($dto->numericValue !== null) {
+				$pp->setValue($dto->numericValue);
+			}
+			if ($dto->numericMin !== null) {
+				$pp->setMinValue($dto->numericMin);
+			}
+			if ($dto->numericMax !== null) {
+				$pp->setMaxValue($dto->numericMax);
+			}
+			$pp->setValueType(PartParameter::VALUE_TYPE_NUMERIC);
+			if ($dto->unit !== null && $dto->unit !== '') {
+				if (!array_key_exists($dto->unit, $unitBySymbol)) {
+					$unitBySymbol[$dto->unit] = $unitRepo->findOneBy(['symbol' => $dto->unit]);
+				}
+				if ($unitBySymbol[$dto->unit] !== null) {
+					$pp->setUnit($unitBySymbol[$dto->unit]);
+				}
+			}
+			if ($dto->siPrefix !== null && $dto->siPrefix !== '') {
+				if (!array_key_exists($dto->siPrefix, $siPrefixBySymbol)) {
+					$siPrefixBySymbol[$dto->siPrefix] = $siPrefixRepo->findOneBy(['symbol' => $dto->siPrefix]);
+				}
+				if ($siPrefixBySymbol[$dto->siPrefix] !== null) {
+					$prefix = $siPrefixBySymbol[$dto->siPrefix];
+					if ($dto->numericValue !== null) {
+						$pp->setSiPrefix($prefix);
+					}
+					if ($dto->numericMin !== null) {
+						$pp->setMinSiPrefix($prefix);
+					}
+					if ($dto->numericMax !== null) {
+						$pp->setMaxSiPrefix($prefix);
+					}
+				}
+			}
+			$updated++;
+			$bar->advance();
+		}
+		$this->entityManager->flush();
+		$bar->finish();
+		$bar->clear();
+		$io->writeln(sprintf('  → %d PartParameter row(s) gained numeric data.', $updated));
 	}
 
 	private function importBatchJob(OutputStyle $io, Connection $pk): void
@@ -319,34 +579,6 @@ class ImportPartKeeprCommand
 		$bar->clear();
 	}
 
-	private function importCronLogger(OutputStyle $io, Connection $pk): void
-	{
-		$qb = new QueryBuilder($this->connect);
-		$pkTable = $this->lowercase ? 'cronlogger' : 'CronLogger';
-		$io->note('Importing CronLogger');
-		$bar = $io->createProgressBar($pk->executeQuery("SELECT COUNT(id) FROM $pkTable")->fetchOne());
-		$bar->start();
-		$this->connect->beginTransaction();
-		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			$qb->insert($this->entityManager->getClassMetadata(CronLogger::class)->getTableName())
-				->values([
-					'id' => ':id',
-					'lastRunDate' => ':lastRunDate',
-					'cronjob' => ':cronjob'
-				])
-				->setParameters([
-					'id' => $row['id'],
-					'lastRunDate' => $row['lastRunDate'],
-					'cronjob' => $row['cronjob']
-				])
-				->executeStatement();
-			$bar->advance();
-		}
-		$this->connect->commit();
-		$bar->finish();
-		$bar->clear();
-	}
-
 	private function importDistributor(OutputStyle $io, Connection $pk): void
 	{
 		$qb = new QueryBuilder($this->connect);
@@ -421,7 +653,6 @@ class ImportPartKeeprCommand
 
 	private function importFootprintAttachment(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('footprintattachment');
 		$pkTable = $this->lowercase ? 'footprintattachment' : 'FootprintAttachment';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing FootprintAttachment');
@@ -429,31 +660,28 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(FootprintAttachment::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'footprint_id' => ':footprint_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
-					'created' => ':created'
+					'created' => ':created',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'footprint_id' => $row['footprint_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
-					'created' => $row['created']
+					'created' => $row['created'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -502,7 +730,6 @@ class ImportPartKeeprCommand
 
 	private function importFootprintImage(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('footprint');
 		$pkTable = $this->lowercase ? 'footprintimage' : 'FootprintImage';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing FootprintImage');
@@ -510,31 +737,28 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(FootprintImage::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'footprint_id' => ':footprint_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
-					'created' => ':created'
+					'created' => ':created',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'footprint_id' => $row['footprint_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
-					'created' => $row['created']
+					'created' => $row['created'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -642,7 +866,6 @@ class ImportPartKeeprCommand
 
 	private function importManufacturerICLogo(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('iclogo');
 		$pkTable = $this->lowercase ? 'manufacturericlogo' : 'ManufacturerICLogo';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ManufacturerICLogo');
@@ -650,31 +873,28 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(ManufacturerICLogo::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'manufacturer_id' => ':manufacturer_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
-					'created' => ':created'
+					'created' => ':created',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'manufacturer_id' => $row['manufacturer_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
-					'created' => $row['created']
+					'created' => $row['created'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -788,7 +1008,6 @@ class ImportPartKeeprCommand
 
 	private function importPartAttachment(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('partattachment');
 		$pkTable = $this->lowercase ? 'partattachment' : 'PartAttachment';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing PartAttachment');
@@ -796,33 +1015,30 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(PartAttachment::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'part_id' => ':part_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
 					'created' => ':created',
-					'isImage' => ':isImage'
+					'isImage' => ':isImage',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'part_id' => $row['part_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
 					'created' => $row['created'],
-					'isImage' => $row['isImage']
+					'isImage' => $row['isImage'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -1097,7 +1313,6 @@ class ImportPartKeeprCommand
 
 	private function importProjectAttachment(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('projectattachment');
 		$pkTable = $this->lowercase ? 'projectattachment' : 'ProjectAttachment';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing ProjectAttachment');
@@ -1105,31 +1320,28 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(ProjectAttachment::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'project_id' => ':project_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
-					'created' => ':created'
+					'created' => ':created',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'project_id' => $row['project_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
-					'created' => $row['created']
+					'created' => $row['created'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();
@@ -1527,7 +1739,6 @@ class ImportPartKeeprCommand
 
 	private function importStorageLocationImage(OutputStyle $io, Connection $pk, string $dataDir): void
 	{
-		$storage = $this->filesystemMap->get('storagelocation');
 		$pkTable = $this->lowercase ? 'storagelocationimage' : 'StorageLocationImage';
 		$qb = new QueryBuilder($this->connect);
 		$io->note('Importing StorageLocationImage');
@@ -1535,31 +1746,28 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
+			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(StorageLocationImage::class)->getTableName())
 				->values([
 					'id' => ':id',
 					'storageLocation_id' => ':storageLocation_id',
 					'type' => ':type',
-					'filename' => ':filename',
 					'originalname' => ':originalname',
-					'mimetype' => ':mimetype',
-					'size' => ':size',
 					'description' => ':description',
-					'created' => ':created'
+					'created' => ':created',
+					'blob_id' => ':blob_id'
 				])
 				->setParameters([
 					'id' => $row['id'],
 					'storageLocation_id' => $row['storageLocation_id'],
 					'type' => $row['type'],
-					'filename' => $row['filename'],
 					'originalname' => $row['originalname'],
-					'mimetype' => $row['mimetype'],
-					'size' => $row['size'],
 					'description' => $row['description'],
-					'created' => $row['created']
+					'created' => $row['created'],
+					'blob_id' => $blobId
 				])
 				->executeStatement();
-			$storage->write($row['filename'], NFileSystem::read($dataDir . '/' . $row['filename'] . '.' . $row['extension']), true);
 			$bar->advance();
 		}
 		$this->connect->commit();

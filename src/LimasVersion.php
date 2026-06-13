@@ -13,5 +13,5 @@ class LimasVersion
 	 *
 	 * The reason why we have a separate class for the version constant is that we can easily replace it from scripts.
 	 */
-	public const LIMAS_VERSION = '{V_GIT}';
+	public const string LIMAS_VERSION = '{V_GIT}';
 }

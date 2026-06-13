@@ -24,10 +24,15 @@ readonly class JWTCreated
 	public function onJWTCreated(JWTCreatedEvent $event): void
 	{
 		$request = $this->requestStack->getCurrentRequest();
+		$user = $event->getUser();
 
 		$payload = $event->getData();
-		$payload['ip'] = $request->getClientIp();
-		$payload['id'] = $event->getUser()->getId();
+		$payload['ip'] = $request?->getClientIp();
+		// All concrete Limas users carry a numeric primary key — narrow
+		// the type so phpstan stops asking for getId() on bare UserInterface.
+		if ($user instanceof \Limas\Entity\User) {
+			$payload['id'] = $user->getId();
+		}
 		$event->setData($payload);
 
 		$header = $event->getHeader();

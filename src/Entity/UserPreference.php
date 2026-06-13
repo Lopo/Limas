@@ -2,17 +2,17 @@
 
 namespace Limas\Entity;
 
-use ApiPlatform\Symfony\Action\NotFoundAction;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Symfony\Action\NotFoundAction;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\IgnoreIds;
 use Limas\Controller\Actions\UserPreferenceActions;
 use Limas\Repository\UserPreferenceRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity(repositoryClass: UserPreferenceRepository::class)]

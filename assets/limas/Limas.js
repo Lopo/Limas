@@ -18,6 +18,7 @@ Ext.application({
 		Limas.setMaxUploadSize(window.parameters.maxUploadSize);
 		Limas.setAvailableImageFormats(window.parameters.availableImageFormats);
 		Limas.setOctoPartAvailable(window.parameters.isOctoPartAvailable);
+		Limas.setAggregatorAvailable(window.parameters.isAggregatorAvailable);
 
 		Limas.Auth.AuthenticationProvider.setAuthenticationProvider(Ext.create('Limas.Auth.' + window.parameters.authentication_provider + 'AuthenticationProvider'));
 
@@ -49,19 +50,34 @@ Ext.application({
 		}
 	},
 	openAppItem: function (target) {
-		let targetClass = Ext.ClassManager.get(target),
-			j = Ext.create(target, {
+		let targetClass = Ext.ClassManager.get(target);
+
+		if (targetClass.superclass['$className'] === 'Limas.Actions.BaseAction') {
+			let j = Ext.create(target, {
 				title: targetClass.title,
 				closable: targetClass.closable,
 				iconCls: targetClass.iconCls
 			});
-
-		if (targetClass.superclass['$className'] === 'Limas.Actions.BaseAction') {
 			j.execute();
-		} else {
-			Limas.getApplication().addItem(j);
-			j.show();
+			return;
 		}
+
+		// Menu-opened items are singletons — focus an existing tab instead of
+		// stacking duplicates. Per-record editors (PartEditor, ProjectEditor)
+		// don't reach here; they're opened from grid clicks with a record arg.
+		let existing = this.centerPanel.items.findBy(c => c.$className === target);
+		if (existing) {
+			this.centerPanel.setActiveTab(existing);
+			return;
+		}
+
+		let j = Ext.create(target, {
+			title: targetClass.title,
+			closable: targetClass.closable,
+			iconCls: targetClass.iconCls
+		});
+		Limas.getApplication().addItem(j);
+		j.show();
 	},
 	getParameter: function (parameter) {
 		if (window.parameters[parameter] !== undefined) {
@@ -92,6 +108,14 @@ Ext.application({
 		this.menuBar.enable();
 
 		this.doSystemStatusCheck();
+		// Re-poll status every 30 s so menu items gated on messenger
+		// worker liveness (e.g. Bulk Import) flip on/off without a
+		// page reload when the operator starts/stops the worker.
+		this.systemStatusTask = Ext.TaskManager.start({
+			run: this.doSystemStatusCheck,
+			scope: this,
+			interval: 30000
+		});
 
 		this.unacknowledgedNoticesTask = Ext.TaskManager.start({
 			run: this.doUnacknowledgedNoticesCheck,
@@ -110,6 +134,8 @@ Ext.application({
 
 		if (preferredTheme !== null && preferredTheme !== window.theme) {
 			this.switchTheme(preferredTheme);
+		} else {
+			this.applyThemeBodyClass(window.theme);
 		}
 	},
 	onLogout: function () {
@@ -118,6 +144,9 @@ Ext.application({
 		this.getStatusbar().setDisconnected();
 
 		Ext.TaskManager.stop(this.unacknowledgedNoticesTask);
+		if (this.systemStatusTask) {
+			Ext.TaskManager.stop(this.systemStatusTask);
+		}
 	},
 	/**
 	 * Re-creates the part manager. This is usually called when the "compactLayout" configuration option has been
@@ -188,9 +217,39 @@ Ext.application({
 		if (data.schemaStatus !== 'complete') {
 			alert(i18n('Your database schema is not up-to-date! Please re-run setup immediately!'));
 		}
-		if (data.inactiveCronjobCount > 0) {
-			alert(i18n("The following cronjobs aren't running:") + '\n\n' + data.inactiveCronjobs.join('\n'));
-		}
+		// Recurring jobs (version check, statistics snapshot, tips sync)
+		// now ride the messenger scheduler; their liveness is folded into
+		// the same heartbeat the Bulk Import menu uses, no separate
+		// "inactive cronjob" alert needed.
+		this.applyMessengerWorkerGating(data.messengerWorkers || {});
+	},
+	// Reflect per-feature messenger worker liveness across the menu.
+	// Today only Bulk Import is gated (depends on `async` transport
+	// being consumed). Disabled = grayed out + tooltip explaining how
+	// to enable. Walks the toolbar->button->menu->menuitem tree because
+	// nested menus aren't in the toolbar's component-query descendant
+	// list until rendered — getMenu() forces lazy instantiation.
+	applyMessengerWorkerGating: function (workers) {
+		let asyncAlive = !!(workers.async && workers.async.alive);
+		let gatedClass = 'Limas.Components.BulkImport.BulkImportWindow';
+		let tooltip = asyncAlive
+			? null
+			: i18n('Disabled — start the messenger worker: php bin/console messenger:consume async');
+		let walk = function (component) {
+			if (!component || !component.getMenu) return;
+			let menu = component.getMenu();
+			if (!menu || !menu.items) return;
+			menu.items.each(function (it) {
+				if (it.target && it.target.$className === gatedClass) {
+					it.setDisabled(!asyncAlive);
+					if (it.setTooltip) {
+						it.setTooltip(tooltip);
+					}
+				}
+				walk(it);
+			});
+		};
+		this.menuBar.items.each(function (btn) { walk(btn); });
 	},
 	/*
 	 * Checks for unacknowledged system notices. Triggers a service call against the server.
@@ -414,7 +473,7 @@ Ext.application({
 			xtype: 'tabpanel',
 			border: false,
 			region: 'center',
-			bodyStyle: 'background:#DBDBDB',
+			bodyCls: 'limas-bg-panel',
 			plugins: [
 				Ext.create('Ext.ux.TabCloseMenu'),
 				Ext.create('Ext.ux.TabCloseOnMiddleClick')
@@ -525,12 +584,19 @@ Ext.application({
 			this.menuBar.selectTheme(theme);
 			Ext.util.CSS.swapStyleSheet('theme', window.themes[theme].themeUri);
 			Ext.util.CSS.swapStyleSheet('themeUx', window.themes[theme].themeUxUri);
+			this.applyThemeBodyClass(theme);
 
 			Ext.get('loader-wrapper').show();
 			Ext.get('loader-message').setHtml(i18n('Applying theme…'));
 
 			Ext.defer(this.updateThemeLayout, 1000, this);
 		}
+	},
+	applyThemeBodyClass: function (theme) {
+		// Triton + Aria are dark themes in ExtJS classic; the Limas semantic
+		// palette in app.css switches via body.limas-theme-dark.
+		const isDark = theme === 'triton' || theme === 'aria';
+		document.body.classList.toggle('limas-theme-dark', isDark);
 	},
 	updateThemeLayout: function () {
 		Ext.get('loader-wrapper').hide();
@@ -580,6 +646,14 @@ Limas.setOctoPartAvailable = function (octoPartAvailable) {
 
 Limas.isOctoPartAvailable = function () {
 	return Limas.octoPartAvailable;
+};
+
+Limas.setAggregatorAvailable = function (aggregatorAvailable) {
+	Limas.aggregatorAvailable = aggregatorAvailable;
+};
+
+Limas.isAggregatorAvailable = function () {
+	return Limas.aggregatorAvailable;
 };
 
 Limas.bytesToSize = function (bytes) {

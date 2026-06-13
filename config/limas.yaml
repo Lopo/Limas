@@ -32,10 +32,25 @@ parameters:
             quota: false
         category:
             path_separator: ' ➤ '
-        cronjob:
-            check: true
-        required_cronjobs: []
-#            - 'limas:cron:synctips'
+        # Cron expressions for the scheduler-driven recurring jobs.
+        # Picked up by Limas\Scheduler\LimasSchedule. Standard 5-field
+        # cron format ("m h dom month dow"). Edit per-deployment to
+        # match your maintenance window — defaults run early morning
+        # local time when most installs are idle.
+        scheduler:
+            version_check_cron: '30 3 * * *'           # daily 03:30
+            statistic_snapshot_cron: '35 3 * * *'      # daily 03:35
+            sync_tips_cron: '0 4 * * 1'                # weekly Mon 04:00
+            backup_cron: '0 2 * * *'                   # daily 02:00
+            retry_attachment_downloads_cron: '40 3 * * *'  # daily 03:40
+        # Bundled backup task — packs DB dump + attachments + secrets
+        # into a single tarball. Local-only by design; operator can
+        # mount an SMB/NFS share at `directory` for off-host storage.
+        backup:
+            enabled: true
+            directory: '%kernel.project_dir%/var/backups'
+            retention_count: 7                         # keep N newest archives
+            mysqldump_path: 'mysqldump'                # override if not on PATH
         parts:
 #            internalpartnumberunique: false
             internalpartnumberunique: '%env(bool:APP_DEBUG)%'

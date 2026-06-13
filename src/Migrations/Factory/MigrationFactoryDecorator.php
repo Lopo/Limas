@@ -21,7 +21,12 @@ readonly class MigrationFactoryDecorator
 	{
 		$instance = $this->migrationFactory->createVersion($migrationClassName);
 
-		if ((new \ReflectionClass($instance))->hasMethod('setContainer')) {
+		// Migrations can opt in to container injection by declaring a
+		// `setContainer(ContainerInterface)` method themselves;
+		// AbstractMigration doesn't, so the call only fires on the
+		// container-aware subset. Reflective lookup → method_exists is
+		// the conventional dance.
+		if (method_exists($instance, 'setContainer')) {
 			$instance->setContainer($this->container);
 		}
 

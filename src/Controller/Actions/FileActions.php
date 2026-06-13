@@ -4,7 +4,7 @@ namespace Limas\Controller\Actions;
 
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use Gaufrette\Exception\FileNotFound;
+use League\Flysystem\UnableToReadFile;
 use Limas\Entity\UploadedFile;
 use Limas\Service\MimetypeIconService;
 use Limas\Service\UploadedFileService;
@@ -35,8 +35,12 @@ class FileActions
 	public function getMimeTypeIconAction(Request $request, int $id): Response
 	{
 		$entity = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
+		// URL-only attachments have no Blob yet → no mimetype; fall back to
+		// the generic octet-stream icon so the FE always has something to
+		// render. Caller can still surface the sourceUrls in the UI.
+		$mime = $entity->getMimetype() ?? 'application/octet-stream';
 		return new BinaryFileResponse(
-			$this->mimetypeIconService->getMimetypeIcon($entity->getMimetype()),
+			$this->mimetypeIconService->getMimetypeIcon($mime),
 			Response::HTTP_OK,
 			[],
 			false,
@@ -49,10 +53,15 @@ class FileActions
 	public function getFileAction(Request $request, int $id): Response
 	{
 		$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
+		$filename = $file->getFilename();
+		if ($filename === null) {
+			// URL-only attachment with no Blob yet — nothing to stream.
+			return new Response('404 No blob attached (URL-only)', Response::HTTP_NOT_FOUND);
+		}
 		try {
-			return new Response($this->uploadedFileService->getStorage($file)->read($file->getFilename()), Response::HTTP_OK, ['Content-Type' => $file->getMimetype()]);
-		} catch (FileNotFound $e) {
-			$this->logger->error(sprintf('File %s not found in storage %s', $file->getFilename(), $file->getType()));
+			return new Response($this->uploadedFileService->getStorage($file)->read($filename), Response::HTTP_OK, ['Content-Type' => $file->getMimetype() ?? 'application/octet-stream']);
+		} catch (UnableToReadFile $e) {
+			$this->logger->error(sprintf('File %s not found in blob storage (%s)', $filename, $file->getType()));
 			return new Response('404 File not found', Response::HTTP_NOT_FOUND);
 		}
 	}
@@ -62,10 +71,13 @@ class FileActions
 		try {
 			/** @var UploadedFile $file */
 			$file = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
-			$this->uploadedFileService->getStorage($file)->delete($file->getFilename());
-			$this->entityManager->remove($file);
+			// Route through the service so Blob refcount is honoured —
+			// the underlying file only gets removed when the last
+			// attachment referencing it is gone.
+			$this->uploadedFileService->delete($file);
 			return $file;
 		} catch (\Throwable $e) {
+			$this->logger->error('deleteFileAction failed: ' . $e->getMessage(), ['exception' => $e]);
 			return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
 		}
 	}

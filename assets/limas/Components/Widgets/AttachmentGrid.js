@@ -41,6 +41,15 @@ Ext.define('Limas.AttachmentGrid', {
 			disabled: true
 		});
 
+		this.openUrlButton = Ext.create('Ext.button.Button', {
+			text: i18n('Open URL'),
+			tooltip: i18n('Open the original source URL in a new tab — used for attachments that have not been downloaded yet (cron will retry).'),
+			handler: this.onOpenUrlClick,
+			scope: this,
+			iconCls: 'fugue-icon globe-network',
+			hidden: true
+		});
+
 		this.webcamButton = Ext.create('Ext.button.Button', {
 			text: i18n('Take image'),
 			handler: this.onWebcamClick,
@@ -60,7 +69,8 @@ Ext.define('Limas.AttachmentGrid', {
 					},
 					this.webcamButton,
 					this.viewButton,
-					this.deleteButton
+					this.deleteButton,
+					this.openUrlButton
 				]
 			}
 		];
@@ -70,19 +80,37 @@ Ext.define('Limas.AttachmentGrid', {
 				dataIndex: 'extension',
 				width: 30,
 				renderer: function (value, metadata, record) {
+					// URL-only attachments have no file blob — server would
+					// 404 on /getMimeTypeIcon. Show a link icon + tooltip.
+					if (record.get('downloaded') === false) {
+						metadata.tdAttr = 'data-qtip="' + Ext.htmlEncode(i18n('Not downloaded — link only')) + '"';
+						return '<span class="fugue-icon globe-network" style="display:inline-block;width:16px;height:16px;background-position:0 0;"></span>';
+					}
 					return '<img src="' + record.getId() + '/getMimeTypeIcon"/>';
 				}
 			},
 			{
 				header: i18n('Filename'),
 				dataIndex: 'originalFilename',
-				width: 200
+				width: 200,
+				renderer: function (value, metadata, record) {
+					if (record.get('downloaded') === false) {
+						metadata.tdCls = 'limas-attachment-pending limas-text-muted';
+						metadata.style = 'font-style:italic;';
+					}
+					return Ext.htmlEncode(value || '');
+				}
 			},
 			{
 				header: i18n('Size'),
 				dataIndex: 'size',
 				width: 80,
-				renderer: Limas.bytesToSize
+				renderer: function (value, metadata, record) {
+					if (record.get('downloaded') === false) {
+						return '<span class="limas-text-muted" style="font-style:italic;">' + i18n('pending') + '</span>';
+					}
+					return Limas.bytesToSize(value);
+				}
 			},
 			{
 				header: i18n('Description'),
@@ -124,9 +152,14 @@ Ext.define('Limas.AttachmentGrid', {
 		j.show();
 	},
 	onDoubleClick: function (view, record) {
-		if (record) {
-			this.viewAttachment(record);
+		if (!record) return;
+		// URL-only rows can't be embedded (server would 404 on /getFile).
+		// Treat the double-click as "open the source URL" for them.
+		if (record.get('downloaded') === false) {
+			this.openSourceUrl(record);
+			return;
 		}
+		this.viewAttachment(record);
 	},
 	onAddClick: function () {
 		let j = Ext.create('Limas.FileUploadDialog');
@@ -147,13 +180,42 @@ Ext.define('Limas.AttachmentGrid', {
 	},
 	onSelectChange: function (selModel, selections) {
 		this.deleteButton.setDisabled(selections.length === 0);
-		this.viewButton.setDisabled(selections.length === 0);
+		// View only makes sense for fully-downloaded files; URL-only rows have
+		// no blob to embed. The dedicated "Open URL" button covers them.
+		let allDownloaded = selections.length > 0 && selections.every(r => r.get('downloaded') !== false);
+		let anyUrlOnly = selections.some(r => r.get('downloaded') === false);
+		this.viewButton.setDisabled(!allDownloaded);
+		this.openUrlButton.setHidden(!anyUrlOnly);
+		// Post-CAS the attachment serialises with `sourceUrls: string[]`
+		// (Blob can have N provenance URLs). Open URL acts on the first
+		// entry; the multi-source UX shows the rest as a tooltip / chip
+		// strip in the detail view.
+		let urls = selections.length === 1 ? (selections[0].get('sourceUrls') || []) : [];
+		this.openUrlButton.setDisabled(urls.length === 0);
 	},
 	onViewClick: function () {
 		let selection = this.getView().getSelectionModel().getSelection()[0];
-		if (selection) {
+		if (selection && selection.get('downloaded') !== false) {
 			this.viewAttachment(selection);
 		}
+	},
+	onOpenUrlClick: function () {
+		let selection = this.getView().getSelectionModel().getSelection()[0];
+		if (selection) {
+			this.openSourceUrl(selection);
+		}
+	},
+	openSourceUrl: function (record) {
+		// Pick the first URL from the array. If we ever want a picker
+		// (Farnell vs DigiKey for the same datasheet) we'd surface it
+		// here — for now the most-recent BlobSource is good enough.
+		let urls = record.get('sourceUrls') || [];
+		let url = urls[0];
+		if (!url) {
+			Ext.Msg.alert(i18n('No source URL'), i18n('This attachment has no source URL to open.'));
+			return;
+		}
+		window.open(url, '_blank', 'noopener,noreferrer');
 	},
 	viewAttachment: function (record) {
 		let mySrc = record.getId() + '/getFile';

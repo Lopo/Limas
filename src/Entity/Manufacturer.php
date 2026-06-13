@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -54,7 +54,7 @@ class Manufacturer
 	#[Groups(['default'])]
 	private ?string $fax;
 	/** @var Collection<ManufacturerICLogo> */
-	#[ORM\OneToMany(mappedBy: 'manufacturer', targetEntity: ManufacturerICLogo::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ManufacturerICLogo::class, mappedBy: 'manufacturer', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]

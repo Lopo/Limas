@@ -43,13 +43,13 @@ Ext.define('Limas.TipOfTheDayWindow', {
 		this.previousButton = Ext.create('Ext.button.Button', {
 			text: i18n('Previous Tip'),
 			handler: Ext.bind(this.displayPreviousTip, this),
-			iconCls: 'partkeepr-icon tip_previous',
+			iconCls: 'limas-icon tip_previous',
 			disabled: true
 		});
 
 		this.nextButton = Ext.create('Ext.button.Button', {
 			text: i18n('Next Tip'),
-			iconCls: 'partkeepr-icon tip_next',
+			iconCls: 'limas-icon tip_next',
 			handler: Ext.bind(this.displayNextTip, this)
 		});
 

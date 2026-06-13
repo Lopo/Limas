@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Reference;
 class HttpBasicAuthenticatorFactory
 	extends AbstractFactory
 {
-	public const PRIORITY = -5;
+	public const int PRIORITY = -5;
 
 
 	public function getPriority(): int

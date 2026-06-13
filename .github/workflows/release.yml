@@ -1,0 +1,38 @@
+name: Release
+
+on:
+    push:
+        tags: [ 'v*' ]
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v4
+
+            -   name: Bake version into LimasVersion.php
+                run: |
+                    VERSION="${GITHUB_REF_NAME#v}"
+                    sed -i "s/{V_GIT}/${VERSION}/g" src/LimasVersion.php
+
+            -   name: Pack source tarball
+                run: |
+                    VERSION="${GITHUB_REF_NAME#v}"
+                    # Exclude SCM + CI metadata + local-only test artifacts. Everything
+                    # else from the working tree (already version-controlled) is shipped.
+                    tar czf "limas-${VERSION}.tar.gz" \
+                      --exclude=.git \
+                      --exclude=.github \
+                      --exclude=.idea \
+                      --exclude=tests/e2e/test-results \
+                      --exclude=tests/e2e/playwright-report \
+                      --transform "s,^,limas-${VERSION}/," \
+                      *
+
+            -   uses: softprops/action-gh-release@v2
+                with:
+                    files: limas-*.tar.gz
+                    generate_release_notes: true

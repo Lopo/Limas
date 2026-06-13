@@ -19,7 +19,7 @@ use Limas\Controller\Actions\UserActions;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -82,7 +82,7 @@ class User
 	#[ApiProperty(writableLink: true)]
 	private UserProvider $provider;
 	/** @var Collection<TipOfTheDayHistory> */
-	#[ORM\OneToMany(mappedBy: 'user', targetEntity: TipOfTheDayHistory::class, cascade: ['remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: TipOfTheDayHistory::class, mappedBy: 'user', cascade: ['remove'], orphanRemoval: true)]
 	private Collection $tipHistories;
 	#[VirtualField(type: Types::STRING)]
 	#[Groups(['default'])]
@@ -191,9 +191,15 @@ class User
 		return $this->provider;
 	}
 
-	public function setProvider(UserProvider $provider): self
+	public function setProvider(?UserProvider $provider): self
 	{
-		$this->provider = $provider;
+		// Nullable to keep API Platform denormalisation happy when FE omits
+		// the field on new-user POSTs — `UserActions::PostAction` then sets
+		// the built-in provider before flush. The property itself stays
+		// non-nullable, so internal callers still get a hard type guarantee.
+		if ($provider !== null) {
+			$this->provider = $provider;
+		}
 		return $this;
 	}
 

@@ -147,12 +147,18 @@ class ProjectTest
 
 	public function testProjectAttachmentRemoval(): void
 	{
+		// makeAuthenticatedClient() shuts the kernel down + boots a fresh
+		// one, so any EM grabbed beforehand becomes stale. Re-acquire
+		// after the client is up so we and the UploadedFileService (which
+		// also reads from `self::getContainer()` post-reboot) share the
+		// same UoW. Same reason we re-find the Project by id rather than
+		// reusing the fixture reference — that instance belongs to the
+		// pre-reboot EM and isn't managed in the new one.
+		$client = $this->makeAuthenticatedClient();
 		$em = self::getContainer()->get(EntityManagerInterface::class);
 
-		$client = $this->makeAuthenticatedClient();
-
-		$project = $this->fixtures->getReference('project', Project::class);
-		$em->refresh($project);
+		$projectRef = $this->fixtures->getReference('project', Project::class);
+		$project = $em->find(Project::class, $projectRef->getId());
 
 		$projectAttachment = new ProjectAttachment;
 		self::getContainer()->get(UploadedFileService::class)

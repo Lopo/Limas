@@ -19,9 +19,9 @@ Ext.define('Limas.Components.ProjectReport.Renderers.MetaPartAvailabilityRendere
 		}
 
 		if (total < rec.get('quantity')) {
-			return '<span style="color: red;">' + total + " " + partUnit + "</span>";
+			return '<span class="limas-text-error">' + total + " " + partUnit + "</span>";
 		}
-		return '<span style="color: green;">' + total + " " + partUnit + "</span>";
+		return '<span class="limas-text-success">' + total + " " + partUnit + "</span>";
 	},
 	statics: {
 		rendererName: i18n('Project Report Stock Availability Renderer'),

@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -40,7 +40,7 @@ class ProjectRun
 	#[Groups(['default'])]
 	private int $quantity;
 	/** @var Collection<ProjectRunPart> */
-	#[ORM\OneToMany(mappedBy: 'projectRun', targetEntity: ProjectRunPart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: ProjectRunPart::class, mappedBy: 'projectRun', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $parts;
 

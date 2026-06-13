@@ -4,8 +4,8 @@ namespace Limas\Controller\Actions;
 
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use Gaufrette\Exception\FileNotFound;
 use Imagine\Image\AbstractImagine;
+use League\Flysystem\UnableToReadFile;
 use Imagine\Image\Box;
 use Imagine\Image\Point;
 use Limas\Entity\CachedImage;
@@ -44,14 +44,14 @@ class ImageActions
 	public function getImageAction(Request $request, int $id, LoggerInterface $logger): Response
 	{
 		$image = $this->entityManager->find($this->getEntityClass($request), $id);
-		$width = $request->get('maxWidth', 200);
-		$height = $request->get('maxHeight', 200);
+		$width = $request->query->getInt('maxWidth', 200);
+		$height = $request->query->getInt('maxHeight', 200);
 		if ($image === null) {
 			return $this->createImageResponse($width, $height, Response::HTTP_NOT_FOUND, '404 not found');
 		}
 		try {
 			$file = $this->fitWithin($image, $width, $height);
-		} catch (FileNotFound $e) {
+		} catch (UnableToReadFile $e) {
 			$logger->error($e->getMessage());
 			return $this->createImageResponse($width, $height, Response::HTTP_NOT_FOUND, '404 not found');
 		} catch (\Exception $e) {
@@ -66,8 +66,8 @@ class ImageActions
 	{
 		$image = $this->getItem($this->dataProvider, $this->getEntityClass($request), $id);
 		try {
-			$this->uploadedFileService->getStorage($image)->delete($image->getFilename());
-			$this->entityManager->remove($image);
+			// Route through the service so Blob refcount is honoured.
+			$this->uploadedFileService->delete($image);
 			return $image;
 		} catch (\Throwable $e) {
 			return new Response('', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -84,9 +84,16 @@ class ImageActions
 			return $outputFile;
 		}
 
-		$localCacheFile = $this->imageService->getCacheDirForImage($image) . $image->getFilename();
+		$filename = $image->getFilename();
+		if ($filename === null) {
+			throw new UnableToReadFile('URL-only attachment has no blob to thumbnail');
+		}
+		// CAS filenames carry a `<prefix>/<sha>` form. The local thumbnail
+		// cache flattens that to a single-segment leaf so the on-disk
+		// layout stays predictable — basename strips the prefix segment.
+		$localCacheFile = $this->imageService->getCacheDirForImage($image) . basename($filename);
 
-		FileSystem::write($localCacheFile, $this->uploadedFileService->getStorage($image)->read($image->getFilename()));
+		FileSystem::write($localCacheFile, $this->uploadedFileService->getStorage($image)->read($filename));
 
 		$this->liipImagine
 			->open($localCacheFile)
@@ -127,7 +134,13 @@ class ImageActions
 		$cacheFile = $this->imageService->getImageCacheDirectory() . "$code-{$maxWidth}x$maxHeight-" . Strings::webalize($message) . '.png';
 		if (!file_exists($cacheFile)) {
 			$image = $this->liipImagine->create(new Box(300, 300));
-			$image->draw()->text($message, $this->liipImagine->font(realpath($this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Regular.ttf'), 24, $image->palette()->color('000')), new Point(0, 0));
+			// Imagine\Imagick\Imagine::font() declares its return as the
+			// FontInterface base, but every concrete driver returns an
+			// AbstractFont subclass — which is what DrawerInterface::text
+			// requires.
+			$font = $this->liipImagine->font(realpath($this->getParameter('kernel.project_dir') . '/public/fonts/OpenSans-Regular.ttf'), 24, $image->palette()->color('000'));
+			assert($font instanceof \Imagine\Image\AbstractFont);
+			$image->draw()->text($message, $font, new Point(0, 0));
 
 			$box = $image->getSize()->widen($maxWidth);
 			if ($box->getHeight() > $maxHeight) {

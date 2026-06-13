@@ -17,11 +17,28 @@ readonly class TipOfTheDayService
 	}
 
 	/**
-	 * Syncronizes the tip database against the master wiki
+	 * Syncronizes the tip database against the master wiki.
+	 *
+	 * Currently still pointing at partkeepr.org which is gone; the call
+	 * is silently swallowed so the cron tick doesn't error out. Plan is
+	 * to self-host the tip list on a limas subdomain later.
 	 */
 	public function syncTips(): void
 	{
-		$this->updateTipDatabase($this->extractPageNames((new Client)->request('GET', $this->limas['tip_of_the_day_list'])->getBody()));
+		$url = $this->limas['tip_of_the_day_list'] ?? null;
+		if (!is_string($url) || $url === '') {
+			return;
+		}
+		try {
+			$body = (new Client)->request('GET', $url, [
+				'connect_timeout' => 3,
+				'timeout' => 5,
+			])->getBody();
+			$this->updateTipDatabase($this->extractPageNames((string)$body));
+		} catch (\Throwable) {
+			// Source offline / unreachable — leave the existing tip table
+			// untouched rather than wiping it on every failed sync.
+		}
 	}
 
 	/**

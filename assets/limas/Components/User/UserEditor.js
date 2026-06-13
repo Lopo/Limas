@@ -53,14 +53,27 @@ Ext.define('Limas.UserEditor', {
 			}
 		];
 
-		this.on('startEdit', this.onStartEdit, this, {delay: 200});
+		this.on('startEdit', this.onStartEdit, this);
+		this.on('itemSave', this.ensureProviderBeforeSave, this);
 		this.userProvider.on('change', this.onProviderChange, this);
 		this.callParent();
+	},
+	ensureProviderBeforeSave: function (record) {
+		// Defensive: itemSave fires post-updateRecord, pre-save. If the form's
+		// provider field never got a value (race with onStartEdit, or combobox
+		// setValue(<record>) didn't resolve), updateRecord just overwrote the
+		// record's provider back to null. Backend will reject denormalisation
+		// with "Expected UserProvider, null given". Set the builtin here so
+		// the POST body never carries provider: null for phantom records.
+		if (record.getProvider() === null) {
+			record.setProvider(Ext.data.StoreManager.lookup('UserProviderStore').findRecord('type', 'Builtin'));
+		}
 	},
 	onStartEdit: function () {
 		let provider = this.record.getProvider();
 		if (provider === null) {
-			this.record.setProvider(Ext.data.StoreManager.lookup('UserProviderStore').findRecord('type', 'Builtin'));
+			provider = Ext.data.StoreManager.lookup('UserProviderStore').findRecord('type', 'Builtin');
+			this.record.setProvider(provider);
 			this.down('#provider').setValue(provider);
 		}
 		if (this.record.get('protected') === true) {

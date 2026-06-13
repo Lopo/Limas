@@ -43,9 +43,10 @@ class SystemInformationTest
 		$response = Json::decode($client->getResponse()->getContent());
 
 		self::assertIsObject($response);
-		self::assertObjectHasProperty('inactiveCronjobCount', $response);
-		self::assertObjectHasProperty('inactiveCronjobs', $response);
-		self::assertIsArray($response->inactiveCronjobs);
 		self::assertObjectHasProperty('schemaStatus', $response);
+		// CronLogger pipeline retired in favour of Symfony Scheduler —
+		// `messengerWorkers` now exposes per-transport liveness instead
+		// of the inactiveCronjob* counters.
+		self::assertObjectHasProperty('messengerWorkers', $response);
 	}
 }

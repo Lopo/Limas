@@ -6,9 +6,9 @@ namespace Limas\Configuration;
 class OneToManyConfiguration
 	extends Configuration
 {
-	private const IMPORTBEHAVIOUR_IGNORE = 'ignore';
-	private const IMPORTBEHAVIOUR_CREATENEW = 'createNew';
-	private const importBehaviours = [
+	private const string IMPORTBEHAVIOUR_IGNORE = 'ignore';
+	private const string IMPORTBEHAVIOUR_CREATENEW = 'createNew';
+	private const array importBehaviours = [
 		self::IMPORTBEHAVIOUR_IGNORE,
 		self::IMPORTBEHAVIOUR_CREATENEW,
 	];

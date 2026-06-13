@@ -8,15 +8,15 @@ use Doctrine\ORM\QueryBuilder;
 class EntityConfiguration
 	extends Configuration
 {
-	private const IMPORTBEHAVIOUR_ALWAYSIMPORT = 'alwaysImport';
-	private const IMPORTBEHAVIOUR_MATCHDATA = 'matchData';
-	private const importBehaviours = [
+	private const string IMPORTBEHAVIOUR_ALWAYSIMPORT = 'alwaysImport';
+	private const string IMPORTBEHAVIOUR_MATCHDATA = 'matchData';
+	private const array importBehaviours = [
 		self::IMPORTBEHAVIOUR_ALWAYSIMPORT,
 		self::IMPORTBEHAVIOUR_MATCHDATA,
 	];
-	private const UPDATEBEHAVIOUR_DONTUPDATE = 'dontUpdate';
-	private const UPDATEBEHAVIOUR_UPDATEDATA = 'update';
-	private const updateBehaviours = [
+	private const string UPDATEBEHAVIOUR_DONTUPDATE = 'dontUpdate';
+	private const string UPDATEBEHAVIOUR_UPDATEDATA = 'update';
+	private const array updateBehaviours = [
 		self::UPDATEBEHAVIOUR_DONTUPDATE,
 		self::UPDATEBEHAVIOUR_UPDATEDATA
 	];

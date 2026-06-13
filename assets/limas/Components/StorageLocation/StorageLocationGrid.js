@@ -23,7 +23,7 @@ Ext.define('Limas.StorageLocationGrid', {
 		if (this.enableEditing) {
 			// Adds a button which shows the multi-create window
 			this.multiCreateButton = Ext.create('Ext.button.Button', {
-				iconCls: 'partkeepr-icon storagelocation_multiadd',
+				iconCls: 'limas-icon storagelocation_multiadd',
 				tooltip: i18n('Multi-create storage locations'),
 				handler: this.onMultiCreateClick,
 				scope: this

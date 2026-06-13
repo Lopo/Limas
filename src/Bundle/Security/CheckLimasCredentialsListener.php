@@ -115,7 +115,7 @@ readonly class CheckLimasCredentialsListener
 		$user = $passport->getUser();
 		$ldap = $this->ldapLocator->get($ldapBadge->getLdapServiceId());
 		try {
-			if ('' !== ($ldapBadge->getQueryString() ?? '')) {
+			if ('' !== $ldapBadge->getQueryString()) {
 				if ('' !== $ldapBadge->getSearchDn() && '' !== $ldapBadge->getSearchPassword()) {
 					try {
 						$ldap->bind($ldapBadge->getSearchDn(), $ldapBadge->getSearchPassword());

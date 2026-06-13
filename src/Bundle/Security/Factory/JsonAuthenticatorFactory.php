@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Reference;
 class JsonAuthenticatorFactory
 	extends AbstractFactory
 {
-	public const PRIORITY = -5;
+	public const int PRIORITY = -5;
 
 
 	public function __construct()

@@ -10,11 +10,11 @@ use Limas\Exceptions\InvalidImageTypeException;
 abstract class Image
 	extends UploadedFile
 {
-	protected const IMAGE_ICLOGO = 'iclogo';
-	protected const IMAGE_TEMP = 'temp';
-	protected const IMAGE_PART = 'part';
-	protected const IMAGE_STORAGELOCATION = 'storagelocation';
-	protected const IMAGE_FOOTPRINT = 'footprint';
+	protected const string IMAGE_ICLOGO = 'iclogo';
+	protected const string IMAGE_TEMP = 'temp';
+	protected const string IMAGE_PART = 'part';
+	protected const string IMAGE_STORAGELOCATION = 'storagelocation';
+	protected const string IMAGE_FOOTPRINT = 'footprint';
 
 
 	public function __construct(string $type)

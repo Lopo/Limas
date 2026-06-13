@@ -11,8 +11,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class UserService
 {
-	public const BUILTIN_PROVIDER = 'Builtin';
-	public const LDAP_PROVIDER = 'LDAP';
+	public const string BUILTIN_PROVIDER = 'Builtin';
+	public const string LDAP_PROVIDER = 'LDAP';
 
 
 	public function __construct(
@@ -28,14 +28,9 @@ class UserService
 	 */
 	public function getCurrentUser(): User
 	{
-		return $this->tokenStorage->getToken()->getUser();
-
-		$token = $this->tokenStorage->getToken();
-		$tokenProvider = $this->tokenStorage->getToken()->getAttribute('provider');
-		$provider = $this->getProvider($tokenProvider);
-		$username = $this->tokenStorage->getToken()->getUsername();
-
-		return $this->getUser($username, $provider, true);
+		$user = $this->tokenStorage->getToken()?->getUser();
+		assert($user instanceof User, 'getCurrentUser() invoked outside an authenticated request');
+		return $user;
 	}
 
 	public function getProvider(string $providerClass): UserProvider

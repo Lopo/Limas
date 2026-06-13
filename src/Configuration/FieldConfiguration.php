@@ -6,10 +6,10 @@ namespace Limas\Configuration;
 class FieldConfiguration
 	extends BaseConfiguration
 {
-	private const FIELDCONFIGURATION_IGNORE = 'ignore';
-	private const FIELDCONFIGURATION_COPYFROM = 'copyFrom';
-	private const FIELDCONFIGURATION_FIXEDVALUE = 'fixedValue';
-	private const fieldConfigurationModes = [
+	private const string FIELDCONFIGURATION_IGNORE = 'ignore';
+	private const string FIELDCONFIGURATION_COPYFROM = 'copyFrom';
+	private const string FIELDCONFIGURATION_FIXEDVALUE = 'fixedValue';
+	private const array fieldConfigurationModes = [
 		self::FIELDCONFIGURATION_COPYFROM,
 		self::FIELDCONFIGURATION_FIXEDVALUE,
 		self::FIELDCONFIGURATION_IGNORE,
@@ -35,7 +35,6 @@ class FieldConfiguration
 	public function parseConfiguration($configuration): bool
 	{
 		if (!property_exists($configuration, 'fieldConfiguration')) {
-			return false;
 			throw new \RuntimeException('The key fieldConfiguration does not exist!');
 		}
 

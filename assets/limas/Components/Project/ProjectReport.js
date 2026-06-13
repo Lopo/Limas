@@ -2,7 +2,8 @@ Ext.define('Limas.ProjectReportView', {
 	extend: 'Ext.panel.Panel',
 	alias: 'widget.ProjectReportView',
 
-	bodyStyle: 'background:#DBDBDB;padding: 5px',
+	bodyCls: 'limas-bg-panel',
+	bodyStyle: 'padding: 5px',
 	border: false,
 
 	layout: 'border',

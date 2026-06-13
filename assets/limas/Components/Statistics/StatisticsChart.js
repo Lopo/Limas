@@ -3,7 +3,7 @@ Ext.define('Limas.StatisticsChart', {
 	animate: true,
 	shadow: true,
 
-	style: 'border: 1px solid #AAA; background-color: white; box-shadow: 5px 5px 0px #aaa',
+	cls: 'limas-chart-frame',
 	legend: {
 		position: 'right'
 	},

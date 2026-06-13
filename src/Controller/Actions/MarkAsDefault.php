@@ -3,7 +3,6 @@
 namespace Limas\Controller\Actions;
 
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
-use Doctrine\ORM\EntityManagerInterface;
 use Limas\Entity\GridPreset;
 use Limas\Service\GridPresetService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,9 +18,8 @@ class MarkAsDefault
 
 
 	public function __construct(
-		private readonly GridPresetService      $gridPresetService,
-		private readonly EntityManagerInterface $entityManager,
-		private readonly ItemProvider           $dataProvider
+		private readonly GridPresetService $gridPresetService,
+		private readonly ItemProvider      $dataProvider
 	)
 	{
 	}

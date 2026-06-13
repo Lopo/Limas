@@ -20,7 +20,11 @@ readonly class ImageAttachment
 	{
 		if ($args->getObject() instanceof PartAttachment) {
 			$entity = $args->getObject();
-			$entity->setIsImage($this->imageService->canHandleMimetype($entity->getMimetype()));
+			// URL-only attachments have no Blob yet → no mimetype to
+			// classify. Treat as non-image; once the retry CLI attaches
+			// a Blob the flag gets reclassified on the next load.
+			$mt = $entity->getMimetype();
+			$entity->setIsImage($mt !== null ? $this->imageService->canHandleMimetype($mt) : false);
 		}
 	}
 }

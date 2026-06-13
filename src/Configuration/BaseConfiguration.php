@@ -55,6 +55,13 @@ abstract class BaseConfiguration
 
 	abstract public function import(array $row): mixed;
 
+	/**
+	 * Recursively pull settings out of the operator-supplied import config
+	 * shape into the receiver. Returns true on success, false when the
+	 * receiver couldn't interpret the slice.
+	 */
+	abstract public function parseConfiguration(mixed $configuration): bool;
+
 	public function persist($entity): void
 	{
 		self::$persistEntities[] = $entity;

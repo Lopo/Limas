@@ -26,11 +26,11 @@ Ext.define('Limas.PartsGrid', {
 	/**
 	 * @cfg {String} Defines the icon of the "Expand Row" button
 	 */
-	expandRowButtonIconCls: 'partkeepr-icon group-expand',
+	expandRowButtonIconCls: 'limas-icon group-expand',
 	/**
 	 * @cfg {String} Defines the icon of the "Collapse Row" button
 	 */
-	collapseRowButtonIconCls: 'partkeepr-icon group-collapse',
+	collapseRowButtonIconCls: 'limas-icon group-collapse',
 
 	/**
 	 * Configure drag'n'drop.
@@ -544,7 +544,12 @@ Ext.define('Limas.PartsGrid', {
 		});
 	},
 	onPartLoaded: function (record) {
-		let rec = this.store.findRecord('id', record.getId());
+		// The Part model declares `idProperty: '@id'` (IRI string like
+		// `/api/parts/123`), so the previous `findRecord('id', …)` always
+		// missed — there is no scalar `id` field on the model. Use
+		// `store.getById(...)` so ExtJS resolves the lookup against the
+		// model's declared idProperty, then update the record in place.
+		let rec = this.store.getById(record.getId());
 		if (rec) {
 			rec.set('stockLevel', record.get('stockLevel'));
 		}

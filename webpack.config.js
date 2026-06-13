@@ -99,17 +99,43 @@ Encore
 			glob: '*.png'
 		},
 		target: {
-			image: path.resolve(__dirname, 'public/spritesheets/partkeepr.png'),
+			image: path.resolve(__dirname, 'public/spritesheets/limas-icons.png'),
 			css: [
-				[path.resolve(__dirname, 'public/spritesheets/partkeepr.css'), {format: 'partkeeprTemplate'}]
+				[path.resolve(__dirname, 'public/spritesheets/limas-icons.css'), {format: 'limasTemplate'}]
 			]
 		},
 		apiOptions: {
-			cssImageRef: './partkeepr.png?[hash]'
+			cssImageRef: './limas-icons.png?[hash]'
 		},
 		customTemplates: {
-			partkeeprTemplate: (data) => {
-				return '.partkeepr-icon { background: url(I) no-repeat; }'
+			limasTemplate: (data) => {
+				return '.limas-icon { background: url(I) no-repeat; }'
+					.replace('I', data.sprites[0].image) + '\n\n' + perSprite(data.sprites);
+			}
+		}
+	}))
+	// Sprite of distributor favicons (16x16). Used by the InfoProvider
+	// aggregator UI to show each source with a recognisable logo instead of
+	// just the adapter name. Add a new PNG to assets/images/distributors/ to
+	// pick up an extra distributor automatically — class becomes
+	// `.distributor-icon-<filename>`.
+	.addPlugin(new SpritesmithPlugin({
+		src: {
+			cwd: './assets/images/distributors',
+			glob: '*.png'
+		},
+		target: {
+			image: path.resolve(__dirname, 'public/spritesheets/distributors.png'),
+			css: [
+				[path.resolve(__dirname, 'public/spritesheets/distributors.css'), {format: 'distributorTemplate'}]
+			]
+		},
+		apiOptions: {
+			cssImageRef: './distributors.png?[hash]'
+		},
+		customTemplates: {
+			distributorTemplate: (data) => {
+				return '.distributor-icon { background: url(I) no-repeat; display:inline-block; width:16px; height:16px; vertical-align:middle; }'
 					.replace('I', data.sprites[0].image) + '\n\n' + perSprite(data.sprites);
 			}
 		}
@@ -336,6 +362,9 @@ if (!Encore.isDev()) {
 				'@/limas/Components/Editor/EditorComponent.js',
 				'@/limas/Components/Distributor/DistributorEditorComponent.js',
 				'@/limas/Components/Manufacturer/ManufacturerEditorComponent.js',
+				'@/limas/Components/ParameterAlias/ParameterAliasGrid.js',
+				'@/limas/Components/ParameterAlias/ParameterAliasEditor.js',
+				'@/limas/Components/ParameterAlias/ParameterAliasEditorComponent.js',
 				'@/limas/Components/PartMeasurementUnit/PartMeasurementUnitEditorComponent.js',
 				'@/limas/Components/Unit/UnitEditorComponent.js',
 				'@/limas/Components/Footprint/FootprintEditorComponent.js',
@@ -374,6 +403,7 @@ if (!Encore.isDev()) {
 				'@/limas/Components/CategoryEditor/CategoryEditorWindow.js',
 				'@/limas/Components/CategoryEditor/CategoryEditorForm.js',
 				'@/limas/Components/Widgets/StorageLocationPicker.js',
+				'@/limas/Components/Widgets/StorageLocationTreeComboBox.js',
 				'@/limas/Components/Preferences/Panel.js',
 				'@/limas/Components/SystemPreferences/Panel.js',
 				'@/limas/Components/UserPreferences/Panel.js',
@@ -406,6 +436,10 @@ if (!Encore.isDev()) {
 				'@/limas/Components/OctoPart/SearchPanel.js',
 				'@/limas/Components/OctoPart/SearchWindow.js',
 				'@/limas/Components/OctoPart/DataApplicator.js',
+				'@/limas/Components/InfoProviderAggregator/SearchPanel.js',
+				'@/limas/Components/InfoProviderAggregator/SearchWindow.js',
+				'@/limas/Components/InfoProviderAggregator/SettingsWindow.js',
+				'@/limas/Components/BulkImport/BulkImportWindow.js',
 				'@/limas/Components/ThemeTester/ThemeTester.js',
 				'@/limas/phpjs.js'
 			],

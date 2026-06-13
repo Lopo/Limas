@@ -5,7 +5,7 @@ namespace Limas\Entity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\MappedSuperclass]
@@ -25,7 +25,7 @@ abstract class AbstractCategory
 	private ?string $categoryPath = null;
 
 
-	public function setName(string $name): self
+	public function setName(string $name): static
 	{
 		$this->name = $name;
 		return $this;
@@ -36,7 +36,7 @@ abstract class AbstractCategory
 		return $this->name;
 	}
 
-	public function setDescription(?string $description): self
+	public function setDescription(?string $description): static
 	{
 		$this->description = $description;
 		return $this;
@@ -52,7 +52,7 @@ abstract class AbstractCategory
 		return $this->expanded;
 	}
 
-	public function setCategoryPath(?string $categoryPath): self
+	public function setCategoryPath(?string $categoryPath): static
 	{
 		$this->categoryPath = $categoryPath;
 		return $this;

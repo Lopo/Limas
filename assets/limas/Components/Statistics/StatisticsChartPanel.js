@@ -3,7 +3,8 @@ Ext.define('Limas.StatisticsChartPanel', {
 	title: i18n('Statistics Chart'),
 
 	layout: 'anchor',
-	bodyStyle: 'background:#DBDBDB; padding: 15px;',
+	bodyCls: 'limas-bg-panel',
+	bodyStyle: 'padding: 15px;',
 
 	initComponent: function () {
 		this.chart = Ext.create('Limas.StatisticsChart', {anchor: '100% -60'});
@@ -46,7 +47,7 @@ Ext.define('Limas.StatisticsChartPanel', {
 		if (data.startDate === null || data.endDate === null) {
 			Ext.Msg.alert(
 				i18n('Unable to retrieve the statistic data'),
-				i18n('The system was unable to retrieve the statistic data. The most probable cause is that the CreateStatisticSnapshot cronjob is not running.')
+				i18n('The system was unable to retrieve the statistic data. The most probable cause is that the messenger scheduler worker is not running (start it via `php bin/console messenger:consume scheduler_default async`).')
 			);
 			return;
 		}

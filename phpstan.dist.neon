@@ -1,6 +1,6 @@
 parameters:
-	phpVersion: 80200
-	level: 1
+	phpVersion: 80400
+	level: 5
 	paths:
 		- bin/
 		- config/
@@ -12,12 +12,15 @@ parameters:
 	symfony:
 		containerXmlPath: var/cache/dev/Limas_KernelDevDebugContainer.xml
 		consoleApplicationLoader: tests/console-application.php
+	ignoreErrors:
+		# Sf 8 Kernel::getAllowedEnvs() is reflectively probed by the
+		# framework on boot — phpstan can't see the indirect call site.
+		-
+			identifier: method.unused
+			message: '#getAllowedEnvs\(\) is unused#'
+			path: src/Kernel.php
 #	scanDirectories:
 #		- var/cache/dev/Symfony/Config
-#	ignoreErrors:
-#		-
-#			message: '#^Variable property access on (mixed|object)\.$#'
-#			path: %rootDir%/../../../tests/
 includes:
     - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
     - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon

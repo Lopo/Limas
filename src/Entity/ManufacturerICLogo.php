@@ -7,8 +7,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use Limas\Controller\Actions\ImageActions;
 use Doctrine\ORM\Mapping as ORM;
+use Limas\Controller\Actions\ImageActions;
 
 
 #[ORM\Entity]

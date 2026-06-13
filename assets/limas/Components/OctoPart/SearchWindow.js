@@ -1,7 +1,7 @@
 Ext.define('Limas.Components.OctoPart.SearchWindow', {
 	extend: 'Ext.window.Window',
 	title: i18n('Octopart Search'),
-	iconCls: 'partkeepr-icon octopart',
+	iconCls: 'limas-icon octopart',
 	width: 750,
 	height: 300,
 	layout: 'fit',

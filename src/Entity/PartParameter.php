@@ -11,7 +11,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -30,9 +30,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class PartParameter
 	extends BaseEntity
 {
-	final public const VALUE_TYPE_STRING = 'string';
-	final public const VALUE_TYPE_NUMERIC = 'numeric';
-	final public const VALUE_TYPES = [self::VALUE_TYPE_STRING, self::VALUE_TYPE_NUMERIC];
+	final public const string VALUE_TYPE_STRING = 'string';
+	final public const string VALUE_TYPE_NUMERIC = 'numeric';
+	final public const array VALUE_TYPES = [self::VALUE_TYPE_STRING, self::VALUE_TYPE_NUMERIC];
 
 	#[ORM\ManyToOne(targetEntity: Part::class, inversedBy: 'parameters')]
 	private ?Part $part;

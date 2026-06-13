@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\SetDefaultUnit;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
@@ -49,7 +49,7 @@ class PartMeasurementUnit
 	#[Groups(['default'])]
 	private bool $default = false;
 	/** @var Collection<Part> */
-	#[ORM\OneToMany(mappedBy: 'partUnit', targetEntity: Part::class)]
+	#[ORM\OneToMany(targetEntity: Part::class, mappedBy: 'partUnit')]
 	private Collection $parts;
 
 

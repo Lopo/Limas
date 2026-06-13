@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFile;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -33,7 +33,7 @@ class StorageLocation
 	#[ORM\Column(type: Types::STRING, unique: true)]
 	#[Groups(['default'])]
 	private string $name;
-	#[ORM\OneToOne(mappedBy: 'storageLocation', targetEntity: StorageLocationImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToOne(targetEntity: StorageLocationImage::class, mappedBy: 'storageLocation', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[UploadedFile]
 	private ?StorageLocationImage $image = null;

@@ -19,7 +19,7 @@ class GetTipHistoryCollection
 		$user = $this->getUser();
 		$resultCollection = [];
 		foreach ($entityManager->getRepository(TipOfTheDayHistory::class)->findAll() as $item) {
-			if ($item->getUser() == $user) {
+			if ($item->getUser() === $user) {
 				$resultCollection[] = $item;
 			}
 		}

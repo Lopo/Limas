@@ -132,7 +132,7 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 
 		this.nextMetaPart = Ext.create('Ext.button.Button', {
 			text: i18n('Next Meta-Part'),
-			iconCls: 'partkeepr-icon bricks_down',
+			iconCls: 'limas-icon bricks_down',
 			listeners: {
 				click: this.jumpToNextMetaPart,
 				scope: this
@@ -141,7 +141,7 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 
 		this.previousMetaPart = Ext.create('Ext.button.Button', {
 			text: i18n('Previous Meta-Part'),
-			iconCls: 'partkeepr-icon bricks_up',
+			iconCls: 'limas-icon bricks_up',
 			listeners: {
 				click: this.jumpToPreviousMetaPart,
 				scope: this

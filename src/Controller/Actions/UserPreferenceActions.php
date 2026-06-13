@@ -9,7 +9,7 @@ use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 
@@ -26,7 +26,9 @@ class UserPreferenceActions
 
 	public function getPreferencesAction(): JsonResponse
 	{
-		$preferences = $this->userPreferenceService->getPreferences($this->getUser());
+		$user = $this->getUser();
+		assert($user instanceof \Limas\Entity\User);
+		$preferences = $this->userPreferenceService->getPreferences($user);
 		return new JsonResponse($this->normalizer->normalize($preferences, 'json'));
 	}
 
@@ -34,6 +36,7 @@ class UserPreferenceActions
 	public function setPreferenceAction(Request $request): JsonResponse
 	{
 		$user = $this->getUser();
+		assert($user instanceof \Limas\Entity\User);
 		$data = Json::decode($request->getContent());
 		if (!property_exists($data, 'preferenceKey') || !property_exists($data, 'preferenceValue')) {
 			throw new \RuntimeException('Invalid format');
@@ -57,7 +60,9 @@ class UserPreferenceActions
 	public function deletePreferenceAction(Request $request): void
 	{
 		if ($request->request->has('preferenceKey')) {
-			$this->userPreferenceService->deletePreference($this->getUser(), $request->request->get('preferenceKey'));
+			$user = $this->getUser();
+			assert($user instanceof \Limas\Entity\User);
+			$this->userPreferenceService->deletePreference($user, $request->request->get('preferenceKey'));
 		} else {
 			throw new \RuntimeException('Invalid format');
 		}

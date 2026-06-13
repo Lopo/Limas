@@ -1,0 +1,13 @@
+# Single mount post-CAS refactor — all attachment content lives in the
+# blob pool, sha256-keyed under <2-char prefix>/<sha256>. Pre-CAS Limas
+# had 10 separate Gaufrette adapters (iclogo / footprint / partattachment
+# / …); they're dead config now and we don't carry them forward.
+#
+# Service ID `blob.storage` exposes the FilesystemOperator. Injected via
+# the bind on `$blobStorage` declared in services.yaml.
+flysystem:
+    storages:
+        blob.storage:
+            adapter: 'local'
+            options:
+                directory: '%limas.filesystem.data_directory%blob/'

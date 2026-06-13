@@ -1,0 +1,428 @@
+.dataview-multisort-item {
+    float: left;
+    padding: 8px;
+    margin: 8px 8px 4px 8px;
+}
+
+.iclogo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 120px;
+}
+
+.x-item-selected {
+    outline: 1px solid #157fcc !important;
+    outline-offset: -1px;
+}
+
+.remote-image-background {
+    background-color: white;
+    border: 1px solid black;
+    text-align: center;
+}
+
+.x-title-wrappable-text > div {
+    overflow: auto;
+    white-space: normal;
+    vertical-align: top;
+}
+
+.x-title-wrappable-text > div > div {
+    font-size: 20px;
+    line-height: normal;
+}
+
+.x-title-wrappable-text small {
+    font-size: 14px;
+    line-height: 16px;
+}
+
+.x-wrappable-grid .x-grid-cell-inner {
+    white-space: normal;
+}
+
+.x-form-reload-trigger {
+    background-image: url(../images/form/reload-trigger.png);
+}
+
+.x-form-trigger-save {
+    background-image: url(../images/form/trigger-save.png);
+}
+
+.x-form-trigger-add {
+    background-image: url(../images/form/trigger-add.png);
+}
+
+.x-form-trigger-markdefault {
+    background-image: url(../images/form/trigger-default.png);
+}
+
+.x-form-trigger-delete {
+    background-image: url(../images/form/trigger-delete.png);
+}
+
+.x-form-trigger-link {
+    background-image: url(../images/form/trigger-link.png);
+}
+
+.x-form-trigger-help {
+    background-image: url(../images/form/trigger-help.gif);
+}
+
+.x-form-trigger-ellipsis {
+    background-image: url(../images/form/trigger-ellipsis.png);
+}
+
+.partkeepr-part-manager-compact {
+    background-position: top left;
+    background-repeat: no-repeat;
+    display: inline-block;
+    width: 73px;
+    height: 43px;
+    line-height: 16px;
+    vertical-align: text-top;
+    background-image: url(../images/config/layout-compact.png);
+}
+
+.partkeepr-part-manager-standard {
+    background-position: top left;
+    background-repeat: no-repeat;
+    display: inline-block;
+    width: 73px;
+    height: 43px;
+    line-height: 16px;
+    vertical-align: text-top;
+
+    background-image: url(../images/config/layout-standard.png);
+}
+
+#loader-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: white;
+}
+
+#loader-message {
+    position: fixed;
+    top: 70%;
+    text-align: center;
+    font-size: 30px;
+}
+
+#loader-logo {
+    background-image: url(../images/limas_loading.svg);
+    background-repeat: no-repeat;
+    -webkit-background-size: 100%;
+    background-size: 100%;
+    height: 150px;
+    width: 150px;
+    position: fixed;
+    top: 50%;
+left: 50%;
+margin-top: -75px;
+margin-left: -75px;
+
+}
+
+#loader {
+    display: block;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #0087b0;
+    background-position: center;
+    -webkit-animation: spin 2s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+    animation: spin 2s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+    top: 50%;
+    left: 50%;
+    margin-top: -103px;
+    margin-left: -103px;
+    position: fixed;
+}
+
+#loader:before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #007497;
+
+    -webkit-animation: spin 3s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+    animation: spin 3s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+}
+
+#loader:after {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    right: 13px;
+    bottom: 13px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #005d7a;
+
+    -webkit-animation: spin 1.5s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+    animation: spin 1.5s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg); /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(0deg); /* IE 9 */
+        transform: rotate(0deg); /* Firefox 16+, IE 10+, Opera */
+    }
+    100% {
+        -webkit-transform: rotate(360deg); /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(360deg); /* IE 9 */
+        transform: rotate(360deg); /* Firefox 16+, IE 10+, Opera */
+    }
+}
+
+@keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg); /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(0deg); /* IE 9 */
+        transform: rotate(0deg); /* Firefox 16+, IE 10+, Opera */
+    }
+    100% {
+        -webkit-transform: rotate(360deg); /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(360deg); /* IE 9 */
+        transform: rotate(360deg); /* Firefox 16+, IE 10+, Opera */
+    }
+}
+
+.limasLogo {
+    height: 22px !important;
+    width: 112px !important;
+    background-image: url(../images/limas-header.png);
+    background-repeat: no-repeat;
+}
+
+.x-panel-notification {
+    padding: 2px;
+}
+
+.x-panel-body-notification {
+    background-color: #cce5ff;
+    border: 1px solid #b8daff;
+    border-radius: .25rem;
+    padding: .25rem .75rem;
+}
+
+/* InfoProvider aggregator: subtle green tint on candidates that already
+   match a local Part (ExistingPartFinder flag). Makes "you already have
+   this one in your inventory" obvious without rewriting cell content. */
+.limas-aggregator-row-existing .x-grid-cell {
+    background-color: #e9f7ec !important;
+}
+.limas-aggregator-row-existing.x-grid-row-over .x-grid-cell {
+    background-color: #d6f0db !important;
+}
+
+/* Per-source toggle chips above the aggregator search bar. The distributor
+   spritesheet covers the entire button surface, hiding ExtJS's own pressed
+   state, so we drive the on/off look ourselves: disabled chips fade and
+   gray out so the user can see which sources are skipped in the next query. */
+.aggregator-source-toggle {
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background: transparent;
+}
+.aggregator-source-toggle.aggregator-source-on {
+    border-color: #6aa84f;
+    background: #eef7e9;
+}
+.aggregator-source-toggle.aggregator-source-off .x-btn-icon-el,
+.aggregator-source-toggle.aggregator-source-off .distributor-icon {
+    opacity: 0.35;
+    filter: grayscale(100%);
+}
+.aggregator-source-toggle.aggregator-source-off {
+    border-color: #ccc;
+    background: transparent;
+}
+/* Regional storefront aliases — same brand, same sprite slot as the parent.
+   element14apac (Premier Farnell APAC) and element14 (EU/global storefront)
+   ship the same logo; rather than bloating the sprite with a duplicate PNG
+   we map the alias class to the existing sprite offset. */
+.distributor-icon.element14apac { background-position: 0 -16px !important; }
+
+/* Grid column headers: always centred — keeps headers visually anchored even
+ * when the column's `align` config right-justifies the data (e.g. Params,
+ * Stock). Per-cell alignment stays controlled by the column's `align`. */
+.x-grid-header-ct .x-column-header-text-container,
+.x-grid-header-ct .x-column-header-text {
+    text-align: center;
+}
+
+/* Limas semantic palette.
+ * ExtJS classic toolkit ships 8 themes (classic, crisp, crisp-touch, gray,
+ * neptune, neptune-touch, triton, aria). Triton + Aria are dark themes.
+ * Defaults below target light themes; `body.limas-theme-dark` (toggled by
+ * Limas.switchTheme()) overrides the same vars for dark themes. */
+:root {
+    --limas-text-muted: rgba(0, 0, 0, 0.55);
+    --limas-text-success: #1d8842;
+    --limas-text-warning: #c46a1f;
+    --limas-text-error: #b0413e;
+    --limas-text-emphasis: #a05000;
+    --limas-text-link: #2966c4;
+    --limas-bg-panel: #DBDBDB;
+    --limas-bg-subtle: rgba(0, 0, 0, 0.03);
+    --limas-bg-header: rgba(0, 0, 0, 0.05);
+    --limas-box-warning-bg: rgba(255, 200, 80, 0.10);
+    --limas-box-warning-border: rgba(196, 106, 31, 0.4);
+    --limas-box-warning-text: #a05000;
+    --limas-border-subtle: rgba(0, 0, 0, 0.12);
+    --limas-text-disabled: rgba(0, 0, 0, 0.45);
+    --limas-bg-disabled: rgba(0, 0, 0, 0.04);
+}
+
+body.limas-theme-dark {
+    --limas-text-muted: rgba(255, 255, 255, 0.55);
+    --limas-text-success: #4ade80;
+    --limas-text-warning: #fb923c;
+    --limas-text-error: #f87171;
+    --limas-text-emphasis: #fbbf24;
+    --limas-text-link: #93c5fd;
+    --limas-bg-panel: #1e1e1e;
+    --limas-bg-subtle: rgba(255, 255, 255, 0.04);
+    --limas-bg-header: rgba(255, 255, 255, 0.07);
+    --limas-box-warning-bg: rgba(255, 200, 80, 0.12);
+    --limas-box-warning-border: rgba(251, 146, 60, 0.5);
+    --limas-box-warning-text: #fbbf24;
+    --limas-border-subtle: rgba(255, 255, 255, 0.18);
+    --limas-text-disabled: rgba(255, 255, 255, 0.4);
+    --limas-bg-disabled: rgba(255, 255, 255, 0.05);
+}
+
+.limas-text-muted    { color: var(--limas-text-muted); }
+.limas-text-success  { color: var(--limas-text-success); font-weight: bold; }
+.limas-text-warning  { color: var(--limas-text-warning); }
+.limas-text-error    { color: var(--limas-text-error); }
+.limas-text-emphasis { color: var(--limas-text-emphasis); font-weight: bold; }
+.limas-text-link     { color: var(--limas-text-link); }
+
+.limas-bg-panel  { background: var(--limas-bg-panel); }
+.limas-bg-subtle { background: var(--limas-bg-subtle); }
+.limas-bg-header { background: var(--limas-bg-header); font-weight: bold; }
+
+.limas-border-subtle { border: 1px solid var(--limas-border-subtle); }
+
+.limas-box-warning {
+    background: var(--limas-box-warning-bg);
+    border: 1px solid var(--limas-box-warning-border);
+    border-radius: 4px;
+    padding: 8px;
+}
+.limas-box-warning-header {
+    color: var(--limas-box-warning-text);
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.limas-dropzone {
+    border: 2px dashed var(--limas-border-subtle);
+    border-radius: 6px;
+    text-align: center;
+    padding: 20px;
+    color: var(--limas-text-muted);
+    cursor: pointer;
+}
+
+.limas-field-readonly .x-form-text {
+    background: var(--limas-bg-disabled) !important;
+    color: var(--limas-text-disabled) !important;
+}
+
+/* Lifecycle badges — used by the aggregator candidate grid + per-distributor
+ * detail panel. Inline-block chips with pastel bg + dark fg. Dark theme keeps
+ * the same hue family but darker bg + brighter fg so they remain legible. */
+.limas-lifecycle {
+    display: inline-block;
+    padding: 1px 6px;
+    margin-left: 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+}
+.limas-lifecycle-active       { background: #e6f4ea; color: #1e7e34; }
+.limas-lifecycle-pre_release  { background: #e6f0fb; color: #0a58ca; }
+.limas-lifecycle-nrnd         { background: #fff4e0; color: #a36500; }
+.limas-lifecycle-eol          { background: #fde6d1; color: #a04400; }
+.limas-lifecycle-discontinued { background: #fbe1e1; color: #a02020; }
+
+body.limas-theme-dark .limas-lifecycle-active       { background: rgba(74, 222, 128, 0.16); color: #6ee7a3; }
+body.limas-theme-dark .limas-lifecycle-pre_release  { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
+body.limas-theme-dark .limas-lifecycle-nrnd         { background: rgba(251, 191, 36, 0.16); color: #fcd34d; }
+body.limas-theme-dark .limas-lifecycle-eol          { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+body.limas-theme-dark .limas-lifecycle-discontinued { background: rgba(248, 113, 113, 0.16); color: #fca5a5; }
+
+/* Bulk-import row status pills (and any other per-row outcome rendering).
+ * Smaller chip than lifecycle since they live inside grid table cells. */
+.limas-status {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+.limas-status-pending   { background: #eee;     color: #666; }
+.limas-status-success   { background: #e6f4ea;  color: #1e7e34; }
+.limas-status-warning   { background: #fff4e0;  color: #a36500; }
+.limas-status-skipped   { background: #e6f0fb;  color: #0a58ca; }
+.limas-status-ambiguous { background: #fde6d1;  color: #a04400; }
+.limas-status-failed    { background: #fbe1e1;  color: #a02020; }
+
+body.limas-theme-dark .limas-status-pending   { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.7); }
+body.limas-theme-dark .limas-status-success   { background: rgba(74, 222, 128, 0.16); color: #6ee7a3; }
+body.limas-theme-dark .limas-status-warning   { background: rgba(251, 191, 36, 0.16); color: #fcd34d; }
+body.limas-theme-dark .limas-status-skipped   { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
+body.limas-theme-dark .limas-status-ambiguous { background: rgba(251, 146, 60, 0.16); color: #fdba74; }
+body.limas-theme-dark .limas-status-failed    { background: rgba(248, 113, 113, 0.16); color: #fca5a5; }
+
+/* Bulk-import preview/result table — bordered cells, header-row tint */
+.limas-grid-table { border-collapse: collapse; }
+.limas-grid-table th, .limas-grid-table td {
+    border: 1px solid var(--limas-border-subtle);
+    padding: 3px 6px;
+    font-size: 11px;
+    vertical-align: top;
+}
+.limas-grid-table th {
+    background: var(--limas-bg-header);
+    font-weight: bold;
+}
+.limas-grid-table .limas-grid-cell-truncate {
+    white-space: nowrap;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Drag-over hint on the bulk-import drop zone. Toggled by the drag handlers. */
+.limas-dropzone-hover { background: rgba(45, 130, 220, 0.08); }
+
+/* Statistics chart wrapper — visible bordered box around the canvas */
+.limas-chart-frame {
+    border: 1px solid var(--limas-border-subtle);
+    background: #fff;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.18);
+}
+body.limas-theme-dark .limas-chart-frame {
+    background: #2a2a2a;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.6);
+}

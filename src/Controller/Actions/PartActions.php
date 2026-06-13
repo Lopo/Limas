@@ -12,6 +12,7 @@ use Limas\Entity\PartParameter;
 use Limas\Entity\ProjectRun;
 use Limas\Entity\ProjectRunPart;
 use Limas\Entity\StockEntry;
+use Limas\Entity\User;
 use Limas\Exceptions\InternalPartNumberNotUniqueException;
 use Limas\Exceptions\PartLimitExceededException;
 use Limas\Service\PartService;
@@ -20,7 +21,7 @@ use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -44,12 +45,12 @@ class PartActions
 	#[Route(path: '/api/parts/massRemoveStock', defaults: ['method' => 'GET', '_format' => 'json'])]
 	public function massRemoveStockAction(Request $request, IriConverterInterface $iriConverter): void
 	{
-		$removals = Json::decode($request->get('removals'));
+		$removals = Json::decode($request->query->get('removals'));
 		if (!is_array($removals)) {
 			throw new \RuntimeException('removals parameter must be an array');
 		}
 
-		$projects = Json::decode($request->get('projects'));
+		$projects = Json::decode($request->query->get('projects'));
 		if (!is_array($projects)) {
 			throw new \RuntimeException('projects parameter must be an array');
 		}
@@ -63,6 +64,7 @@ class PartActions
 		}
 
 		$user = $this->getUser();
+		assert($user instanceof User, 'massRemoveStockAction requires an authenticated user');
 
 		foreach ($removals as $removal) {
 			if (!property_exists($removal, 'part')) {
@@ -210,8 +212,10 @@ class PartActions
 	{
 		$data = Json::decode($request->getContent());
 		$part = $this->getItem($this->dataProvider, Part::class, $id);
+		$user = $this->getUser();
+		assert($user instanceof User, 'AddStockAction requires an authenticated user');
 		$stock = (new StockEntry)
-			->setUser($this->getUser())
+			->setUser($user)
 			->setStockLevel((int)$data->quantity);
 		if (($data->price ?? null) !== null) {
 			$stock->setPrice((float)$data->price);

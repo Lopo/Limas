@@ -15,7 +15,7 @@ use Limas\Annotation\VirtualField;
 use Limas\Annotation\VirtualOneToMany;
 use Limas\Entity\AbstractCategory;
 use Nette\Utils\Json;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
@@ -106,7 +106,7 @@ readonly class ReflectionService
 		return match ($type) {
 			Types::INTEGER => 'int',
 			Types::TEXT => 'string',
-			Types::DATETIME_MUTABLE => 'date',
+			Types::DATETIME_MUTABLE, Types::DATETIME_IMMUTABLE => 'date',
 			Types::FLOAT => 'number',
 			/*Types::ARRAY, */ Types::BOOLEAN, Types::DECIMAL, Types::STRING => $type,
 			Types::JSON => $rp ?? 'undefined', // array | object
@@ -121,19 +121,25 @@ readonly class ReflectionService
 			$currentMapping = $cm->getFieldMapping($field);
 			$asserts = $this->getExtJSAssertMappings($cm, $field);
 
-			$fieldName = $currentMapping['fieldName'];
-			$fieldType = $currentMapping['type'];
+			// Doctrine ORM 3.x exposed FieldMapping via ArrayAccess; ORM 4.x
+			// drops it. Read properties directly so we stay forward-compatible.
+			$fieldName = $currentMapping->fieldName;
+			$fieldType = $currentMapping->type;
 
 			if ($fieldName === 'id') {
 				$fieldName = '@id';
 				$fieldType = 'string';
 			}
 
-			$nullable = $currentMapping->offsetExists('nullable') ? $currentMapping['nullable'] : false;
+			$nullable = $currentMapping->nullable ?? false;
 
 			$name = null;
-			if ($currentMapping['type'] === Types::JSON) {
-				$type = (new \ReflectionClass($cm->getName()))->getProperty($field)->getType();
+			if ($currentMapping->type === Types::JSON) {
+				// Doctrine's PropertyAccessor knows how to reach inherited
+				// private fields on a mapped superclass (e.g.
+				// UploadedFile.blob) — PHP's `new ReflectionClass(...)`
+				// getProperty() does not walk to a private ancestor.
+				$type = $cm->getPropertyAccessor($field)?->getUnderlyingReflector()->getType();
 				if ($type instanceof \ReflectionNamedType) {
 					$name = $type->getName();
 				}
@@ -162,7 +168,14 @@ readonly class ReflectionService
 	{
 		$asserts = [];
 		try {
-			foreach ((new \ReflectionClass($cm->getName()))->getProperty($field)->getAttributes() as $att) {
+			// Doctrine's PropertyAccessor walks mapped-superclass inheritance
+			// correctly; `new ReflectionClass(...)` does not see inherited
+			// private props.
+			$accessor = $cm->getPropertyAccessor($field);
+			if ($accessor === null) {
+				return $asserts;
+			}
+			foreach ($accessor->getUnderlyingReflector()->getAttributes() as $att) {
 				$ai = $att->newInstance();
 				if ($ai instanceof Constraint) {
 					$assertMapping = $this->getExtJSAssertMapping($ai);
@@ -221,7 +234,12 @@ readonly class ReflectionService
 			}
 
 			$nullable = true;
-			foreach ((new \ReflectionClass($cm->getName()))->getProperty($association['fieldName'])->getAttributes() as $property) {
+			// PropertyAccessor handles mapped-superclass private fields
+			// correctly (e.g. UploadedFile.blob ManyToOne lives on the
+			// abstract parent).
+			$accessor = $cm->getPropertyAccessor($association['fieldName']);
+			$attributes = $accessor !== null ? $accessor->getUnderlyingReflector()->getAttributes() : [];
+			foreach ($attributes as $property) {
 				$pi = $property->newInstance();
 				if ($pi instanceof NotNull) {
 					$nullable = false;
@@ -265,7 +283,9 @@ readonly class ReflectionService
 		if ($class->hasProperty($field)) {
 			$atribs = $class->getProperty($field)->getAttributes(Groups::class);
 			if (0 !== count($atribs)) {
-				return !in_array('readonly', $atribs[0]->newInstance()->getGroups(), true);
+				// `groups` is the public property; `getGroups()` was
+				// deprecated in symfony/serializer 7.4.
+				return !in_array('readonly', $atribs[0]->newInstance()->groups, true);
 			}
 			return true;
 		}

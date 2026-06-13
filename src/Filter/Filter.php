@@ -8,17 +8,17 @@ class Filter
 {
 	use AssociationPropertyTrait;
 
-	public const TYPE_AND = 'and';
-	public const TYPE_OR = 'or';
-	public const OPERATOR_LESS_THAN = '<';
-	public const OPERATOR_GREATER_THAN = '>';
-	public const OPERATOR_EQUALS = '=';
-	public const OPERATOR_GREATER_THAN_EQUALS = '>=';
-	public const OPERATOR_LESS_THAN_EQUALS = '<=';
-	public const OPERATOR_NOT_EQUALS = '!=';
-	public const OPERATOR_IN = 'in';
-	public const OPERATOR_LIKE = 'like';
-	public const OPERATORS = [
+	public const string TYPE_AND = 'and';
+	public const string TYPE_OR = 'or';
+	public const string OPERATOR_LESS_THAN = '<';
+	public const string OPERATOR_GREATER_THAN = '>';
+	public const string OPERATOR_EQUALS = '=';
+	public const string OPERATOR_GREATER_THAN_EQUALS = '>=';
+	public const string OPERATOR_LESS_THAN_EQUALS = '<=';
+	public const string OPERATOR_NOT_EQUALS = '!=';
+	public const string OPERATOR_IN = 'in';
+	public const string OPERATOR_LIKE = 'like';
+	public const array OPERATORS = [
 		self::OPERATOR_LESS_THAN,
 		self::OPERATOR_GREATER_THAN,
 		self::OPERATOR_EQUALS,
@@ -28,7 +28,7 @@ class Filter
 		self::OPERATOR_IN,
 		self::OPERATOR_LIKE,
 	];
-	public const TYPES = [
+	public const array TYPES = [
 		self::TYPE_AND,
 		self::TYPE_OR,
 	];

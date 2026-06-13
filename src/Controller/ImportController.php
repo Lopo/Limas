@@ -9,7 +9,7 @@ use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 
 class ImportController
@@ -23,18 +23,18 @@ class ImportController
 	{
 	}
 
-	#[Route(path: '/getSource/', name: 'getsource')]
+	#[Route(path: '/getSource/', name: 'getsource', methods: ['GET'])]
 	public function getSourceAction(Request $request): JsonResponse
 	{
-		return new JsonResponse($this->extractCSVData($request->get('file')));
+		return new JsonResponse($this->extractCSVData($request->query->get('file')));
 	}
 
 	#[Route(path: '/getPreview/', name: 'getpreview', methods: ['POST'])]
 	public function getPreviewAction(Request $request): JsonResponse
 	{
-		$this->importerService->setBaseEntity($request->get('baseEntity'));
-		$this->importerService->setImportConfiguration(Json::decode($request->get('configuration')));
-		$this->importerService->setImportData($this->extractCSVData($request->get('file'), false));
+		$this->importerService->setBaseEntity($request->request->get('baseEntity'));
+		$this->importerService->setImportConfiguration(Json::decode($request->request->get('configuration')));
+		$this->importerService->setImportData($this->extractCSVData($request->request->get('file'), false));
 
 		try {
 			list($entities, $logs) = $this->importerService->import(true);
@@ -48,9 +48,9 @@ class ImportController
 	#[Route(path: '/executeImport/', name: 'import', methods: ['POST'])]
 	public function importAction(Request $request): JsonResponse
 	{
-		$this->importerService->setBaseEntity($request->get('baseEntity'));
-		$this->importerService->setImportConfiguration(Json::decode($request->get('configuration')));
-		$this->importerService->setImportData($this->extractCSVData($request->get('file'), false));
+		$this->importerService->setBaseEntity($request->request->get('baseEntity'));
+		$this->importerService->setImportConfiguration(Json::decode($request->request->get('configuration')));
+		$this->importerService->setImportData($this->extractCSVData($request->request->get('file'), false));
 		list($entities, $logs) = $this->importerService->import();
 
 		return new JsonResponse(['logs' => $logs]);

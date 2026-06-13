@@ -7,7 +7,7 @@ use Nette\Utils\DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 
 class StatisticController
@@ -35,7 +35,7 @@ class StatisticController
 	#[Route('/api/statistics/sampled', name: 'getsampledstatistic', defaults: ['method' => 'GET', '_format' => 'json'], priority: 100)]
 	public function getSampledStatisticAction(Request $request): JsonResponse
 	{
-		return $this->json($this->statisticService->getSampledStatistics(DateTime::from($request->get('start')), DateTime::from($request->get('end'))));
+		return $this->json($this->statisticService->getSampledStatistics(DateTime::from($request->query->get('start')), DateTime::from($request->query->get('end'))));
 	}
 
 	#[Route('/api/statistics/range', name: 'getstatisticrange', defaults: ['method' => 'GET', '_format' => 'json'], priority: 100)]

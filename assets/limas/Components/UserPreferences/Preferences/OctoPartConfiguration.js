@@ -92,7 +92,7 @@ Ext.define('Limas.Components.UserPreferences.Preferences.OctoPartConfiguration',
 		}
 	},
 	statics: {
-		iconCls: 'partkeepr-icon octopart',
+		iconCls: 'limas-icon octopart',
 		title: i18n('Octopart'),
 		menuPath: [{iconCls: 'fugue-icon ui-scroll-pane-image', text: i18n('User Interface')}]
 	}

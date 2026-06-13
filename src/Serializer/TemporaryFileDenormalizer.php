@@ -104,12 +104,6 @@ class TemporaryFileDenormalizer
 //		return false;
 //	}
 
-	private function isTemporaryFile(\ReflectionProperty $property): bool
-	{
-		return 0 !== count($property->getAttributes(UploadedFileCollection::class))
-			|| 0 !== count($property->getAttributes(UploadedFile::class));
-	}
-
 	protected function replaceFile(\Limas\Entity\UploadedFile $target, \Limas\Entity\UploadedFile $source): void
 	{
 		if ($target instanceof Image) {

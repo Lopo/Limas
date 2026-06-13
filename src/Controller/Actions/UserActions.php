@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -87,7 +87,7 @@ class UserActions
 	public function getAction(User $data): User
 	{
 		$user = $this->getUser();
-		if ($user->getId() === $data->getId()) {
+		if ($user instanceof User && $user->getId() === $data->getId()) {
 			$userPreferences = $this->entityManager->getRepository(UserPreference::class)->getPreferences($user);
 			$arrayUserPreferences = [];
 			foreach ($userPreferences as $userPreference) {

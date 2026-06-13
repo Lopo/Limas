@@ -68,7 +68,7 @@ readonly class TemporaryFile
 					$collection = $this->propertyAccessor->getValue($data, $property->getName());
 					foreach ($collection as $key => $item) {
 						if ($item instanceof TempUploadedFile || $item instanceof TempImage) {
-							$collection[$key] = $this->setReplacementFile($manyToOneAnnotation[0]->newInstance()->target, $item, $data);
+							$collection[$key] = $this->setReplacementFile($manyToOneAnnotation[0]->newInstance()->targetEntity, $item, $data);
 						}
 					}
 
@@ -78,7 +78,7 @@ readonly class TemporaryFile
 				if (0 !== count($oneToOneAnnotation)) {
 					$item = $this->propertyAccessor->getValue($data, $property->getName());
 					if ($item instanceof TempUploadedFile || $item instanceof TempImage) {
-						$this->propertyAccessor->setValue($data, $property->getName(), $this->setReplacementFile($oneToOneAnnotation[0]->newInstance()->target, $item, $data));
+						$this->propertyAccessor->setValue($data, $property->getName(), $this->setReplacementFile($oneToOneAnnotation[0]->newInstance()->targetEntity, $item, $data));
 					} else {
 						$item = $this->propertyAccessor->getValue($data, $property->getName());
 						if ($item !== null && $item->getReplacement() !== null) {
@@ -131,7 +131,7 @@ readonly class TemporaryFile
 		foreach ($inverseSideReflection->getProperties() as $inverseSideProperty) {
 			$manyToOneAssociation = $inverseSideProperty->getAttributes(ManyToOne::class);
 			if (0 !== count($manyToOneAssociation)
-				&& $manyToOneAssociation[0]->newInstance()->target === $owningSideReflection->getName()
+				&& $manyToOneAssociation[0]->newInstance()->targetEntity === $owningSideReflection->getName()
 			) {
 				return $inverseSideProperty->getName();
 			}

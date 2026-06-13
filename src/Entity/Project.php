@@ -15,7 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
 use Limas\State\ProjectProcessor;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -101,11 +101,11 @@ class Project
 
 	public function setParts(iterable $parts): self
 	{
-		// Odstráň staré parts (orphanRemoval ich zmaže)
+		// remove old parts (orphanRemoval will delete them)
 		foreach ($this->parts->toArray() as $existingPart) {
 			$this->removePart($existingPart);
 		}
-		// Pridaj nové
+		// add new
 		foreach ($parts as $part) {
 			$this->addPart($part);
 		}

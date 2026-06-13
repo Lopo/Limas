@@ -1,12 +1,17 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    aggregator_default_priority: ['digikey', 'mouser', 'farnell', 'tme', 'arrow']
 
 imports:
     - { resource: limas.yaml }
+    - { resource: distributors.yaml }
 
 services:
     # default configuration for services in *this* file
@@ -17,6 +22,10 @@ services:
             $limas: '%limas%'
             $liipImagine: '@liip_imagine'
             $ldapLocator: '@security.ldap_locator'
+            # Single Flysystem mount post-CAS. Pre-CAS had a FilesystemMap
+            # over 10 named pools — all unused after the sha256-keyed
+            # blob store took over.
+            $blobStorage: '@blob.storage'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -44,8 +53,161 @@ services:
             $clientId: '%env(NEXAR_ID)%'
             $clientSecret: '%env(NEXAR_SECRET)%'
             $limit: "@=parameter('limas')['octopart']['limit']"
-            $country: '%env(NEXAR_COUNTRY)%'
-            $currency: '%env(NEXAR_CURRENCY)%'
+            $country: "@=parameter('distributors')['nexar']['country']"
+            $currency: "@=parameter('distributors')['nexar']['currency']"
+    Limas\Scheduler\LimasSchedule:
+        arguments:
+            $versionCheckCron: "@=parameter('limas')['scheduler']['version_check_cron']"
+            $statisticSnapshotCron: "@=parameter('limas')['scheduler']['statistic_snapshot_cron']"
+            $syncTipsCron: "@=parameter('limas')['scheduler']['sync_tips_cron']"
+            $backupCron: "@=parameter('limas')['scheduler']['backup_cron']"
+            $retryAttachmentDownloadsCron: "@=parameter('limas')['scheduler']['retry_attachment_downloads_cron']"
+    Limas\Service\BackupService:
+        arguments:
+            $backupDirectory: "@=parameter('limas')['backup']['directory']"
+            $retentionCount: "@=parameter('limas')['backup']['retention_count']"
+            $mysqldumpPath: "@=parameter('limas')['backup']['mysqldump_path']"
+            $dataDirectory: '%limas.filesystem.data_directory%'
+    Limas\MessageHandler\BackupMessageHandler:
+        arguments:
+            $enabled: "@=parameter('limas')['backup']['enabled']"
+    Limas\Service\Integration\InfoProvider\MouserService:
+        arguments:
+            $clientKey: '%env(MOUSER_KEY)%'
+    Limas\Service\Integration\InfoProvider\DigiKeyService:
+        arguments:
+            $clientID: '%env(DIGIKEY_ID)%'
+            $clientSecret: '%env(DIGIKEY_SECRET)%'
+            $sandbox: "@=parameter('distributors')['digikey']['sandbox']"
+            $localeSite: "@=parameter('distributors')['digikey']['locale_site']"
+            $localeLanguage: "@=parameter('distributors')['digikey']['locale_language']"
+            $localeCurrency: "@=parameter('distributors')['digikey']['locale_currency']"
+    Limas\Service\Integration\InfoProvider\TMEService:
+        arguments:
+            $token: '%env(TME_TOKEN)%'
+            $appSecret: '%env(TME_SECRET)%'
+            $country: "@=parameter('distributors')['tme']['country']"
+    Limas\Service\Integration\InfoProvider\FarnellService:
+        arguments:
+            $apiKey: '%env(ELEMENT14_KEY)%'
+            $storeId: "@=parameter('distributors')['element14']['store']"
+            $customerId: '%env(ELEMENT14_CUSTOMER_ID)%'
+            $secretKey: '%env(ELEMENT14_SECRET_KEY)%'
+
+    # Aggregator adapter wrappers — tag for iteration by InfoProviderAggregator
+    _instanceof:
+        Limas\Service\Integration\InfoProvider\Contract\InfoProviderInterface:
+            tags: ['limas.info_provider']
+        # Distributor URL parsers — decoupled from InfoProviderInterface so
+        # we can ship standalone handlers (Mouser parses URLs even with
+        # no working data adapter on this branch).
+        Limas\Service\Integration\InfoProvider\Contract\URLHandlerInterface:
+            tags: ['limas.url_handler']
+
+    Limas\Service\Integration\InfoProvider\Adapter\DigiKeyAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\DigiKeyService'
+            $clientId: '%env(DIGIKEY_ID)%'
+            $clientSecret: '%env(DIGIKEY_SECRET)%'
+            $currency: "@=parameter('distributors')['digikey']['locale_currency']"
+    Limas\Service\Integration\InfoProvider\Adapter\TmeAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\TMEService'
+            $token: '%env(TME_TOKEN)%'
+            $appSecret: '%env(TME_SECRET)%'
+    Limas\Service\Integration\InfoProvider\Adapter\FarnellAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\FarnellService'
+            $apiKey: '%env(ELEMENT14_KEY)%'
+
+    # Newark = Premier Farnell's US sister catalog. Same element14 API endpoint,
+    # same key, different `storeInfo.id` + a separate cache pool so the per-sku
+    # caches don't cross-contaminate between catalogs that may use overlapping
+    # SKU formats. Wired as an independent source so the aggregator can compare
+    # EU (Farnell) vs US (Newark) pricing for the same MPN.
+    newark.service:
+        class: Limas\Service\Integration\InfoProvider\FarnellService
+        arguments:
+            $apiKey: '%env(ELEMENT14_KEY)%'
+            $storeId: "@=parameter('distributors')['newark']['store']"
+            $customerId: '%env(ELEMENT14_CUSTOMER_ID)%'
+            $secretKey: '%env(ELEMENT14_SECRET_KEY)%'
+            $farnellCache: '@newark.cache'
+    newark.adapter:
+        class: Limas\Service\Integration\InfoProvider\Adapter\FarnellAdapter
+        arguments:
+            $service: '@newark.service'
+            $apiKey: '%env(ELEMENT14_KEY)%'
+            $currency: 'USD'
+            $name: 'newark'
+        tags: ['limas.info_provider']
+
+    # element14 APAC — the third regional catalog under the same element14
+    # API key (alongside Farnell EU + Newark US). storeInfo.id is the only
+    # thing that changes; pricing is typically USD or local depending on
+    # the queried region.
+    element14apac.service:
+        class: Limas\Service\Integration\InfoProvider\FarnellService
+        arguments:
+            $apiKey: '%env(ELEMENT14_KEY)%'
+            $storeId: "@=parameter('distributors')['element14apac']['store']"
+            $customerId: '%env(ELEMENT14_CUSTOMER_ID)%'
+            $secretKey: '%env(ELEMENT14_SECRET_KEY)%'
+            $farnellCache: '@element14apac.cache'
+    element14apac.adapter:
+        class: Limas\Service\Integration\InfoProvider\Adapter\FarnellAdapter
+        arguments:
+            $service: '@element14apac.service'
+            $apiKey: '%env(ELEMENT14_KEY)%'
+            $currency: 'USD'
+            $name: 'element14apac'
+        tags: ['limas.info_provider']
+
+    Limas\Service\Integration\InfoProvider\OemSecretsService:
+        arguments:
+            $apiKey: '%env(OEMSECRETS_API_KEY)%'
+            $currency: "@=parameter('distributors')['oemsecrets']['currency']"
+            $countryCode: "@=parameter('distributors')['oemsecrets']['country']"
+    Limas\Service\Integration\InfoProvider\Adapter\OemSecretsAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\OemSecretsService'
+            $directAdapters: !tagged_iterator limas.info_provider
+            $currency: "@=parameter('distributors')['oemsecrets']['currency']"
+
+    Limas\Service\Integration\InfoProvider\LcscService:
+        arguments:
+            $enabled: "@=parameter('distributors')['lcsc']['enabled']"
+    Limas\Service\Integration\InfoProvider\Adapter\LcscAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\LcscService'
+            $currency: "@=parameter('distributors')['lcsc']['currency']"
+
+    # Default trust order for hierarchy-fallback ties: DigiKey (richest data, fastest
+    # OAuth churn) > Mouser > Farnell > TME > Arrow. Per-request override is exposed
+    # via the aggregator settings dialog (priority + mergeStrategy query params).
+    Limas\Service\Integration\InfoProvider\Merger\MajorityMergeStrategy:
+        arguments:
+            $priority: '%aggregator_default_priority%'
+    Limas\Service\Integration\InfoProvider\Merger\MergeStrategyInterface:
+        alias: Limas\Service\Integration\InfoProvider\Merger\MajorityMergeStrategy
+    Limas\Service\Integration\InfoProvider\Merger\InfoProviderMerger:
+        arguments:
+            $strategy: '@Limas\Service\Integration\InfoProvider\Merger\MergeStrategyInterface'
+
+    Limas\Service\Integration\InfoProvider\InfoProviderAggregator:
+        arguments:
+            $adapters: !tagged_iterator limas.info_provider
+            $merger: '@Limas\Service\Integration\InfoProvider\Merger\InfoProviderMerger'
+            $aggregatorCache: '@aggregator.cache'
+            $existingPartFinder: '@Limas\Service\Integration\InfoProvider\ExistingPartFinder'
+            $parameterNormalizer: '@Limas\Service\Integration\InfoProvider\ParameterNormalizer'
+            $parameterValueParser: '@Limas\Service\Integration\InfoProvider\ParameterValueParser'
+            $urlHandlers: !tagged_iterator limas.url_handler
+            $defaultPriority: '%aggregator_default_priority%'
+
+    Limas\Service\Integration\InfoProvider\DatasheetUrlResolver:
+        arguments:
+            $patternsFile: '%kernel.project_dir%/data/datasheet-patterns.json'
     Limas\Filter\AdvancedSearchFilter:
         tags:
             - { name: api_platform.doctrine.orm.query_extension.collection }

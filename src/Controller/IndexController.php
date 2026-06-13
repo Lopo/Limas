@@ -6,12 +6,13 @@ use Composer\InstalledVersions;
 use Imagine\Image\AbstractImagine;
 use Imagine\Image\Format;
 use Limas\Service\GridPresetService;
+use Limas\Service\Integration\InfoProvider\InfoProviderAggregator;
 use Limas\Service\SystemService;
 use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\RouterInterface;
 
 
@@ -19,12 +20,13 @@ class IndexController
 	extends AbstractController
 {
 	public function __construct(
-		private readonly SystemService     $systemService,
-		private readonly array             $limas,
-		private readonly RouterInterface   $router,
-		private readonly GridPresetService $gridPresetService,
-		private readonly KernelInterface   $kernel,
-		private readonly AbstractImagine   $liipImagine
+		private readonly SystemService          $systemService,
+		private readonly array                  $limas,
+		private readonly RouterInterface        $router,
+		private readonly GridPresetService      $gridPresetService,
+		private readonly KernelInterface        $kernel,
+		private readonly AbstractImagine        $liipImagine,
+		private readonly InfoProviderAggregator $aggregator
 	)
 	{
 	}
@@ -53,6 +55,13 @@ class IndexController
 				? $val
 				: min($this->systemService->getBytesFromHumanReadable(ini_get('post_max_size')), $this->systemService->getBytesFromHumanReadable(ini_get('upload_max_filesize'))),
 			'isOctoPartAvailable' => ($this->getLimasParameterWithDefault('octopart.nexarId', '') !== '' && $this->getLimasParameterWithDefault('octopart.nexarSecret', '') !== ''),
+			// True iff at least one InfoProvider adapter passes isConfigured()
+			// at boot. Drives the Aggregator… button in PartEditorWindow:
+			// always-rendered (mirrors Octopart's pattern) but clicks show a
+			// "configure API keys" message when this flag is false.
+			'isAggregatorAvailable' => $this->aggregator->configuredSources() !== [],
+			// Late-static-bound — see comment in ImageService::canHandleMimetype.
+			// @phpstan-ignore-next-line method.notFound
 			'availableImageFormats' => array_map(static fn(Format $format): string => $format->getMimeType(), $this->liipImagine->getDriverInfo()->getSupportedFormats()->getAll()),
 			'max_users' => $this->getLimasParameterWithDefault('auth.max_users', 'unlimited'),
 			'authentication_provider' => $this->limas['authentication_provider'],

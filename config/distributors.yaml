@@ -1,0 +1,66 @@
+# Distributor / InfoProvider non-secret defaults
+#
+# Secrets (API keys, OAuth client IDs/secrets, tokens) live in .env /
+# .env.local. Anything here is locale / currency / store-id / behaviour
+# flags — operators who want to override per-deployment edit this file
+# directly, or drop a `when@prod:` block at the bottom.
+#
+# services.yaml binds these via `@=parameter('distributors')[...]`
+# expressions — slightly verbose, but the alternative was 14 flat
+# dot-named params cluttering the top of limas.yaml.
+parameters:
+    distributors:
+        # Nexar / Octopart (legacy, free tier discontinued).
+        nexar:
+            country: 'DE'   # ISO 3166-1 alpha-2 country code
+            currency: 'EUR' # ISO 4217 currency code
+
+        # DigiKey REST API.
+        digikey:
+            # Toggle the DigiKey sandbox endpoint instead of production.
+            # Useful while developing/integrating; flip to false for live.
+            sandbox: false
+            locale_site: 'SK'      # 2-letter site code (US, DE, SK, …)
+            locale_language: 'en'  # ISO 639-1 language code
+            locale_currency: 'EUR' # ISO 4217 currency code
+
+        # TME v2 API.
+        tme:
+            country: 'SK' # ISO 3166-1 alpha-2 country code
+
+        # Premier Farnell family — three regional catalogs share one API
+        # key (ELEMENT14_KEY); only the `storeId` query parameter differs.
+        # Pricing currency follows the store's region.
+        element14:
+            # Farnell EU storefront. Examples:
+            #   sk.farnell.com, uk.farnell.com, de.farnell.com,
+            #   fr.farnell.com, it.farnell.com, …
+            store: 'sk.farnell.com'
+        newark:
+            # element14's US-Americas sibling. Pricing comes back in USD.
+            store: 'www.newark.com'
+        element14apac:
+            # APAC catalog. Examples:
+            #   au.element14.com (Australia), sg.element14.com (Singapore),
+            #   cn.element14.com (China), hk.element14.com (Hong Kong), …
+            store: 'au.element14.com'
+
+        # LCSC — no key needed; uses community jlcsearch + LCSC's
+        # unauthenticated wmsc detail endpoint. Default on.
+        lcsc:
+            enabled: true
+            # LCSC quotes catalog prices in USD; this just controls the
+            # currency tag passed through to PartDistributor records.
+            currency: 'USD'
+
+        # OEMSecrets — meta-aggregator. The adapter dynamically filters
+        # out distributors corresponding to OTHER configured adapters
+        # (so OEMSecrets only contributes coverage we don't already have
+        # direct access to). Disabling a direct adapter automatically
+        # re-enables that distributor's OEMSecrets coverage.
+        oemsecrets:
+            country: 'DE'   # ISO 3166-1 alpha-2 country code
+            # Available currencies (per OEMSecrets docs):
+            #   AUD CAD CHF CNY DKK EUR GBP HKD ILS INR
+            #   JPY KRW NOK NZD RUB SEK SGD TWD USD
+            currency: 'EUR'

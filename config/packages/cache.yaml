@@ -18,4 +18,27 @@ framework:
         pools:
             octopart.cache:
                 adapter: app.cache.adapter.redis
+            mouser.cache:
+                adapter: app.cache.adapter.redis
+            digikey.cache:
+                adapter: app.cache.adapter.redis
+            tme.cache:
+                adapter: app.cache.adapter.redis
+            farnell.cache:
+                adapter: app.cache.adapter.redis
+            newark.cache:
+                adapter: app.cache.adapter.redis
+            element14apac.cache:
+                adapter: app.cache.adapter.redis
+            oemsecrets.cache:
+                adapter: app.cache.adapter.redis
+            lcsc.cache:
+                adapter: app.cache.adapter.redis
+            # InfoProvider aggregator merged search + detail results. 5 min
+            # TTL — vendor stock/prices barely move in that window, parameters
+            # are effectively immutable. Saves repeating identical fan-outs
+            # while the user clicks around the Apply Data dialog.
+            aggregator.cache:
+                adapter: app.cache.adapter.redis
+                default_lifetime: 300
             #my.dedicated.cache: null

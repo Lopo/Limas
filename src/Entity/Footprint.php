@@ -15,7 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFile;
 use Limas\Annotation\UploadedFileCollection;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
@@ -43,13 +43,13 @@ class Footprint
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?FootprintCategory $category;
-	#[ORM\OneToOne(mappedBy: 'footprint', targetEntity: FootprintImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToOne(targetEntity: FootprintImage::class, mappedBy: 'footprint', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[UploadedFile]
 	#[ApiProperty(readableLink: true, writableLink: true)]
 	private ?FootprintImage $image;
 	/** @var Collection<FootprintAttachment> */
-	#[ORM\OneToMany(mappedBy: 'footprint', targetEntity: FootprintAttachment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(targetEntity: FootprintAttachment::class, mappedBy: 'footprint', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]

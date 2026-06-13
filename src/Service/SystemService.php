@@ -13,10 +13,10 @@ use Limas\Object\SystemInformationRecord;
 readonly class SystemService
 {
 	public function __construct(
-		private EntityManagerInterface $entityManager,
-		private VersionService         $versionService,
-		private CronLoggerService      $cronLoggerService,
-		private array                  $limas
+		private EntityManagerInterface       $entityManager,
+		private VersionService               $versionService,
+		private MessengerWorkerStatusService $messengerWorkerStatus,
+		private array                        $limas
 	)
 	{
 	}
@@ -85,6 +85,29 @@ readonly class SystemService
 			'Limas'
 		);
 
+		foreach ($this->messengerWorkerStatus->getStatusAll() as $name => $status) {
+			$lastSeen = $status['lastHeartbeatAt'] !== null
+				? sprintf('%s (%ds ago)', $status['lastHeartbeatAt'], $status['secondsSinceLastSeen'])
+				: 'never';
+			$aData[] = new SystemInformationRecord(
+				sprintf('Worker "%s" status', $name),
+				$status['alive'] ? 'alive' : 'stopped',
+				'Messenger'
+			);
+			$aData[] = new SystemInformationRecord(
+				sprintf('Worker "%s" last heartbeat', $name),
+				$lastSeen,
+				'Messenger'
+			);
+			if ($status['queued'] !== null) {
+				$aData[] = new SystemInformationRecord(
+					sprintf('Transport "%s" queued', $name),
+					(string)$status['queued'],
+					'Messenger'
+				);
+			}
+		}
+
 		return $aData;
 	}
 
@@ -97,15 +120,15 @@ readonly class SystemService
 	 */
 	public function getSystemStatus(): array
 	{
-		$inactiveCronjobs = $this->limas['cronjob']['check']
-			? $this->cronLoggerService->getInactiveCronjobs($this->limas['required_cronjobs'])
-			: []; // Skip cronjob tests
-
 		return [
-			'inactiveCronjobCount' => count($inactiveCronjobs),
-			'inactiveCronjobs' => $inactiveCronjobs,
 			'schemaStatus' => $this->getSchemaStatus(),
 			'schemaQueries' => $this->getSchemaQueries(),
+			// Per-transport messenger worker liveness. FE uses
+			// `messengerWorkers.async.alive` to gate the Bulk Import
+			// menu entry; the scheduler-driven recurring jobs (version
+			// check, statistics snapshot, tips sync) ride the same
+			// worker process so the async heartbeat covers them too.
+			'messengerWorkers' => $this->messengerWorkerStatus->getStatusAll(),
 		];
 	}
 

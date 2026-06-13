@@ -30,6 +30,7 @@ class TipOfTheDayActions
 	public function MarkTipRead(TipOfTheDay $data): TipOfTheDay
 	{
 		$user = $this->getUser();
+		assert($user instanceof \Limas\Entity\User, 'MarkTipRead requires an authenticated user');
 		if (null === $this->entityManager->getRepository(TipOfTheDayHistory::class)->findOneBy(['user' => $user, 'name' => $data->getName()])) {
 			$this->entityManager->persist((new TipOfTheDayHistory)
 				->setUser($user)

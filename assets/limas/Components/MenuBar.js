@@ -46,6 +46,7 @@ Ext.define('Limas.MenuBar', {
 			// System Menu
 			'Limas.Components.UserPreferences.Panel',
 			'Limas.Components.SystemPreferences.Panel',
+			'Limas.Components.BulkImport.BulkImportWindow',
 			'Limas.Actions.LogoutAction',
 
 			// Edit Menu
@@ -57,6 +58,7 @@ Ext.define('Limas.MenuBar', {
 			'Limas.UserEditorComponent',
 			'Limas.PartMeasurementUnitEditorComponent',
 			'Limas.UnitEditorComponent',
+			'Limas.ParameterAliasEditorComponent',
 			'Limas.BatchJobEditorComponent',
 
 			// View Menu
@@ -104,7 +106,7 @@ Ext.define('Limas.MenuBar', {
 		this.menu.menu.push({xtype: 'tbspacer', width: 50});
 
 		this.menu.menu.push({xtype: 'tbfill'});
-		this.menu.menu.push({xtype: 'button', iconCls: 'partkeeprLogo'});
+		this.menu.menu.push({xtype: 'button', iconCls: 'limasLogo'});
 		this.menu.menu.push({xtype: 'tbspacer', width: 10});
 
 		this.items = this.menu.menu;

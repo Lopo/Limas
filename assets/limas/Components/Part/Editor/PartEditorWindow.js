@@ -51,8 +51,15 @@ Ext.define('Limas.PartEditorWindow', {
 
 		this.octoPartButton = Ext.create('Ext.button.Button', {
 			text: i18n('Octopart…'),
-			iconCls: 'partkeepr-icon octopart',
+			iconCls: 'limas-icon octopart',
 			handler: Ext.bind(this.onOctoPartClick, this)
+		});
+
+		this.aggregatorButton = Ext.create('Ext.button.Button', {
+			text: i18n('Aggregator…'),
+			iconCls: 'fugue-icon globe-network',
+			tooltip: i18n('Search MPN across configured info providers and apply data to this Part'),
+			handler: Ext.bind(this.onAggregatorClick, this)
 		});
 
 		this.saveButton = Ext.create('Ext.button.Button', {
@@ -73,7 +80,7 @@ Ext.define('Limas.PartEditorWindow', {
 			dock: 'bottom',
 			ui: 'footer',
 			pack: 'start',
-			items: [this.saveButton, this.cancelButton, this.octoPartButton]
+			items: [this.saveButton, this.cancelButton, this.octoPartButton, this.aggregatorButton]
 		});
 
 		this.dockedItems = [this.bottomToolbar];
@@ -134,6 +141,30 @@ Ext.define('Limas.PartEditorWindow', {
 	onRefreshData: function () {
 		this.editor.getForm().loadRecord(this.editor.record);
 		this.octoPartQueryWindow.destroy();
+	},
+	onAggregatorClick: function () {
+		if (!Limas.isAggregatorAvailable()) {
+			Ext.MessageBox.alert(
+				i18n('Aggregator is not configured'),
+				i18n('No info providers are configured. Set at least one provider (DigiKey / Farnell / TME / OEMSecrets / …) in .env.local — the button will activate automatically.')
+			);
+			return;
+		}
+		this.editor.getForm().updateRecord();
+		this.aggregatorWindow = Ext.create('Limas.Components.InfoProviderAggregator.SearchWindow');
+		this.aggregatorWindow.show();
+		this.aggregatorWindow.setPart(this.editor.record);
+		let name = this.editor.nameField.getValue();
+		if (name && name.trim() !== '') {
+			this.aggregatorWindow.startSearch(name.trim());
+		}
+		// Octopart-style flow: aggregator only fills the open Part editor — user
+		// then picks storage/category/stock and saves manually.
+		this.aggregatorWindow.on('applied', this.onAggregatorApplied, this);
+	},
+	onAggregatorApplied: function () {
+		this.editor.getForm().loadRecord(this.editor.record);
+		this.aggregatorWindow.destroy();
 	},
 	onItemSave: function () {
 		if (!this.editor.getForm().isValid()) {

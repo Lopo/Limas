@@ -30,7 +30,13 @@ class CategoryActions
 
 	public function GetRootNodeAction(Request $request, SerializerInterface $serializer): Response
 	{
-		$roots = $this->entityManager->getRepository($this->getResourceClass($request))->getRootNodes();
+		// All AbstractCategory subclasses (Part / Footprint / StorageLocation)
+		// declare repositoryClass = Gedmo NestedTreeRepository, which is where
+		// getRootNodes() lives. PHPStan can't infer this from the runtime
+		// `getResourceClass(...)` string, hence the cast.
+		$repo = $this->entityManager->getRepository($this->getResourceClass($request));
+		assert($repo instanceof \Gedmo\Tree\Entity\Repository\NestedTreeRepository);
+		$roots = $repo->getRootNodes();
 		if (0 === count($roots)) {
 			throw new RootNodeNotFoundException;
 		}
@@ -44,7 +50,7 @@ class CategoryActions
 	public function MoveAction(Request $request, int $id, IriConverterInterface $iriConverter): Response
 	{
 		$entity = $this->getItem($this->dataProvider, $this->getResourceClass($request), $id);
-		$data = json_decode($request->getContent(), true) ?: [];
+		$data = json_decode($request->getContent(), true) ?? [];
 		$parentId = $data['parent'] ?? $request->request->get('parent');
 		try {
 			$parentEntity = $iriConverter->getResourceFromIri($parentId);
