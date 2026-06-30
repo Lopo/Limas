@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
+use Limas\Annotation\VirtualField;
 use Limas\Controller\Actions\PartActions;
 use Limas\Exceptions\CategoryNotAssignedException;
 use Limas\Exceptions\MinStockLevelOutOfRangeException;
@@ -27,7 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
 	operations: [
 		new GetCollection(
-			controller: PartActions::class . '::GetPartsAction',
+			controller: PartActions::class . '::getPartsAction',
 			name: 'PartsGet'
 		),
 		new GetCollection(
@@ -72,6 +73,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 			controller: PartActions::class . '::SetStockAction',
 			deserialize: false,
 			name: 'PartSetStock'
+		),
+		new Post(
+			uriTemplate: 'parts/bulkMove',
+			controller: PartActions::class . '::BulkMoveAction',
+			read: false,
+			deserialize: false,
+			name: 'PartsBulkMove'
 		)
 	],
 	normalizationContext: ['groups' => ['default', 'readonly']],
@@ -177,6 +185,22 @@ class Part
 	private bool $metaPart = false;
 	#[Groups(['default'])]
 	private array $metaPartMatches = [];
+	/**
+	 * Transient flat map populated by getPartsAction when the request carries
+	 * ?includeParameters[]=… — lets list-view custom columns render specific
+	 * PartParameter values without having to detail-load each row. Keyed by
+	 * parameter name; value is the pre-formatted display string.
+	 *
+	 * VirtualField makes ReflectionService surface this as an ExtJS model
+	 * field so renderers can use `record.get('paramValues')`.
+	 *
+	 * @var array<string, string>
+	 */
+	// ExtJS field type 'auto' keeps the object as-is in record.data
+	// (Types::JSON would emit literal "json" which Ext doesn't know)
+	#[VirtualField(type: 'auto')]
+	#[Groups(['readonly'])]
+	private array $paramValues = [];
 
 
 	public function __construct()
@@ -216,6 +240,23 @@ class Part
 	public function setMetaPartMatches(array $metaPartMatches): self
 	{
 		$this->metaPartMatches = $metaPartMatches;
+		return $this;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getParamValues(): array
+	{
+		return $this->paramValues;
+	}
+
+	/**
+	 * @param array<string, string> $paramValues
+	 */
+	public function setParamValues(array $paramValues): self
+	{
+		$this->paramValues = $paramValues;
 		return $this;
 	}
 

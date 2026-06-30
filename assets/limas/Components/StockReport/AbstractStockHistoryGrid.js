@@ -25,6 +25,7 @@ Ext.define('Limas.AbstractStockHistoryGrid', {
 					if (rec.getUser() !== null) {
 						return rec.getUser().get('username');
 					}
+					return '';
 				},
 				editor: {
 					xtype: 'UserComboBox'

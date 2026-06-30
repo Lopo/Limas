@@ -90,6 +90,15 @@ function createCategoryTests(config) {
 			const windows = Ext.ComponentQuery.query('window[title="Add Category"]');
 			return windows.length === 0;
 		}, {timeout: 10000});
+
+		// PartCategoryEditorWindow keeps the window open after first save (title
+		// flips to "Edit Category") so the user can add default parameters right
+		// away. Tests don't need that — close any leftover Edit Category window
+		// so subsequent steps start with a clean slate.
+		await page.evaluate(() => {
+			const editWindows = Ext.ComponentQuery.query('window[title="Edit Category"]');
+			editWindows.forEach((w) => w.close());
+		});
 	}
 
 	test.describe(`Limas ${name} Categories UI`, () => {

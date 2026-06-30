@@ -46,20 +46,24 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			parameters: true,
 			distributors: true,
 			bestDatasheet: true,
-			images: true
+			images: true,
+			footprint: true
 		};
 
 		this.store = Ext.create('Ext.data.Store', {
 			fields: [
 				{name: 'manufacturer', type: 'string'},
+				{name: 'manufacturerSources'}, // {sourceName: value} for Review dialog override
 				{name: 'mpn', type: 'string'},
 				{name: 'isExactMatch', type: 'boolean'},
 				{name: 'description', type: 'string'},
+				{name: 'descriptionSources'}, // {sourceName: value} for Review dialog override
 				{name: 'sources'},
 				{name: 'conflicts'},
 				{name: 'package', type: 'string'},
+				{name: 'packageSources'}, // {sourceName: value} for Review dialog override
 				{name: 'datasheetUrl', type: 'string'},
-				{name: 'datasheetSources'}, // {sourceName: url, ...} for multi-URL fallback
+				{name: 'datasheetSources'}, // {sourceName: url, ...} for multi-URL fallback / Review multi-select
 				{name: 'imageUrl', type: 'string'},
 				{name: 'imageSources'}, // ditto for images
 				{name: 'paramCount', type: 'int'},
@@ -244,12 +248,13 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			html: '<i class="limas-text-muted">' + i18n('Picked data will fill the Part editor; set category, storage and save there as usual.') + '</i>'
 		});
 
-		this.applyCheckboxes = ['parameters', 'distributors', 'bestDatasheet', 'images'].map(function (key) {
+		this.applyCheckboxes = ['parameters', 'distributors', 'bestDatasheet', 'images', 'footprint'].map(function (key) {
 			let labels = {
 				parameters: i18n('Parameters'),
 				distributors: i18n('Distributors'),
 				bestDatasheet: i18n('Best Datasheet'),
-				images: i18n('Image')
+				images: i18n('Image'),
+				footprint: i18n('Footprint')
 			};
 			return Ext.create('Ext.form.field.Checkbox', {
 				boxLabel: labels[key],
@@ -263,6 +268,15 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				}
 			});
 		}, this);
+
+		this.reviewButton = Ext.create('Ext.button.Button', {
+			text: i18n('Review…'),
+			iconCls: 'fugue-icon ui-check-boxes-list',
+			tooltip: i18n('Override merger consensus per-field and multi-select datasheets / images before applying.'),
+			disabled: true,
+			handler: this.onReviewClick,
+			scope: this
+		});
 
 		this.applyButton = Ext.create('Ext.button.Button', {
 			text: i18n('Apply Data'),
@@ -360,6 +374,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 					this.completeMoreButton,
 					this.showMoreButton,
 					this.contextLabel,
+					this.reviewButton,
 					this.applyButton
 				]
 			}
@@ -753,12 +768,15 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 		})();
 		return {
 			manufacturer: c.manufacturerName ? c.manufacturerName.chosenValue : '',
+			manufacturerSources: c.manufacturerName ? (c.manufacturerName.sourcesValues || {}) : {},
 			mpn: mpn,
 			isExactMatch: needle !== '' && String(mpn).trim().toLowerCase() === needle,
 			description: c.description ? c.description.chosenValue : '',
+			descriptionSources: c.description ? (c.description.sourcesValues || {}) : {},
 			sources: c.contributingSources || [],
 			conflicts: c.conflicts || [],
 			package: c.packageName ? c.packageName.chosenValue : '',
+			packageSources: c.packageName ? (c.packageName.sourcesValues || {}) : {},
 			datasheetUrl: c.datasheetUrl ? c.datasheetUrl.chosenValue : '',
 			datasheetSources: c.datasheetUrl ? (c.datasheetUrl.sourcesValues || {}) : {},
 			imageUrl: c.imageUrl ? c.imageUrl.chosenValue : '',
@@ -772,8 +790,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			existingPartId: c.existingPart ? c.existingPart.partId : 0,
 			existingPartName: c.existingPart ? c.existingPart.partName : '',
 			existingStorageLocation: c.existingPart ? c.existingPart.storageLocationName : '',
-			existingStock: (c.existingPart && c.existingPart.totalStock !== null && c.existingPart.totalStock !== undefined)
-				? c.existingPart.totalStock : 0
+			existingStock: (c.existingPart && c.existingPart.totalStock !== null && c.existingPart.totalStock !== undefined) ? c.existingPart.totalStock : 0
 		};
 	},
 
@@ -1044,7 +1061,9 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 		// lifecycle wouldn't be available yet, so applying would produce
 		// an under-populated Part.
 		let deepenPending = row && row.get('deepened') === 'pending';
-		this.applyButton.setDisabled(!row || deepenPending);
+		let muted = !row || deepenPending;
+		this.applyButton.setDisabled(muted);
+		this.reviewButton.setDisabled(muted);
 	},
 
 	refreshDetailPanel: function () {
@@ -1207,6 +1226,29 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 	 * normal. We do NOT call /import here — the backend importer is reserved
 	 * for the CLI flow.
 	 */
+	/**
+	 * Open the Review dialog so the user can override per-field consensus
+	 * and multi-select datasheets / images before the apply fires
+	 */
+	onReviewClick: function () {
+		let row = this.grid.getSelectionModel().getSelection()[0];
+		if (!row) {
+			return;
+		}
+		if (!this.partRecord) {
+			Ext.Msg.alert(i18n('No part editor'), i18n('Cannot apply — no Part editor is open.'));
+			return;
+		}
+		let dialog = Ext.create('Limas.InfoProviderAggregator.ApplyReviewDialog', {
+			candidateRow: row,
+			applyFlags: this.applyFlags
+		});
+		dialog.on('apply', function (overrides) {
+			this.runApply(row, overrides);
+		}, this);
+		dialog.show();
+	},
+
 	onApplyClick: function () {
 		let row = this.grid.getSelectionModel().getSelection()[0];
 		if (!row) return;
@@ -1226,20 +1268,33 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 		// destroying this whole window; touching applyButton after that would
 		// crash on a null component. The abort path keeps the window open, so
 		// the button must come back enabled there.
+		this.runApply(row, {});
+	},
+
+	/**
+	 * Shared apply entry point — called from both the plain Apply Data button
+	 * (overrides = {}) and the Review dialog (overrides populated).
+	 */
+	runApply: function (row, overrides) {
 		this.applyButton.disable();
+		this.reviewButton.disable();
 		this.ensureRequirements(row, () => {
-			this.doApply(row);
+			this.doApply(row, overrides);
 		}, () => {
 			if (this.applyButton && !this.applyButton.destroyed) {
 				this.applyButton.enable();
 			}
-		});
+			if (this.reviewButton && !this.reviewButton.destroyed) {
+				this.reviewButton.enable();
+			}
+		}, overrides);
 	},
 
-	doApply: function (row) {
+	doApply: function (row, overrides) {
+		overrides = overrides || {};
 		let part = this.partRecord;
 		part.set('name', row.get('mpn'));
-		part.set('description', row.get('description'));
+		part.set('description', overrides.description !== undefined ? overrides.description : row.get('description'));
 
 		// Default partUnit if none set yet — without this, the parts grid's
 		// stockLevel renderer shows the count without a "pcs" suffix
@@ -1254,8 +1309,13 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			}
 		}
 
-		this.applyManufacturer(part, row.get('manufacturer'), row.get('mpn'));
+		let mfrName = overrides.manufacturer !== undefined ? overrides.manufacturer : row.get('manufacturer');
+		this.applyManufacturer(part, mfrName, row.get('mpn'));
 
+		if (this.applyFlags.footprint) {
+			let pkg = overrides.package !== undefined ? overrides.package : row.get('package');
+			this.applyFootprint(part, pkg);
+		}
 		if (this.applyFlags.distributors) {
 			this.applyDistributors(part, row.get('providerSpecific') || {});
 		}
@@ -1263,7 +1323,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			this.applyParameters(part, row.get('paramsFlat') || []);
 		}
 
-		this.applyAttachments(part, row, this.applyFlags, () => {
+		this.applyAttachments(part, row, this.applyFlags, overrides, () => {
 			this.fireEvent('applied');
 		});
 	},
@@ -1282,7 +1342,8 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 	 * Calls `onReady` when all entities exist. `onAbort` if user cancels or
 	 * server save fails.
 	 */
-	ensureRequirements: function (row, onReady, onAbort) {
+	ensureRequirements: function (row, onReady, onAbort, overrides) {
+		overrides = overrides || {};
 		let neededDistributors = [];
 		if (this.applyFlags.distributors) {
 			let providerSpecific = row.get('providerSpecific') || {};
@@ -1290,7 +1351,8 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				neededDistributors.push(sourceKey);
 			});
 		}
-		this.ensureManufacturer(row.get('manufacturer'), () => {
+		let mfrName = overrides.manufacturer !== undefined ? overrides.manufacturer : row.get('manufacturer');
+		this.ensureManufacturer(mfrName, () => {
 			this.ensureDistributors(neededDistributors, onReady, onAbort);
 		}, onAbort);
 	},
@@ -1436,15 +1498,33 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 	 * skips re-upload if an attachment with the same originalFilename already
 	 * exists on the Part.
 	 */
-	applyAttachments: function (part, row, flags, done) {
+	applyAttachments: function (part, row, flags, overrides, done) {
+		overrides = overrides || {};
 		let tasks = [];
 		if (flags.bestDatasheet) {
-			let urls = this.rankAttachmentUrls(row.get('datasheetUrl'), row.get('datasheetSources'));
-			if (urls.length) tasks.push({urls: urls, description: i18n('Datasheet')});
+			if (Ext.isArray(overrides.datasheetUrls) && overrides.datasheetUrls.length > 0) {
+				// User explicitly picked URL(s) in the Review dialog — download each independently rather than first-success
+				overrides.datasheetUrls.forEach(function (u) {
+					tasks.push({urls: [u], description: i18n('Datasheet'), strict: true});
+				});
+			} else {
+				let urls = this.rankAttachmentUrls(row.get('datasheetUrl'), row.get('datasheetSources'));
+				if (urls.length) {
+					tasks.push({urls: urls, description: i18n('Datasheet'), strict: false});
+				}
+			}
 		}
 		if (flags.images) {
-			let urls = this.rankAttachmentUrls(row.get('imageUrl'), row.get('imageSources'));
-			if (urls.length) tasks.push({urls: urls, description: i18n('Image')});
+			if (Ext.isArray(overrides.imageUrls) && overrides.imageUrls.length > 0) {
+				overrides.imageUrls.forEach(function (u) {
+					tasks.push({urls: [u], description: i18n('Image'), strict: true});
+				});
+			} else {
+				let urls = this.rankAttachmentUrls(row.get('imageUrl'), row.get('imageSources'));
+				if (urls.length) {
+					tasks.push({urls: urls, description: i18n('Image'), strict: false});
+				}
+			}
 		}
 		if (tasks.length === 0) {
 			done();
@@ -1580,6 +1660,75 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 		} else {
 			part.manufacturers().add(pm);
 		}
+	},
+
+	/**
+	 * Resolve the candidate's `package` string to a Footprint entity and set
+	 * it on the Part. Two-step (mirrors server-side FootprintCanonicalizer):
+	 *   1. FootprintAliasStore by aliasNormalized — verified aliases only
+	 *   2. FootprintStore by direct case+separator-insensitive name match
+	 * On miss, toast notice + no auto-create (vendor variants would pollute).
+	 */
+	applyFootprint: function (part, packageName) {
+		if (!packageName) {
+			return;
+		}
+		let key = this.normalizeFootprintName(packageName);
+		if (!key) {
+			return;
+		}
+
+		let aliasStore = Ext.data.StoreManager.lookup('FootprintAliasStore');
+		if (aliasStore) {
+			let aliasRec = aliasStore.findRecord('aliasNormalized', key, 0, false, true, true);
+			if (aliasRec !== null && aliasRec.get('verified') && aliasRec.get('footprint')) {
+				let fpRef = aliasRec.get('footprint');
+				let fpId = typeof fpRef === 'object' && fpRef !== null ? (fpRef['@id'] || fpRef.id) : fpRef;
+				let fp = this.lookupFootprintBy(fpId);
+				if (fp !== null) {
+					part.setFootprint(fp);
+					return;
+				}
+			}
+		}
+
+		// Fallback: direct match on Footprint.name (case+separator-insensitive)
+		let store = Ext.data.StoreManager.lookup('FootprintStore');
+		if (store) {
+			let fp = store.findBy((rec) => this.normalizeFootprintName(rec.get('name') || '') === key);
+			if (fp !== -1) {
+				part.setFootprint(store.getAt(fp));
+				return;
+			}
+		}
+
+		Ext.toast({
+			html: i18n('Footprint not in DB:') + ' <b>' + Ext.htmlEncode(packageName) + '</b>. ' + i18n('Create it manually and re-apply, or set it on the part after saving.'),
+			align: 't',
+			slideInDuration: 200,
+			autoCloseDelay: 5000
+		});
+	},
+
+	/**
+	 * Mirror FootprintCanonicalizer::normalize() — lowercase + whitespace
+	 * collapse + dash/underscore/space strip. Lets the FE shortcut catch
+	 * "SOIC-8" / "SOIC8" / "SOIC 8" without a server round-trip
+	 */
+	normalizeFootprintName: function (s) {
+		return String(s || '').replace(/\s+/g, ' ').trim().replace(/[-_\s]+/g, '').toLowerCase();
+	},
+
+	lookupFootprintBy: function (iriOrId) {
+		let store = Ext.data.StoreManager.lookup('FootprintStore');
+		if (!store) {
+			return null;
+		}
+		// Try @id (IRI), then numeric id.
+		let idx = store.findBy((rec) => {
+			return rec.get('@id') === iriOrId || rec.getId() === iriOrId;
+		});
+		return idx === -1 ? null : store.getAt(idx);
 	},
 
 	applyDistributors: function (part, providerSpecific) {

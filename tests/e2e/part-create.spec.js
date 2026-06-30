@@ -20,37 +20,67 @@ test.describe('Limas Part Create', () => {
 		// Fill in description
 		await page.fill('input[name="description"]', 'Created via E2E test');
 
-		// Select storage location via JavaScript (complex picker widget)
-		await page.evaluate(() => {
-			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
-			if (picker) {
-				picker.expand();
+		// Select a category — auto-prefill from the tree was removed
+		// (commit 3df9d03), so the editor opens with category empty and FE
+		// validation refuses save without one. Wait for the combo's store to
+		// load, then pick the first child of the (invisible) root node via
+		// the picker's selection model so the input field + value sync.
+		await page.evaluate(async () => {
+			const combo = Ext.ComponentQuery.query('CategoryComboBox[name=category]')[0];
+			if (!combo) {
+				throw new Error('CategoryComboBox not found');
 			}
-		});
-		await page.waitForTimeout(1000);
-
-		// Wait for picker grid to show and click on Test Location
-		await page.waitForSelector('.x-floatpanel .x-grid-cell, .x-layer .x-grid-cell', {timeout: 10000});
-		await page.waitForTimeout(500);
-
-		// Use JavaScript to select the first storage location and close picker
-		await page.evaluate(() => {
-			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
-			const grid = picker.getPicker().getGrid();
-			if (grid.getStore().getCount() > 0) {
-				picker.setValue(grid.getStore().getAt(0));
+			const store = combo.store;
+			if (!store.isLoaded()) {
+				await new Promise((resolve) => store.on('load', resolve, null, {single: true}));
 			}
-			picker.collapse();
+			combo.expand();
+			const picker = combo.getPicker();
+			const root = picker.getStore().getRoot();
+			const target = root && root.firstChild;
+			if (!target) {
+				throw new Error('No category available to pick');
+			}
+			picker.getSelectionModel().select(target);
+			combo.applySelection();
 		});
-		await page.waitForTimeout(300);
+		await page.waitForFunction(() => {
+			const combo = Ext.ComponentQuery.query('CategoryComboBox[name=category]')[0];
+			return combo && combo.getValue() instanceof Limas.Entity.PartCategory;
+		}, {timeout: 5000});
+
+		// Pick first available storage location straight from the picker's own
+		// store — bypasses the open/click dance which is flaky now that the
+		// picker overlay competes for z-index with the rest of the dialog
+		await page.evaluate(async () => {
+			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
+			if (!picker) {
+				throw new Error('StorageLocationPicker not found');
+			}
+			const store = picker.store;
+			if (!store.isLoaded()) {
+				await new Promise((resolve) => store.on('load', resolve, null, {single: true}));
+			}
+			if (store.getCount() === 0) {
+				throw new Error('No storage locations seeded');
+			}
+			picker.setValue(store.getAt(0));
+		});
 
 		// Set initial stock level
 		const stockField = page.locator('input[name="initialStockLevel"]');
 		await stockField.clear();
 		await stockField.fill('10');
 
-		// Save the part - use getByRole and force click to avoid overlay issues
-		await page.getByRole('button', {name: 'Save'}).click({force: true});
+		// Save via Ext API — clicking the rendered button is unreliable with
+		// the new dialog overlays. Mirrors what the category factory tests do.
+		await page.evaluate(() => {
+			const win = Ext.ComponentQuery.query('window[title="Add Part"]')[0];
+			if (!win || !win.saveButton) {
+				throw new Error('PartEditorWindow not found');
+			}
+			win.saveButton.fireHandler();
+		});
 
 		// Wait for dialog to close and grid to update
 		await page.waitForSelector('div.x-window:has-text("Add Part")', {state: 'hidden', timeout: 10000});
@@ -75,24 +105,45 @@ test.describe('Limas Part Create', () => {
 		const partName = 'E2E_Attachment_Part_' + Date.now();
 		await page.fill('input[name="name"]', partName);
 
-		// Select storage location via JavaScript (complex picker widget)
-		await page.evaluate(() => {
-			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
-			if (picker) {
-				picker.expand();
+		// Select a category — auto-prefill removed (commit 3df9d03), FE validation refuses save without one
+		await page.evaluate(async () => {
+			const combo = Ext.ComponentQuery.query('CategoryComboBox[name=category]')[0];
+			if (!combo) {
+				throw new Error('CategoryComboBox not found');
 			}
-		});
-		await page.waitForTimeout(1000);
-		await page.waitForSelector('.x-floatpanel .x-grid-cell, .x-layer .x-grid-cell', {timeout: 10000});
-		await page.evaluate(() => {
-			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
-			const grid = picker.getPicker().getGrid();
-			if (grid.getStore().getCount() > 0) {
-				picker.setValue(grid.getStore().getAt(0));
+			const store = combo.store;
+			if (!store.isLoaded()) {
+				await new Promise((resolve) => store.on('load', resolve, null, {single: true}));
 			}
-			picker.collapse();
+			combo.expand();
+			const picker = combo.getPicker();
+			const target = picker.getStore().getRoot() && picker.getStore().getRoot().firstChild;
+			if (!target) {
+				throw new Error('No category available to pick');
+			}
+			picker.getSelectionModel().select(target);
+			combo.applySelection();
 		});
-		await page.waitForTimeout(300);
+		await page.waitForFunction(() => {
+			const combo = Ext.ComponentQuery.query('CategoryComboBox[name=category]')[0];
+			return combo && combo.getValue() instanceof Limas.Entity.PartCategory;
+		}, {timeout: 5000});
+
+		// Pick first available storage location straight from its store
+		await page.evaluate(async () => {
+			const picker = Ext.ComponentQuery.query('StorageLocationPicker')[0];
+			if (!picker) {
+				throw new Error('StorageLocationPicker not found');
+			}
+			const store = picker.store;
+			if (!store.isLoaded()) {
+				await new Promise((resolve) => store.on('load', resolve, null, {single: true}));
+			}
+			if (store.getCount() === 0) {
+				throw new Error('No storage locations seeded');
+			}
+			picker.setValue(store.getAt(0));
+		});
 
 		// Go to Attachments tab
 		await page.click('span.x-tab-inner:has-text("Attachments")');
@@ -128,8 +179,14 @@ test.describe('Limas Part Create', () => {
 		await page.click('span.x-tab-inner:has-text("Basic Data")');
 		await page.waitForTimeout(200);
 
-		// Save the part
-		await page.getByRole('button', {name: 'Save'}).click({force: true});
+		// Save via Ext API
+		await page.evaluate(() => {
+			const win = Ext.ComponentQuery.query('window[title="Add Part"]')[0];
+			if (!win || !win.saveButton) {
+				throw new Error('PartEditorWindow not found');
+			}
+			win.saveButton.fireHandler();
+		});
 
 		// Wait for dialog to close
 		await page.waitForSelector('div.x-window:has-text("Add Part")', {state: 'hidden', timeout: 15000});

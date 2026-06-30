@@ -10,7 +10,8 @@ Ext.define('Limas.StockHistoryGrid', {
 		this.columns.splice(2, 0, {
 			header: i18n('Part'),
 			renderer: function (val, q, rec) {
-				return rec.getPart().get('name');
+				let part = rec.getPart();
+				return part !== null ? part.get('name') : '';
 			},
 			flex: 1,
 			minWidth: 200
@@ -19,7 +20,12 @@ Ext.define('Limas.StockHistoryGrid', {
 		this.columns.splice(3, 0, {
 			header: i18n('Storage Location'),
 			renderer: function (val, q, rec) {
-				return rec.getPart().getStorageLocation().get('name');
+				let part = rec.getPart();
+				if (part === null) {
+					return '';
+				}
+				let location = part.getStorageLocation();
+				return location !== null ? location.get('name') : '';
 			},
 			flex: 1,
 			minWidth: 200

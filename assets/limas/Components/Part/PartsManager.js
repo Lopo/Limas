@@ -75,13 +75,16 @@ Ext.define('Limas.PartManager', {
 		};
 
 		if (this.dragAndDrop) {
-			gridConfig.viewConfig = {
+			// Merge into PartsGrid.viewConfig instead of overwriting — the
+			// prototype carries getRowClass for the low-stock tint that we
+			// don't want to nuke here
+			gridConfig.viewConfig = Ext.apply({}, {
 				plugins: {
 					ddGroup: 'PartTree',
 					ptype: 'gridviewdragdrop',
 					enableDrop: false
 				}
-			};
+			}, Limas.PartsGrid.prototype.viewConfig || {});
 			gridConfig.enableDragDrop = true;
 		}
 
@@ -388,7 +391,13 @@ Ext.define('Limas.PartManager', {
 		let record = Ext.create('Limas.Entity.Part', {
 			metaPart: true
 		});
-		record.setCategory(this.getSelectedCategory() !== null ? this.getSelectedCategory() : this.tree.getRootNode().firstChild);
+		// Don't pre-fill with the tree's root child when nothing is selected —
+		// the user should explicitly pick a category. PartEditor's
+		// CategoryComboBox is allowBlank:false so save will catch the omission
+		// if the user forgets (port: PartKeepr commit ddd3c79e).
+		if (this.getSelectedCategory() !== null) {
+			record.setCategory(this.getSelectedCategory());
+		}
 		record.setPartUnit(defaultPartUnit);
 
 		j.editor.editItem(record);
@@ -440,7 +449,13 @@ Ext.define('Limas.PartManager', {
 		Ext.apply(defaults, {});
 
 		let record = Ext.create('Limas.Entity.Part', defaults);
-		record.setCategory(this.getSelectedCategory() !== null ? this.getSelectedCategory() : this.tree.getRootNode().firstChild);
+		// Don't pre-fill with the tree's root child when nothing is selected —
+		// the user should explicitly pick a category. PartEditor's
+		// CategoryComboBox is allowBlank:false so save will catch the omission
+		// if the user forgets (port: PartKeepr commit ddd3c79e).
+		if (this.getSelectedCategory() !== null) {
+			record.setCategory(this.getSelectedCategory());
+		}
 		record.setPartUnit(defaultPartUnit);
 
 		j.editor.editItem(record);

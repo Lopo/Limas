@@ -267,7 +267,9 @@ final class OemSecretsAdapter
 			description: $this->trimOrNull($row['description'] ?? null),
 			imageUrl: $this->trimOrNull($row['image_url'] ?? null),
 			productUrl: $this->trimOrNull($row['buy_now_url'] ?? null),
-			packageName: $this->trimOrNull($row['packaging'] ?? null),
+			// `packaging` is shipping format ("Tape and Reel", "Cut Tape"),
+			// NOT the IC footprint — don't pollute packageName with it
+			packageName: null,
 			categoryName: $this->trimOrNull($row['category'] ?? null),
 			lifecycleStatus: ManufacturingStatus::fromRaw($this->trimOrNull($row['life_cycle'] ?? null)),
 			stock: isset($row['quantity_in_stock']) ? (int)$row['quantity_in_stock'] : null,
@@ -289,7 +291,9 @@ final class OemSecretsAdapter
 			description: $this->trimOrNull($row['description'] ?? null),
 			imageUrl: $this->trimOrNull($row['image_url'] ?? null),
 			productUrl: $this->trimOrNull($row['buy_now_url'] ?? null),
-			packageName: $this->trimOrNull($row['packaging'] ?? null),
+			// `packaging` is shipping format ("Tape and Reel", "Cut Tape"),
+			// NOT the IC footprint — don't pollute packageName with it
+			packageName: null,
 			categoryName: $this->trimOrNull($row['category'] ?? null),
 			lifecycleStatus: ManufacturingStatus::fromRaw($this->trimOrNull($row['life_cycle'] ?? null)),
 			stock: isset($row['quantity_in_stock']) ? (int)$row['quantity_in_stock'] : null,

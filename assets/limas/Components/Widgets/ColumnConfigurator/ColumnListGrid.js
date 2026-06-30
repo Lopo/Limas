@@ -6,7 +6,24 @@ Ext.define('Limas.Components.Widgets.ColumnConfigurator.ColumnListGrid', {
 		dataIndex: 'text',
 		menuDisabled: true,
 		resizable: false,
-		flex: 1
+		flex: 1,
+		renderer: function (v, m, rec) {
+			// Some grids use icon-only headers — their `text` may arrive
+			// here as raw HTML (`<span class="web-icon …"></span>`) OR
+			// as the entity-encoded form (`&lt;span class=&quot;web-icon`
+			// …) depending on whether ExtJS Column pre-encoded it. Decode
+			// entities first, then strip tags; if nothing meaningful
+			// remains use the dataIndex as a placeholder.
+			let raw = String(v || '');
+			let decoded = Ext.util.Format.htmlDecode(raw);
+			let stripped = Ext.util.Format.stripTags(decoded).trim();
+			if (stripped !== '') {
+				return Ext.htmlEncode(stripped);
+			}
+			let di = rec.get('dataIndex');
+			let placeholder = di || i18n('column');
+			return '<i class="limas-text-muted">(' + Ext.htmlEncode(placeholder) + ')</i>';
+		}
 	}, {
 		header: 'Field',
 		menuDisabled: true,

@@ -137,7 +137,9 @@ Ext.define('Limas.PartDisplay', {
 			quantity: quantity,
 			price: price,
 			comment: comment
-		}, null, true);
+		}, function () {
+			Ext.GlobalEvents.fireEvent('partStockChanged');
+		}, true);
 	},
 	/**
 	 * Prompts the user for the stock level to decrease for the item
@@ -152,7 +154,9 @@ Ext.define('Limas.PartDisplay', {
 		this.record.callPutAction('removeStock', {
 			quantity: quantity,
 			comment: comment,
-		}, null, true);
+		}, function () {
+			Ext.GlobalEvents.fireEvent('partStockChanged');
+		}, true);
 	},
 	loadPart: function () {
 		this.record.load({

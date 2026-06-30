@@ -145,26 +145,85 @@ Ext.define('Limas.EditorComponent', {
 		return editor;
 	},
 	confirmDelete: function () {
-		let r = this.navigation.getSelectionModel().getLastSelected(),
-			recordName = r.get(this.titleProperty);
+		let selection = this.navigation.getSelectionModel().getSelection();
+		if (!selection || selection.length === 0) {
+			return;
+		}
+
+		let prompt;
+		if (selection.length === 1) {
+			prompt = sprintf(this.deleteMessage, selection[0].get(this.titleProperty));
+		} else {
+			prompt = sprintf(i18n('Delete %d selected items?'), selection.length);
+		}
 
 		Ext.Msg.confirm(
 			this.deleteTitle,
-			sprintf(this.deleteMessage, recordName),
+			prompt,
 			function (but) {
 				if (but === 'yes') {
-					this.deleteRecord(r);
+					this.deleteRecords(selection);
 				}
 			}, this);
 	},
-	deleteRecord: function (r) {
-		let editor = this.findEditor(r.getId());
-		if (editor !== null) {
-			this.editorTabPanel.remove(editor);
-		}
+	deleteRecords: function (records) {
+		// Most admin entities (Manufacturer/Distributor/Footprint/Unit/…)
+		// have foreign keys WITHOUT ON DELETE clauses — MySQL defaults to
+		// RESTRICT, so trying to delete one that's still referenced by a
+		// Part/PartParameter/etc. throws an FK violation. We hit the IRI
+		// directly via Ext.Ajax instead of r.erase() to bypass HydraProxy's
+		// global exception listener (it pops an ExceptionWindow per
+		// failure, which would spam the user with N popups on a bulk
+		// delete). Failures are summarised in a single toast instead.
+		let total = records.length;
+		let deleted = 0;
+		let failed = 0;
+		let failedNames = [];
+		let remaining = total;
 
-		r.erase();
-		this.store.load();
+		let done = function () {
+			if (--remaining > 0) return;
+			this.store.load();
+			if (failed === 0) {
+				if (total > 1) {
+					Ext.toast({html: Ext.String.format(i18n('Deleted {0} items.'), deleted), align: 't', autoCloseDelay: 3000});
+				}
+				return;
+			}
+			let msg = Ext.String.format(i18n('Deleted {0}, {1} failed.'), deleted, failed);
+			if (failedNames.length > 0) {
+				msg += '<br><span class="limas-text-muted">' + Ext.htmlEncode(failedNames.slice(0, 5).join(', '));
+				if (failedNames.length > 5) msg += ' …';
+				msg += '</span><br>' + i18n('(still referenced elsewhere)');
+			}
+			Ext.toast({html: msg, align: 't', autoCloseDelay: 8000});
+		}.bind(this);
+
+		records.forEach(function (r) {
+			let editor = this.findEditor(r.getId());
+			if (editor !== null) {
+				this.editorTabPanel.remove(editor);
+			}
+			let iri = r.getId();
+			Ext.Ajax.request({
+				url: Limas.getBasePath() + iri,
+				method: 'DELETE',
+				headers: Limas.Auth.AuthenticationProvider.getAuthenticationProvider().getHeaders(),
+				success: function () {
+					deleted++;
+					done();
+				},
+				failure: Ext.bind(function () {
+					failed++;
+					failedNames.push(r.get(this.titleProperty) || ('#' + iri));
+					done();
+				}, this)
+			});
+		}, this);
+	},
+	// Kept as a thin compat wrapper — older callers may invoke it directly.
+	deleteRecord: function (r) {
+		this.deleteRecords([r]);
 	},
 	// Creates a store. To be called from child's initComponent
 	createStore: function (config) {

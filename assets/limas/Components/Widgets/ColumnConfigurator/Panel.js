@@ -96,7 +96,15 @@ Ext.define('Limas.Components.Widgets.ColumnConfigurator.Panel', {
 		this.autoPreviewTask.delay(200);
 	},
 	doPreview: function () {
-		this.grid.reconfigure(this.grid.store, this.getColumnConfigurations());
+		// materializeColumn wires Param Renderer columns with the right
+		// dataIndex + sortable flag so backend ORDER BY paramValues.<name>
+		// works regardless of whether the user just edited columns in this
+		// dialog or applied a saved preset (PK #1217 (b))
+		let cols = this.getColumnConfigurations().map(
+			Limas.Components.Grid.GridPresetState.materializeColumn,
+			Limas.Components.Grid.GridPresetState
+		);
+		this.grid.reconfigure(this.grid.store, cols);
 	},
 	getColumnConfigurations: function () {
 		let j, rtype,
@@ -121,9 +129,13 @@ Ext.define('Limas.Components.Widgets.ColumnConfigurator.Panel', {
 				rtype = data.getAt(i).renderers().getAt(j).get('rtype');
 
 				if (typeof (Limas.Components.Grid.Renderers.RendererRegistry.lookupRenderer(rtype)) !== 'undefined') {
+					// Most renderers don't carry a configurable payload; the
+					// `config` field is then empty string and Ext.decode('')
+					// throws. Default to null in that case.
+					let rawCfg = data.getAt(i).renderers().getAt(j).get('config');
 					config.renderers.push({
 						rtype: rtype,
-						rendererConfig: Ext.decode(data.getAt(i).renderers().getAt(j).get('config'))
+						rendererConfig: (rawCfg !== null && rawCfg !== '') ? Ext.decode(rawCfg) : null
 					});
 				}
 			}
@@ -183,6 +195,10 @@ Ext.define('Limas.Components.Widgets.ColumnConfigurator.Panel', {
 		}
 	},
 	getFieldsToCopy: function () {
-		return ['dataIndex', 'text', 'hidden', 'flex', 'width', 'tooltip'];
+		// align/minWidth/maxWidth round-trip so right-aligned numeric columns
+		// don't silently regress to left after Save → Default → Load.
+		// sortable/sortParam for PK #1217 — Param Renderer columns need
+		// both to survive save→load.
+		return ['dataIndex', 'text', 'hidden', 'flex', 'width', 'minWidth', 'maxWidth', 'align', 'tooltip', 'sortable', 'sortParam'];
 	}
 });

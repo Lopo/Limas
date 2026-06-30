@@ -10,7 +10,9 @@ use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\Query\Expr\Comparison;
 use Doctrine\ORM\Query\Expr\Composite;
 use Doctrine\ORM\Query\Expr\Func;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use Limas\Entity\PartParameter;
 use Limas\Service\FilterService;
 use Nette\Utils\Json;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -50,7 +52,10 @@ class AdvancedSearchFilter
 		}
 
 		foreach ($sorters as $sorter) {
-			if ($sorter->getAssociation() !== null) {
+			// `paramValues` is a synthetic association — applyOrderByExpression
+			// handles it via a correlated subquery and adding a real JOIN here
+			// would try to navigate a non-existent Doctrine association
+			if ($sorter->getAssociation() !== null && $sorter->getAssociation() !== 'paramValues') {
 				$this->addJoins($queryBuilder, $sorter); // Pull in associations
 			}
 
@@ -175,13 +180,53 @@ class AdvancedSearchFilter
 	}
 
 	/**
-	 * Returns the expression for a specific sort order
+	 * Returns the expression for a specific sort order.
+	 *
+	 * Special case `paramValues.<paramName>` (PK #1217 (b)): the FE Param
+	 * Renderer columns expose their dataIndex in that shape so the user can
+	 * click the header to sort by a specific PartParameter value. Translate
+	 * into a LEFT JOIN onto PartParameter filtered by name + ORDER BY on the
+	 * normalized numeric value, falling back to stringValue so string-typed
+	 * params still sort sensibly. NULL parts (no such parameter row) sort
+	 * last in ASC, first in DESC — the DB's natural ordering.
 	 */
 	private function applyOrderByExpression(QueryBuilder $queryBuilder, Sorter $sorter): QueryBuilder
 	{
+		if ($sorter->getAssociation() === 'paramValues') {
+			$paramName = $sorter->getProperty();
+			// Standalone LEFT JOIN onto PartParameter filtered by name. The
+			// outer filter() loop skips addJoins() for the 'paramValues'
+			// pseudo-association so API Platform's QueryChecker (which would
+			// barf on `o.paramValues`) never sees that bogus path. Alias
+			// includes parameterCount so multiple sort criteria don't share
+			// a parameter binding.
+			$alias = 'ppSort_' . preg_replace('/[^A-Za-z0-9_]/', '_', $paramName) . $this->parameterCount;
+			$paramKey = $alias . '_name';
+			$this->parameterCount++;
+			$queryBuilder->leftJoin(
+				PartParameter::class,
+				$alias,
+				Join::WITH,
+				$queryBuilder->expr()->andX(
+					$queryBuilder->expr()->eq($alias . '.part', 'o'),
+					$queryBuilder->expr()->eq($alias . '.name', ':' . $paramKey)
+				)
+			);
+			$queryBuilder->setParameter($paramKey, $paramName);
+			// Two ORDER BY clauses — numeric first so rows with real numeric
+			// values sort deterministically, stringValue as the tiebreaker
+			// for string-typed params (where normalizedValue is NULL)
+			$queryBuilder->addOrderBy($alias . '.normalizedValue', $sorter->getDirection());
+			$queryBuilder->addOrderBy($alias . '.stringValue', $sorter->getDirection());
+			return $queryBuilder;
+		}
+
+		// FE columns use `@id` as the dataIndex for the Hydra IRI field —
+		// DQL has no `@` token so map it back to the real entity property
+		$property = $sorter->getProperty() === '@id' ? 'id' : $sorter->getProperty();
 		$alias = $sorter->getAssociation() !== null
-			? $this->getAlias('o.' . $sorter->getAssociation()) . '.' . $sorter->getProperty()
-			: 'o.' . $sorter->getProperty();
+			? $this->getAlias('o.' . $sorter->getAssociation()) . '.' . $property
+			: 'o.' . $property;
 
 		return $queryBuilder->addOrderBy($alias, $sorter->getDirection());
 	}

@@ -12,6 +12,7 @@ use Limas\Entity\PartDistributor;
 use Limas\Entity\PartManufacturer;
 use Limas\Entity\PartParameter;
 use Limas\Entity\StorageLocation;
+use Limas\Service\FootprintCanonicalizer;
 use Limas\Service\Integration\InfoProvider\Dto\AggregatedPartCandidate;
 use Limas\Service\Integration\InfoProvider\Dto\FieldWithProvenance;
 use Limas\Service\ManufacturerCanonicalizer;
@@ -50,6 +51,7 @@ final readonly class AggregatorImporter
 	public function __construct(
 		private EntityManagerInterface    $em,
 		private ManufacturerCanonicalizer $manufacturerCanonicalizer,
+		private FootprintCanonicalizer    $footprintCanonicalizer,
 		private UploadedFileService       $uploadedFileService,
 		private DatasheetUrlResolver      $datasheetUrlResolver,
 		private LoggerInterface           $logger
@@ -76,6 +78,19 @@ final readonly class AggregatorImporter
 		$part->setDescription($candidate->description->chosenValue ?? '');
 		$part->setCategory($category);
 		$part->setStorageLocation($storageLocation);
+
+		// Footprint resolution — best-effort canonicalisation. The merger's
+		// `packageName.chosenValue` is the winning raw string across sources;
+		// FootprintCanonicalizer finds a matching alias or direct Footprint
+		// name. Missing match = leave Part.footprint null (user resolves
+		// manually OR a later improvement adds auto-create unverified alias).
+		$rawPackage = $candidate->packageName->chosenValue ?? '';
+		if ($rawPackage !== '') {
+			$footprint = $this->footprintCanonicalizer->canonicalize($rawPackage);
+			if ($footprint !== null) {
+				$part->setFootprint($footprint);
+			}
+		}
 
 		$pm = (new PartManufacturer)
 			->setManufacturer($manufacturer)
@@ -249,8 +264,12 @@ final readonly class AggregatorImporter
 	}
 
 	/**
-	 * Find canonical Manufacturer via the alias table; create + register first
-	 * alias when nothing matches yet
+	 * Find canonical Manufacturer via the alias table; create + register a
+	 * verified alias when nothing matches yet. canonicalize() returns null
+	 * either when no alias matched at all (it auto-created an unverified
+	 * pending one) OR when the matched alias has manufacturer=NULL (still
+	 * pending admin verification). Either way we land here and create a fresh
+	 * Manufacturer; registerAlias upgrades the pending alias to verified.
 	 */
 	private function resolveManufacturer(string $rawName): Manufacturer
 	{

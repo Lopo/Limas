@@ -11,6 +11,7 @@ Ext.define('Limas.CategoryEditorTree', {
 	categoryModel: null,
 	categoryService: null,
 	categoryEditActions: true,
+	editorWindowClass: 'Limas.CategoryEditorWindow',
 
 	initComponent: function () {
 		this.columns = [{
@@ -165,7 +166,7 @@ Ext.define('Limas.CategoryEditorTree', {
 			this.onCategoryDelete, this);
 	},
 	showCategoryAddDialog: function () {
-		Ext.create('Limas.CategoryEditorWindow', {
+		Ext.create(this.editorWindowClass, {
 			record: Ext.create(this.categoryModel),
 			categoryModel: this.categoryModel,
 			parentRecord: this.getSelection()[0],
@@ -176,7 +177,7 @@ Ext.define('Limas.CategoryEditorTree', {
 			.show();
 	},
 	showCategoryEditDialog: function () {
-		Ext.create('Limas.CategoryEditorWindow', {
+		Ext.create(this.editorWindowClass, {
 			record: this.getSelection()[0],
 			parentRecord: null,
 			categoryModel: this.categoryModel,

@@ -59,6 +59,8 @@ Ext.define('Limas.MenuBar', {
 			'Limas.PartMeasurementUnitEditorComponent',
 			'Limas.UnitEditorComponent',
 			'Limas.ParameterAliasEditorComponent',
+			'Limas.FootprintAliasEditorComponent',
+			'Limas.ManufacturerAliasEditorComponent',
 			'Limas.BatchJobEditorComponent',
 
 			// View Menu
@@ -106,6 +108,8 @@ Ext.define('Limas.MenuBar', {
 		this.menu.menu.push({xtype: 'tbspacer', width: 50});
 
 		this.menu.menu.push({xtype: 'tbfill'});
+		this.menu.menu.push({xtype: 'LowStockButton'});
+		this.menu.menu.push({xtype: 'tbspacer', width: 8});
 		this.menu.menu.push({xtype: 'button', iconCls: 'limasLogo'});
 		this.menu.menu.push({xtype: 'tbspacer', width: 10});
 

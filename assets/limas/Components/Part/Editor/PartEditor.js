@@ -412,6 +412,68 @@ Ext.define('Limas.PartEditor', {
 		} else {
 			this.footprintNone.setValue(true);
 		}
+
+		// Pre-fill default parameters for new Parts when a category is already
+		// set (e.g. via the parts grid's selected category). Hooks the combo
+		// for subsequent changes too.
+		if (this.record.phantom) {
+			this.maybeApplyCategoryDefaults();
+		}
+		let categoryCombo = this.down('CategoryComboBox[name=category]');
+		if (categoryCombo) {
+			categoryCombo.on('select', this.onCategoryChange, this);
+		}
+	},
+	onCategoryChange: function () {
+		if (this.record.phantom) {
+			this.maybeApplyCategoryDefaults();
+		}
+	},
+	/**
+	 * Fetch resolved (inheritance-aware) default parameter templates for the
+	 * current category and pre-populate empty PartParameter rows. Skips if
+	 * the parameters grid is non-empty so user edits never get clobbered.
+	 */
+	maybeApplyCategoryDefaults: function () {
+		let category = this.record.getCategory();
+		if (!category) return;
+		if (this.record.parameters().getCount() > 0) return;
+
+		let categoryIri = (typeof category === 'object' && category.get) ? category.get('@id')
+			: (typeof category === 'object' ? category['@id'] : category);
+		if (!categoryIri || typeof categoryIri !== 'string') return;
+
+		Ext.Ajax.request({
+			url: Limas.getBasePath() + categoryIri + '/resolved_defaults',
+			method: 'GET',
+			success: Ext.bind(function (response) {
+				let defaults;
+				try {
+					defaults = Ext.decode(response.responseText);
+				} catch (e) {
+					return;
+				}
+				if (!Ext.isArray(defaults) || defaults.length === 0) return;
+				// Re-check — user might have started typing while we awaited.
+				if (this.record.parameters().getCount() > 0) return;
+
+				let unitStore = Ext.data.StoreManager.lookup('UnitStore');
+				defaults.forEach(function (tpl) {
+					let param = Ext.create('Limas.Entity.PartParameter', {
+						name: tpl.name,
+						description: tpl.description || '',
+						valueType: tpl.valueType || 'string'
+					});
+					if (tpl.unit && unitStore) {
+						let unitRec = unitStore.findRecord('@id', tpl.unit['@id']);
+						if (unitRec) {
+							param.setUnit(unitRec);
+						}
+					}
+					this.record.parameters().add(param);
+				}, this);
+			}, this)
+		});
 	},
 	_onItemSaved: function () {
 		this.fireEvent('partSaved', this.record);

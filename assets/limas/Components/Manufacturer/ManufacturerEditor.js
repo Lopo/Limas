@@ -11,6 +11,14 @@ Ext.define('Limas.ManufacturerEditor', {
 			'<div class="dataview-multisort-item iclogo"><img src="{[values["@id"]]}/getImage?maxWidth=100&maxHeight=100"/></div>',
 			'</tpl>');
 
+		this.mergeButton = Ext.create('Ext.button.Button', {
+			iconCls: 'web-icon arrow_merge',
+			text: i18n('Merge into…'),
+			tooltip: i18n('Reassign every part of this manufacturer onto another, then delete this row. Source\'s name is auto-recorded as a verified alias of the target.'),
+			disabled: true,
+			handler: Ext.bind(this.openMergeDialog, this)
+		});
+
 		this.addLogoButton = Ext.create('Ext.button.Button', {
 			iconCls: 'web-icon add',
 			text: i18n('Add Logo'),
@@ -99,9 +107,27 @@ Ext.define('Limas.ManufacturerEditor', {
 		this.on('itemSaved', this._onItemSaved, this);
 		this.callParent();
 
+		// Wire up the Merge button into the editor's footer toolbar (Save+Cancel
+		// row). Inserted to the left of Save so it's not the dangerous default.
+		if (this.bottomToolbar) {
+			this.bottomToolbar.insert(0, this.mergeButton);
+			this.bottomToolbar.insert(1, '-');
+		}
 	},
 	_onItemSaved: function (record) {
 		this.iclogoGrid.bindStore(record.icLogos());
+		this.mergeButton.setDisabled(!record || record.phantom);
+	},
+	openMergeDialog: function () {
+		if (!this.record || this.record.phantom) {
+			return;
+		}
+		Ext.create('Limas.ManufacturerMergeDialog', {
+			sourceRecord: this.record,
+			onSuccess: Ext.bind(function () {
+				this.fireEvent('editorClose', this);
+			}, this)
+		}).show();
 	},
 	onFileUploaded: function (response) {
 		this.iclogoGrid.getStore().add(response);
@@ -123,5 +149,6 @@ Ext.define('Limas.ManufacturerEditor', {
 	},
 	onEditStart: function () {
 		this.iclogoGrid.bindStore(this.record.icLogos());
+		this.mergeButton.setDisabled(!this.record || this.record.phantom);
 	}
 });

@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
+use Limas\Controller\Actions\ManufacturerActions;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 
@@ -24,7 +25,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 		new Post,
 		new Get,
 		new Put,
-		new Delete
+		new Delete,
+		new Post(
+			uriTemplate: '/manufacturers/{id}/merge',
+			controller: ManufacturerActions::class,
+			name: 'ManufacturerMerge'
+		),
 	],
 	normalizationContext: ['groups' => ['default']],
 	denormalizationContext: ['groups' => ['default']]

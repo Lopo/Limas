@@ -214,7 +214,7 @@ final readonly class DigiKeyAdapter
 			description: $p['Description']['DetailedDescription'] ?? ($p['Description']['ProductDescription'] ?? null),
 			imageUrl: $p['PhotoUrl'] ?? null,
 			productUrl: $p['ProductUrl'] ?? null,
-			packageName: $variation['PackageType']['Name'] ?? null,
+			packageName: $this->extractPackageName($p, $variation),
 			categoryName: $p['Category']['Name'] ?? null,
 			lifecycleStatus: $this->extractLifecycle($p),
 			stock: isset($p['QuantityAvailable']) ? (int)$p['QuantityAvailable'] : null,
@@ -238,7 +238,7 @@ final readonly class DigiKeyAdapter
 			description: $p['Description']['DetailedDescription'] ?? ($p['Description']['ProductDescription'] ?? null),
 			imageUrl: $p['PhotoUrl'] ?? null,
 			productUrl: $p['ProductUrl'] ?? null,
-			packageName: $variation['PackageType']['Name'] ?? null,
+			packageName: $this->extractPackageName($p, $variation),
 			categoryName: $p['Category']['Name'] ?? null,
 			lifecycleStatus: $this->extractLifecycle($p),
 			stock: isset($p['QuantityAvailable']) ? (int)$p['QuantityAvailable'] : null,
@@ -262,6 +262,39 @@ final readonly class DigiKeyAdapter
 			return ManufacturingStatus::EndOfLife;
 		}
 		return ManufacturingStatus::fromRaw($p['ProductStatus']['Status'] ?? null);
+	}
+
+	/**
+	 * DigiKey's `ProductVariations[*].PackageType.Name` is the SHIPPING format
+	 * ("Cut Tape (CT)", "Tape & Reel (TR)", "Tube", "Bulk", …) — not the
+	 * electrical package (TO-92, SOIC-8). The actual package is in the
+	 * Parameters[] payload under "Package / Case" or "Supplier Device Package".
+	 *
+	 * Strategy:
+	 *   1. Prefer "Package / Case" from Parameters
+	 *   2. Fall back to "Supplier Device Package"
+	 *   3. As a last resort, use PackageType.Name ONLY when it doesn't look
+	 *      like a shipping/packaging format — covers parts where DigiKey
+	 *      categorises the actual package under PackageType.
+	 */
+	private function extractPackageName(array $p, array $variation): ?string
+	{
+		$shippingPatterns = '/\b(cut tape|tape\s*&\s*reel|t\s*&\s*r|tube|bulk|reel|strip|tray|ammo)\b/i';
+		foreach (($p['Parameters'] ?? []) as $param) {
+			$name = $param['ParameterText'] ?? ($param['Parameter'] ?? '');
+			$value = $param['ValueText'] ?? ($param['Value'] ?? '');
+			if ($value === '' || $value === '-') {
+				continue;
+			}
+			if (in_array($name, ['Package / Case', 'Supplier Device Package'], true)) {
+				return (string)$value;
+			}
+		}
+		$pkgType = $variation['PackageType']['Name'] ?? null;
+		if ($pkgType !== null && !preg_match($shippingPatterns, $pkgType)) {
+			return (string)$pkgType;
+		}
+		return null;
 	}
 
 	/**

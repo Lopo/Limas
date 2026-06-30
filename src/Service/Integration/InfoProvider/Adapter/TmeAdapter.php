@@ -70,13 +70,17 @@ final class TmeAdapter
 		// search returns BASIC + PICTURE (assets.primary_photo).
 		// /products/parameters → PARAMETERS, /products/data → PRICE,
 		// /products/files → DATASHEET (documents[].type=DTE).
-		// FOOTPRINT lives inside parameters (e.g. "Case - inch"), no top-level field.
+		// FOOTPRINT is mined from /products/parameters labels — "Case",
+		// "Kind of package", etc. Only available on Phase-2 detail responses
+		// (Phase-1 search payload has no parameters block), so the light
+		// SearchResult leaves packageName null and detail filling in.
 		// GTIN: TME returns `ean` on the product but it's often empty for components.
 		return [
 			ProviderCapability::BASIC,
 			ProviderCapability::PICTURE,
 			ProviderCapability::DATASHEET,
 			ProviderCapability::PRICE,
+			ProviderCapability::FOOTPRINT,
 			ProviderCapability::PARAMETERS
 		];
 	}
@@ -86,16 +90,52 @@ final class TmeAdapter
 		return $this->mapSearchByMpnResponses($this->searchByMpnAsync($mpn, $limit), $mpn, $limit);
 	}
 
+	/**
+	 * Phase-1 dispatches BOTH `/products/search?phrase=...` AND
+	 * `/products?symbols[]=...`. Some products only exist under their TME
+	 * symbol with `manufacturer_symbols: []` (e.g. BS-244DSM-R) and the
+	 * phrase search misses them entirely; the direct symbol lookup catches
+	 * them. Costs one extra request per Phase-1 query — TME's 50 rps cap is
+	 * irrelevant at this volume.
+	 */
 	public function searchByMpnAsync(string $mpn, int $limit = 10): array
 	{
-		return ['search' => $this->service->searchByKeywordAsync($mpn)];
+		return [
+			'search' => $this->service->searchByKeywordAsync($mpn),
+			'symbol' => $this->service->getProductsAsync(symbols: [$mpn])
+		];
 	}
 
 	public function mapSearchByMpnResponses(array $responses, string $mpn, int $limit = 10): array
 	{
-		$data = $responses['search']->toArray(false);
-		$elements = array_slice($data['data']['products']['elements'] ?? [], 0, $limit);
-		return array_map(fn(array $e) => $this->mapLight($e, exactMpn: $mpn), $elements);
+		// Note the envelope difference: `/products/search` wraps results
+		// under `data.products.elements`, `/products` (mpns/symbols lookup)
+		// returns `data.elements`. Dedup by `symbol` so a product hit by
+		// both endpoints isn't double-counted.
+		$seen = [];
+		$out = [];
+
+		$searchData = $this->safeArray($responses['search'] ?? null);
+		foreach (array_slice($searchData['data']['products']['elements'] ?? [], 0, $limit) as $e) {
+			$sym = (string)($e['symbol'] ?? '');
+			if ($sym === '' || isset($seen[$sym])) {
+				continue;
+			}
+			$seen[$sym] = true;
+			$out[] = $this->mapLight($e, exactMpn: $mpn);
+		}
+
+		$symbolData = $this->safeArray($responses['symbol'] ?? null);
+		foreach ($symbolData['data']['elements'] ?? [] as $e) {
+			$sym = (string)($e['symbol'] ?? '');
+			if ($sym === '' || isset($seen[$sym])) {
+				continue;
+			}
+			$seen[$sym] = true;
+			$out[] = $this->mapLight($e, exactMpn: $mpn);
+		}
+
+		return array_slice($out, 0, $limit);
 	}
 
 	public function getDetails(string $sourceSku): ?InfoProviderResult
@@ -158,34 +198,46 @@ final class TmeAdapter
 		return $out;
 	}
 
+	/**
+	 * Completion pass — fires `/products?mpns[]=...` AND `/products?symbols[]=...`
+	 * in parallel. The MPN lookup catches products where TME tagged
+	 * manufacturer_symbols, the symbol lookup catches products where TME has
+	 * the catalogue entry but no MPN tag (BS-244DSM-R, etc. — `symbol`
+	 * effectively IS the MPN for these). Doubling the requests is fine under
+	 * TME's 50 rps cap.
+	 */
 	public function searchExactByMpnAsync(string $mpn): array
 	{
-		// TME's /products endpoint accepts `mpns[]=<MPN>` for strict lookup —
-		// returns full product objects (manufacturer, category, assets) but
-		// NOT parameters/prices (those still need /products/parameters and
-		// /products/data). For completion-pass purposes the light DTO is
-		// enough; the aggregator will fire batched detail fetch on the
-		// returned SKUs after filtering by canonical mfr.
-		return ['exact' => $this->service->getProductsAsync(mpns: [$mpn])];
+		return [
+			'exact_mpn' => $this->service->getProductsAsync(mpns: [$mpn]),
+			'exact_sym' => $this->service->getProductsAsync(symbols: [$mpn])
+		];
 	}
 
 	public function mapSearchExactByMpnResponses(array $responses, string $mpn): array
 	{
-		if (!isset($responses['exact'])) {
-			return [];
-		}
-		$data = $this->safeArray($responses['exact']);
-		$elements = $data['data']['products']['elements'] ?? [];
-		$out = [];
-		foreach ($elements as $e) {
-			$rowMpn = $e['manufacturer_symbols'][0] ?? '';
-			// Defensive: TME's mpns[] match is exact but a single MPN may map
-			// to multiple TME symbols (different packaging/quantities). Keep
-			// all of them — aggregator picks by canonical mfr.
-			if (strcasecmp((string)$rowMpn, $mpn) !== 0) {
-				continue;
+		// /products endpoints return `data.elements` (NOT `data.products.elements`
+		// — that's only on /products/search). The previous "data.products.elements"
+		// parse silently yielded zero hits forever — TME never contributed to
+		// completion-pass exact-match candidates.
+		$seen = $out = [];
+		foreach (['exact_mpn', 'exact_sym'] as $key) {
+			$data = $this->safeArray($responses[$key] ?? null);
+			foreach ($data['data']['elements'] ?? [] as $e) {
+				$sym = (string)($e['symbol'] ?? '');
+				if ($sym === '' || isset($seen[$sym])) {
+					continue;
+				}
+				// Match by manufacturer_symbols[0] OR by symbol — covers
+				// MPN-tagged entries AND symbol-only entries (the latter has
+				// manufacturer_symbols: [])
+				$rowMpn = (string)($e['manufacturer_symbols'][0] ?? '');
+				if (strcasecmp($rowMpn, $mpn) !== 0 && strcasecmp($sym, $mpn) !== 0) {
+					continue;
+				}
+				$seen[$sym] = true;
+				$out[] = $this->mapLight($e, exactMpn: $mpn);
 			}
-			$out[] = $this->mapLight($e, exactMpn: $mpn);
 		}
 		return $out;
 	}
@@ -232,7 +284,12 @@ final class TmeAdapter
 
 	private function mapLight(array $e, string $exactMpn = ''): InfoProviderSearchResult
 	{
-		$mpn = $e['manufacturer_symbols'][0] ?? '';
+		// For symbol-only catalogue entries (manufacturer_symbols is empty,
+		// e.g. BS-244DSM-R) the TME symbol IS effectively the MPN — it's how
+		// the product is publicly addressable. Without this fallback the
+		// merger drops such candidates entirely because manufacturerPartNumber
+		// stays empty.
+		$mpn = $e['manufacturer_symbols'][0] ?? ($e['symbol'] ?? '');
 		return new InfoProviderSearchResult(
 			source: 'tme',
 			sourceSku: $e['symbol'] ?? '',
@@ -252,7 +309,8 @@ final class TmeAdapter
 
 	private function mapFull(array $e, ?array $paramElement, ?array $dataElement, ?array $filesElement = null): InfoProviderResult
 	{
-		$mpn = $e['manufacturer_symbols'][0] ?? '';
+		// See mapLight() for the symbol-fallback rationale
+		$mpn = $e['manufacturer_symbols'][0] ?? ($e['symbol'] ?? '');
 		return new InfoProviderResult(
 			source: 'tme',
 			sourceSku: $e['symbol'] ?? '',
@@ -261,7 +319,7 @@ final class TmeAdapter
 			description: $e['description'] ?? null,
 			imageUrl: $this->extractImageUrl($e),
 			productUrl: $this->productUrl($e),
-			packageName: null,
+			packageName: $this->extractPackageName($paramElement),
 			categoryName: $e['category']['name'] ?? null,
 			lifecycleStatus: $this->lifecycle($e),
 			stock: isset($dataElement['stock_quantity']) ? (int)$dataElement['stock_quantity'] : null,
@@ -271,6 +329,36 @@ final class TmeAdapter
 			priceBreaks: $this->mapPriceBreaks($dataElement['prices']['elements'] ?? []),
 			rawSource: $e
 		);
+	}
+
+	/**
+	 * Mine the package label out of TME's /products/parameters response.
+	 * Common label values: "Case", "Kind of package", "Type of package",
+	 * "Housing". Returns the first matching parameter value or null.
+	 */
+	private function extractPackageName(?array $paramElement): ?string
+	{
+		$elements = $paramElement['parameters']['elements'] ?? [];
+		$patterns = [
+			'/\bcase\b/i',
+			'/\b(?:kind|type)\s+of\s+package\b/i',
+			'/\bpackage\b/i',
+			'/\bhousing\b/i'
+		];
+		foreach ($patterns as $pattern) {
+			foreach ($elements as $p) {
+				$name = trim((string)($p['name'] ?? ''));
+				if ($name === '' || preg_match($pattern, $name) !== 1) {
+					continue;
+				}
+				$values = array_column($p['values'] ?? [], 'value');
+				$value = trim((string)($values[0] ?? ''));
+				if ($value !== '' && $value !== '-') {
+					return $value;
+				}
+			}
+		}
+		return null;
 	}
 
 	private function lifecycle(array $e): ?ManufacturingStatus

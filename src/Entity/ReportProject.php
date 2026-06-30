@@ -32,6 +32,7 @@ class ReportProject
 	#[ORM\ManyToOne(targetEntity: Report::class, inversedBy: 'reportProjects')]
 	private ?Report $report;
 	#[ORM\ManyToOne(targetEntity: Project::class)]
+	#[ORM\JoinColumn(onDelete: 'CASCADE')]
 	#[Groups(['default'])]
 	#[Assert\NotNull]
 	private ?Project $project;

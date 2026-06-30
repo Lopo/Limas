@@ -1,0 +1,78 @@
+/**
+ * Admin host for the FootprintAlias grid. Same flipped layout as
+ * ParameterAliasEditorComponent: grid in center, narrow east form for the
+ * rare per-row deep edit. Most operations happen inline in the grid.
+ */
+Ext.define('Limas.FootprintAliasEditorComponent', {
+	extend: 'Limas.EditorComponent',
+	alias: 'widget.FootprintAliasEditorComponent',
+	navigationClass: 'Limas.FootprintAliasGrid',
+	editorClass: 'Limas.FootprintAliasEditor',
+	newItemText: i18n('New Footprint Alias'),
+	model: 'Limas.Entity.FootprintAlias',
+	titleProperty: 'alias',
+
+	initComponent: function () {
+		this.createStore({
+			autoLoad: true,
+			pageSize: 50,
+			sorters: [
+				{property: 'verified', direction: 'ASC'},
+				{property: 'usageCount', direction: 'DESC'}
+			]
+		});
+
+		this.navigation = Ext.create(this.navigationClass, {
+			region: 'center',
+			split: true,
+			store: this.store,
+			titleProperty: this.titleProperty
+		});
+		this.navigation.on('itemAdd', this.newRecord, this);
+		this.navigation.on('itemDelete', this.confirmDelete, this);
+		this.navigation.on('itemEdit', this.startEdit, this);
+
+		this.editorTabPanel = Ext.create('Ext.panel.Panel', {
+			region: 'east',
+			width: 420,
+			collapsed: true,
+			collapsible: true,
+			titleCollapse: true,
+			animCollapse: false,
+			floatable: false,
+			split: true,
+			title: i18n('Edit Alias'),
+			layout: 'fit'
+		});
+
+		this.items = [this.navigation, this.editorTabPanel];
+
+		Ext.panel.Panel.prototype.initComponent.call(this);
+	},
+
+	startEdit: function (id) {
+		let existing = this.findEditor(id);
+		if (existing !== null) {
+			return;
+		}
+		this.editorTabPanel.removeAll();
+		this.callParent(arguments);
+		if (this.editorTabPanel.collapsed) {
+			this.editorTabPanel.expand();
+		}
+	},
+	newRecord: function (defaults) {
+		this.editorTabPanel.removeAll();
+		this.callParent(arguments);
+		if (this.editorTabPanel.collapsed) {
+			this.editorTabPanel.expand();
+		}
+	},
+
+	statics: {
+		iconCls: 'fugue-icon table',
+		title: i18n('Footprint Aliases'),
+		closable: true,
+		menuPath: [{text: i18n('Edit')}]
+	}
+});

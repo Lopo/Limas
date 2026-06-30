@@ -45,7 +45,16 @@ Ext.define('Limas.Exporter.GridExporter', {
 				}
 
 				if (!column.isHidden()) {
-					rowValues.push(Ext.util.Format.stripTags(value));
+					// Strip ASCII control chars (Excel chokes on them) but
+					// PRESERVE unicode — distributor part descriptions often
+					// carry Cyrillic / CJK / accented chars. Keep TAB (0x09),
+					// LF (0x0A), CR (0x0D) since CSV/XLSX cell content
+					// legitimately uses those (port + fix of PartKeepr commit
+					// 2e1c8fa6; their `[^\x1F-\x7D]` stripped Unicode too).
+					let cleaned = typeof value === 'string'
+						? value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+						: value;
+					rowValues.push(Ext.util.Format.stripTags(cleaned));
 				}
 			}
 

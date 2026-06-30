@@ -63,8 +63,9 @@ Ext.define('Limas.PartEditorWindow', {
 		});
 
 		this.saveButton = Ext.create('Ext.button.Button', {
-			text: this.saveText,
+			text: Limas.Editor.underlineFirstS(this.saveText),
 			iconCls: 'fugue-icon disk',
+			tooltip: this.saveText + ' (Alt+S)',
 			handler: Ext.bind(this.onItemSave, this)
 		});
 

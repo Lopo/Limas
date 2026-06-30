@@ -249,7 +249,9 @@ Ext.application({
 				walk(it);
 			});
 		};
-		this.menuBar.items.each(function (btn) { walk(btn); });
+		this.menuBar.items.each(function (btn) {
+			walk(btn);
+		});
 	},
 	/*
 	 * Checks for unacknowledged system notices. Triggers a service call against the server.
@@ -277,6 +279,23 @@ Ext.application({
 		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.Footprint',
 			storeId: 'FootprintStore',
+			pageSize: 99999999,
+			autoLoad: true
+		});
+		// FootprintAliases — used by the aggregator's applyFootprint so
+		// vendor package spellings ("SOIC-8" / "SOIC8") resolve without a
+		// server round-trip; the admin grid CRUDs this same store
+		Ext.create('Ext.data.Store', {
+			model: 'Limas.Entity.FootprintAlias',
+			storeId: 'FootprintAliasStore',
+			pageSize: 99999999,
+			autoLoad: true
+		});
+		// ManufacturerAliases — admin grid CRUDs this store; also lets the
+		// aggregator show user-known vendor spellings without round-tripping
+		Ext.create('Ext.data.Store', {
+			model: 'Limas.Entity.ManufacturerAlias',
+			storeId: 'ManufacturerAliasStore',
 			pageSize: 99999999,
 			autoLoad: true
 		});

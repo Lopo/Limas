@@ -336,6 +336,22 @@ body.limas-theme-dark {
     margin-bottom: 6px;
 }
 
+/* Low-stock row tint — applied by PartsGrid.viewConfig.getRowClass on rows
+ * where Part.lowStock is true (stockLevel <= minStockLevel && min > 0).
+ * ExtJS may put the class on the wrapping table/row OR strip it down to
+ * cell — cover all four hooks so the rule matches regardless of which
+ * element ends up carrying the class. */
+.limas-row-low-stock,
+.limas-row-low-stock .x-grid-cell,
+.limas-row-low-stock .x-grid-cell-inner,
+.x-grid-item.limas-row-low-stock {
+    background-color: var(--limas-box-warning-bg) !important;
+}
+.limas-row-low-stock.x-grid-row-over .x-grid-cell,
+.limas-row-low-stock.x-grid-row-over .x-grid-cell-inner {
+    background-color: var(--limas-box-warning-border) !important;
+}
+
 .limas-dropzone {
     border: 2px dashed var(--limas-border-subtle);
     border-radius: 6px;

@@ -110,13 +110,14 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 				width: 100
 			}, {
 				header: i18n('Order Amount'),
-				dataIndex: 'missing',
-				renderers: [{
-					rtype: 'projectReportQuantity',
-					rendererConfig: {
-						quantityField: 'missing'
-					}
-				}],
+				// PK #404: was bound to `missing` (raw shortfall) — now to
+				// `orderAmount`, the packagingUnit-rounded actual qty you
+				// have to buy from the picked distributor. Falls back to
+				// `missing` until a distributor is chosen.
+				dataIndex: 'orderAmount',
+				renderer: function (v, m, rec) {
+					return (v !== undefined && v !== null && v !== '') ? v : rec.get('missing');
+				},
 				width: 100
 			}, {
 				header: i18n('Sum (Order)'),
@@ -344,13 +345,28 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 
 			for (let i = 0; i < partDistributors.count(); i++) {
 				if (partDistributors.getAt(i).getDistributor().getId() === context.record.getDistributor().getId()) {
-					context.record.set('itemPrice', partDistributors.getAt(i).get('price'));
-					context.record.set('distributorOrderNumber', partDistributors.getAt(i).get('orderNumber'));
-					context.record.set('orderSum', context.record.get("missing") * context.record.get('itemPrice'));
-					context.record.set('itemSum', context.record.get("quantity") * context.record.get('itemPrice'));
+					let pd = partDistributors.getAt(i);
+					context.record.set('itemPrice', pd.get('price'));
+					context.record.set('distributorOrderNumber', pd.get('orderNumber'));
+					this.applyOrderSizing(context.record, pd);
+					context.record.set('itemSum', context.record.get('quantity') * context.record.get('itemPrice'));
 				}
 			}
 		}
+	},
+	/**
+	 * Compute the actual to-buy quantity + total order cost from the picked
+	 * distributor's packagingUnit. When packagingUnit > 1 you can't buy
+	 * exactly `missing`; you're forced up to the next pack boundary, and the
+	 * order cost should reflect that (PK #404).
+	 */
+	applyOrderSizing: function (record, partDistributor) {
+		let needed = Math.max(0, parseInt(record.get('missing'), 10) || 0);
+		let price = parseFloat(record.get('itemPrice')) || 0;
+		let packagingUnit = parseInt(partDistributor.get('packagingUnit'), 10) || 1;
+		let orderAmount = needed > 0 ? Math.ceil(needed / packagingUnit) * packagingUnit : 0;
+		record.set('orderAmount', orderAmount);
+		record.set('orderSum', orderAmount * price);
 	},
 	onAutoFillClick: function () {
 		let partCount = this.getStore().getCount(),
@@ -386,24 +402,31 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 		Ext.defer(this.processCheapestDistributorStack, 1, this, [totalCount]);
 	},
 	processCheapestDistributorForProjectPart: function (projectPart) {
-		let cheapestDistributor = this.getCheapestDistributor(projectPart.getPart());
+		let needed = projectPart.get('missing');
+		let cheapestDistributor = this.getCheapestDistributor(projectPart.getPart(), needed);
 		if (cheapestDistributor !== null) {
 			projectPart.setDistributor(cheapestDistributor.getDistributor());
 			projectPart.set('distributorOrderNumber', cheapestDistributor.get('orderNumber'));
 			projectPart.set('itemPrice', cheapestDistributor.get('price'));
-			projectPart.set('orderSum', projectPart.get('missing') * projectPart.get('itemPrice'));
+			this.applyOrderSizing(projectPart, cheapestDistributor);
 			projectPart.set('itemSum', projectPart.get('quantity') * projectPart.get('itemPrice'));
 		}
 	},
-	getCheapestDistributor: function (part) {
+	/**
+	 * Pick the distributor with the lowest TOTAL order cost for `needed` units —
+	 * not the lowest per-unit price. Distributors with a packagingUnit > 1 force
+	 * you to over-buy; a cheaper per-unit price can still lose to a slightly
+	 * pricier distributor selling in smaller packs. PK #887.
+	 */
+	getCheapestDistributor: function (part, needed) {
 		let cheapestDistributor = null,
-			currentPrice,
-			activeDistributor,
-			lowestPrice = 0,
+			lowestCost = 0,
 			firstPositive = true;
 
+		needed = Math.max(1, needed || 1);
+
 		for (let j = 0; j < part.distributors().count(); j++) {
-			activeDistributor = part.distributors().getAt(j);
+			let activeDistributor = part.distributors().getAt(j);
 			if (activeDistributor.getDistributor().get('enabledForReports') === false) {
 				continue;
 			}
@@ -411,19 +434,19 @@ Ext.define('Limas.Components.Project.ProjectReportResultGrid', {
 				continue;
 			}
 
-			currentPrice = parseFloat(activeDistributor.get('price'));
+			let price = parseFloat(activeDistributor.get('price'));
+			if (price === 0 || isNaN(price)) {
+				continue;
+			}
 
-			if (currentPrice !== 0) {
-				if (firstPositive) {
-					lowestPrice = currentPrice;
-					cheapestDistributor = activeDistributor;
-					firstPositive = false;
-				} else {
-					if (currentPrice < lowestPrice) {
-						lowestPrice = currentPrice;
-						cheapestDistributor = activeDistributor;
-					}
-				}
+			let packagingUnit = parseInt(activeDistributor.get('packagingUnit'), 10) || 1;
+			let unitsToBuy = Math.ceil(needed / packagingUnit) * packagingUnit;
+			let cost = unitsToBuy * price;
+
+			if (firstPositive || cost < lowestCost) {
+				lowestCost = cost;
+				cheapestDistributor = activeDistributor;
+				firstPositive = false;
 			}
 		}
 

@@ -100,13 +100,15 @@ final class FarnellAdapter
 	public function getCapabilities(): array
 	{
 		// Search response includes attributes[], prices[], datasheets[], image.
-		// FOOTPRINT lives inside attributes (e.g. "Resistor Case / Package"), not a top-level field.
+		// FOOTPRINT is mined out of attributes[] via extractPackageName() —
+		// labels like "Case / Package", "Transistor Case Style", etc.
 		// GTIN not in the default search payload for element14 catalog.
 		return [
 			ProviderCapability::BASIC,
 			ProviderCapability::PICTURE,
 			ProviderCapability::DATASHEET,
 			ProviderCapability::PRICE,
+			ProviderCapability::FOOTPRINT,
 			ProviderCapability::PARAMETERS
 		];
 	}
@@ -239,7 +241,7 @@ final class FarnellAdapter
 			description: $this->cleanDescription($p['displayName'] ?? null, $mfr, $mpn),
 			imageUrl: $this->buildImageUrl($p['image'] ?? null),
 			productUrl: isset($p['sku']) ? "https://{$this->storeHost()}/w/c/{$p['sku']}" : null,
-			packageName: null,
+			packageName: $this->extractPackageName($p['attributes'] ?? []),
 			categoryName: null,
 			lifecycleStatus: $this->lifecycle($p),
 			stock: isset($p['inv']) ? (int)$p['inv'] : null,
@@ -260,7 +262,7 @@ final class FarnellAdapter
 			description: $this->cleanDescription($p['displayName'] ?? null, $mfr, $mpn),
 			imageUrl: $this->buildImageUrl($p['image'] ?? null),
 			productUrl: isset($p['sku']) ? "https://{$this->storeHost()}/w/c/{$p['sku']}" : null,
-			packageName: null,
+			packageName: $this->extractPackageName($p['attributes'] ?? []),
 			categoryName: null,
 			lifecycleStatus: $this->lifecycle($p),
 			stock: isset($p['inv']) ? (int)$p['inv'] : null,
@@ -270,6 +272,39 @@ final class FarnellAdapter
 			priceBreaks: $this->mapPriceBreaks($p['prices'] ?? []),
 			rawSource: $p
 		);
+	}
+
+	/**
+	 * Mine the package/footprint label out of Farnell's flat attributes[] array.
+	 * Labels seen in the wild: "Case / Package", "Case Style", "IC Case",
+	 * "Transistor Case Style", "Mounting Style" (sometimes carries SMD/THT
+	 * but not a real footprint — checked AFTER the more specific patterns).
+	 */
+	private function extractPackageName(array $attributes): ?string
+	{
+		// Priority-ordered label patterns; first hit with a non-empty value wins.
+		$patterns = [
+			'/\bcase\s*\/\s*package\b/i',
+			'/\bic\s+case\b/i',
+			'/\bcase\s+style\b/i',
+			'/\btransistor\s+case\s+style\b/i',
+			'/\b(?:resistor|capacitor|inductor)\s+case(?:\s*\/\s*package)?\b/i',
+			'/\bpackage\s+type\b/i',
+			'/\bpackage\s*\/\s*case\b/i',
+		];
+		foreach ($patterns as $pattern) {
+			foreach ($attributes as $a) {
+				$label = trim((string)($a['attributeLabel'] ?? ''));
+				$value = trim((string)($a['attributeValue'] ?? ''));
+				if ($label === '' || $value === '' || $value === '-') {
+					continue;
+				}
+				if (preg_match($pattern, $label) === 1) {
+					return $value;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**

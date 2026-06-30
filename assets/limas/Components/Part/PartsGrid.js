@@ -41,6 +41,11 @@ Ext.define('Limas.PartsGrid', {
 			ddGroup: 'CategoryTree',
 			ptype: 'gridviewdragdrop',
 			enableDrop: false
+		},
+		// PK #821: tint rows where stockLevel <= minStockLevel (lowStock is
+		// the backend's auto-computed boolean — already lives on Part)
+		getRowClass: function (record) {
+			return record.get('lowStock') ? 'limas-row-low-stock' : '';
 		}
 	},
 	enableDragDrop: true,
@@ -166,7 +171,71 @@ Ext.define('Limas.PartsGrid', {
 
 		this.topToolbar.insert(1, this.createMetaPartButton);
 
+		// Bulk actions menu — enabled only when grid selection > 0 (the
+		// button wires its own selectionchange listener). First action:
+		// Move to storage location (PK #1193/#664).
+		this.bulkActionsButton = Ext.create('Limas.Components.Part.BulkActionsButton', {
+			grid: this
+		});
+		// Land just before the tbfill spacer so it sits at the right end of
+		// the per-item action cluster (after Add / MetaPart / Delete /
+		// Duplicate), rather than wedging into the middle
+		let tbfillIdx = -1;
+		this.topToolbar.items.each(function (item, i) {
+			if (item.xtype === 'tbfill') {
+				tbfillIdx = i;
+				return false;
+			}
+		});
+		if (tbfillIdx === -1) {
+			this.topToolbar.add(this.bulkActionsButton);
+		} else {
+			this.topToolbar.insert(tbfillIdx, this.bulkActionsButton);
+		}
+
 		this.mapSearchHotkey();
+
+		// PK #1217 (b): list endpoint elides PartParameter collection for perf.
+		// When the user has Param Renderer columns configured, ask the backend
+		// to bulk-load those specific parameter values into a flat paramValues
+		// map so the renderer has data to show. Re-evaluated on every
+		// reconfigure (preset / column add / remove) so the request matches
+		// the current column set.
+		this.store.on('beforeload', this._injectIncludeParameters, this);
+		this.on('reconfigure', this._refreshIncludeParameters, this);
+	},
+
+	_collectIncludeParameters: function () {
+		let names = [];
+		this.getColumns().forEach(function (col) {
+			if (!Ext.isArray(col.renderers)) return;
+			col.renderers.forEach(function (r) {
+				if (r.rtype === 'partParameter' && r.rendererConfig && r.rendererConfig.parameterName) {
+					if (names.indexOf(r.rendererConfig.parameterName) === -1) {
+						names.push(r.rendererConfig.parameterName);
+					}
+				}
+			});
+		});
+		return names;
+	},
+
+	_injectIncludeParameters: function () {
+		let proxy = this.store.getProxy();
+		if (!proxy) {
+			return;
+		}
+		let names = this._collectIncludeParameters();
+		if (names.length > 0) {
+			proxy.extraParams['includeParameters[]'] = names;
+		} else {
+			delete proxy.extraParams['includeParameters[]'];
+		}
+	},
+
+	_refreshIncludeParameters: function () {
+		this._injectIncludeParameters();
+		this.store.load();
 	},
 	/**
 	 * Maps a search hotkey to the search box
@@ -532,7 +601,10 @@ Ext.define('Limas.PartsGrid', {
 
 		e.record.callPutAction(call, {
 			quantity: value
-		}, Ext.bind(this.reloadPart, this, [e]));
+		}, Ext.bind(function () {
+			this.reloadPart(e);
+			Ext.GlobalEvents.fireEvent('partStockChanged');
+		}, this));
 	},
 	reloadPart: function (opts) {
 		this.loadPart(opts.record.getId(), opts);

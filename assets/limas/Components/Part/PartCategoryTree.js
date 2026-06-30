@@ -10,6 +10,7 @@ Ext.define('Limas.PartCategoryTree', {
 		}
 	},
 	categoryModel: 'Limas.Entity.PartCategory',
+	editorWindowClass: 'Limas.PartCategoryEditorWindow',
 	rootVisible: false,
 
 	initComponent: function () {

@@ -98,7 +98,6 @@ Ext.define('Limas.PresetCombobox', {
 	 */
 
 	initComponent: function () {
-		console.log(this.markedAsDefaultProperty);
 		if (this.allowMarkAsDefault) {
 			this.tpl = Ext.create('Ext.XTemplate',
 				'<ul class="x-list-plain"><tpl for=".">',

@@ -10,6 +10,10 @@ Ext.define('Limas.EditorGrid', {
 	extend: 'Limas.BaseGrid',
 	alias: 'widget.EditorGrid',
 
+	// Ctrl/shift-click multi-select feeds the bulk delete path in
+	// EditorComponent.confirmDelete (PK #669)
+	multiSelect: true,
+
 	/**
 	 * @cfg {String} text The text for the "delete" button
 	 */
@@ -268,10 +272,10 @@ Ext.define('Limas.EditorGrid', {
 	},
 	/**
 	 * Called when an item was selected. Enables/disables the delete button.
+	 * Bulk delete is supported (PK #669) — any non-empty selection enables.
 	 */
 	_updateDeleteButton: function () {
-		/* Right now, we support delete on a single record only */
-		if (this.getSelectionModel().getCount() === 1) {
+		if (this.getSelectionModel().getCount() >= 1) {
 			this.deleteButton.enable();
 		} else {
 			this.deleteButton.disable();

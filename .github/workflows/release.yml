@@ -16,7 +16,9 @@ jobs:
             -   name: Bake version into LimasVersion.php
                 run: |
                     VERSION="${GITHUB_REF_NAME#v}"
-                    sed -i "s/{V_GIT}/${VERSION}/g" src/LimasVersion.php
+                    # Target only the constant declaration — don't touch the
+                    # `{V_GIT}` mentions in the docblock above it
+                    sed -i "s/LIMAS_VERSION = '{V_GIT}'/LIMAS_VERSION = '${VERSION}'/" src/LimasVersion.php
 
             -   name: Pack source tarball
                 run: |

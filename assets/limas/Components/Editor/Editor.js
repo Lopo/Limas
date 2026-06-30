@@ -25,8 +25,9 @@ Ext.define('Limas.Editor', {
 	initComponent: function () {
 		if (this.enableButtons) {
 			this.saveButton = Ext.create('Ext.button.Button', {
-				text: this.saveText,
+				text: Limas.Editor.underlineFirstS(this.saveText),
 				iconCls: 'fugue-icon disk',
+				tooltip: this.saveText + ' (Alt+S)',
 				handler: Ext.bind(this._onItemSave, this)
 			});
 
@@ -51,6 +52,56 @@ Ext.define('Limas.Editor', {
 		}
 
 		this.callParent();
+
+		// alt+s on the editor's own element saves the record (PK #399).
+		// Scoped to this.el so concurrently-open editors don't all fire
+		// at once; bound after render so the element exists.
+		this.on('afterrender', this._installSaveHotkey, this);
+	},
+	statics: {
+		/**
+		 * Underline the first ASCII s/S in the save label so the alt+s
+		 * accelerator surfaces visually next to the button. Falls through
+		 * to the unchanged text when the label has no s (e.g. Slovak
+		 * "Uložiť") — the hotkey still works, just no visual hint.
+		 */
+		underlineFirstS: function (text) {
+			if (!text) return text;
+			let m = text.match(/[sS]/);
+			if (!m) return text;
+			let idx = m.index;
+			return Ext.String.htmlEncode(text.substring(0, idx))
+				+ '<u>' + Ext.String.htmlEncode(text.substring(idx, idx + 1)) + '</u>'
+				+ Ext.String.htmlEncode(text.substring(idx + 1));
+		}
+	},
+
+	_installSaveHotkey: function () {
+		// PartEditorWindow (and possibly future wrappers) set
+		// enableButtons=false because the wrapping window draws its own
+		// footer + its own onItemSave that adds validity check + save-
+		// button-disable bookkeeping. Prefer the wrapper's onItemSave
+		// when present, fall back to the Editor base's _onItemSave.
+		if (!this.el) return;
+		this.saveHotkey = new Ext.util.KeyMap({
+			target: this.el,
+			binding: [{
+				key: 's',
+				ctrl: false,
+				alt: true,
+				shift: false,
+				fn: function () {
+					let win = this.up('window');
+					if (win && typeof win.onItemSave === 'function') {
+						win.onItemSave();
+					} else {
+						this._onItemSave();
+					}
+				},
+				scope: this,
+				stopEvent: true
+			}]
+		});
 	},
 	onCancelEdit: function () {
 		this.record.reject();

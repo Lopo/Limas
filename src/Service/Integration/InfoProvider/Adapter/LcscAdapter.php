@@ -63,13 +63,16 @@ final class LcscAdapter
 
 	public function getCapabilities(): array
 	{
-		// Phase-2 response has everything except a true FOOTPRINT field —
-		// "encapStandard" is closer to package-type (SOD-323, SOIC-8)
+		// Phase-1 jlcsearch carries `package` (broad: SOIC, LQFP) on every row
+		// Phase-2 wmsc carries `encapStandard` (specific: SOIC-8, LQFP-48)
+		// mapFull prefers `encapStandard`, mapLight uses the broader `package`
+		// as a fallback — the merger picks the most specific across sources.
 		return [
 			ProviderCapability::BASIC,
 			ProviderCapability::PICTURE,
 			ProviderCapability::DATASHEET,
 			ProviderCapability::PRICE,
+			ProviderCapability::FOOTPRINT,
 			ProviderCapability::PARAMETERS
 		];
 	}

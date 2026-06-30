@@ -63,7 +63,11 @@ Ext.define('Limas.Components.Widgets.FieldSelector', {
 			if (!fields[i]['persist']) {
 				continue;
 			}
-			if (fields[i]['reference'] === null) {
+			// Plain (auto-typed) fields don't carry a `reference` key at all —
+			// the old `=== null` check missed the undefined case and the else
+			// branch then NPE'd on `reference.cls.getName()`. Surfaced after
+			// Part gained the transient `paramValues` field.
+			if (!fields[i].reference) {
 				checked = Ext.Array.contains(this.initiallyChecked, prefix + fields[i].name);
 
 				if (!Ext.Array.contains(this.excludeFields, prefix + fields[i].name)) {
@@ -83,15 +87,24 @@ Ext.define('Limas.Components.Widgets.FieldSelector', {
 				}
 			} else {
 				if (this.recurseSubModels) {
+					// `reference.cls` is null when the target class hasn't been
+					// resolved by the schema yet (e.g. references a class that
+					// isn't defined or got declared too late). Skip rather than
+					// NPE; the field still won't be selectable but the dialog
+					// at least renders.
+					let refCls = fields[i].reference && fields[i].reference.cls;
+					if (!refCls) {
+						continue;
+					}
 					skipSubModel = false;
 					for (j = 0; j < visitedModels.length; j++) {
-						if (visitedModels[j] === fields[i].reference.cls.getName()) {
+						if (visitedModels[j] === refCls.getName()) {
 							skipSubModel = true;
 						}
 					}
 
 					for (j = 0; j < this.excludeModels.length; j++) {
-						if (this.excludeModels[j] === fields[i].reference.cls.getName()) {
+						if (this.excludeModels[j] === refCls.getName()) {
 							skipSubModel = true;
 						}
 					}
@@ -103,13 +116,13 @@ Ext.define('Limas.Components.Widgets.FieldSelector', {
 							data: {
 								name: prefix + fields[i].name,
 								type: 'manytoone',
-								reference: fields[i].reference.cls,
-								model: fields[i].reference.cls.getName()
+								reference: refCls,
+								model: refCls.getName()
 							},
 							leaf: false
 						});
 
-						this.treeMaker(childNode, fields[i].reference.cls, prefix + fields[i].name + ".", callback, visitedModels);
+						this.treeMaker(childNode, refCls, prefix + fields[i].name + ".", callback, visitedModels);
 					}
 				}
 			}
