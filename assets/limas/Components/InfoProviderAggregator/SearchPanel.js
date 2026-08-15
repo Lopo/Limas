@@ -885,6 +885,19 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				let needle = (this.lastQuery || '').trim().toLowerCase();
 				let row = this.candidateToRow(c, needle);
 				row.deepened = true;
+				// Deepen ENRICHES (parameters / pricing / stock / lifecycle) — it
+				// must never BLANK a Phase-1 display field when a source's Phase-2
+				// detail happens to omit it (e.g. LCSC detail-by-SKU returns no
+				// description). Keep the existing light-search value + its per-source
+				// map wherever the deepened row would overwrite it with an empty.
+				[['description', 'descriptionSources'], ['manufacturer', 'manufacturerSources'],
+					['mpn', null], ['package', 'packageSources']].forEach(function (pair) {
+					let f = pair[0];
+					if ((row[f] === undefined || row[f] === null || row[f] === '') && rec.get(f)) {
+						delete row[f];
+						if (pair[1]) delete row[pair[1]];
+					}
+				});
 				rec.beginEdit();
 				Ext.Object.each(row, function (k, v) {
 					rec.set(k, v);

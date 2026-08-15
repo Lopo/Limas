@@ -6,6 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use enshrined\svgSanitize\Sanitizer;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
 use League\Flysystem\FilesystemOperator;
 use Limas\Entity\Blob;
@@ -132,6 +134,32 @@ class UploadedFileService
 		Validation::createCallable(new NotBlank, new Hostname)($host = rawurldecode(parse_url($url)['host'] ?? ''));
 		$vettedIps = $this->assertHostIsPublic($host);
 
+		[$data, $contentType, $contentDisposition] = $this->downloadUrlBody($url, $host, $vettedIps, $headers);
+		$this->replaceFromData($file, $data, $this->resolveDownloadFilename($url, $contentType, $contentDisposition));
+		$blob = $file->getBlob();
+		if ($blob !== null) {
+			$this->ensureBlobSource($blob, $url, $adapter);
+			// Clear the pending URL + adapter columns — provenance is now
+			// on the Blob's BlobSource set. Without this, a retried
+			// download would leave both stuck on the row even though
+			// they're already attached.
+			$file->setSourceUrl(null);
+			$file->setSourceAdapter(null);
+		}
+	}
+
+	/**
+	 * Download the body of an already-vetted URL and return
+	 * [bytes, contentType, contentDisposition]. Split out of replaceFromURL so
+	 * the fetch is unit-testable without the CAS/storage half (and without the
+	 * SSRF host check, which stays in the caller). $vettedIps are the public IPs
+	 * assertHostIsPublic() returned; they pin the connection against DNS rebind.
+	 *
+	 * @param string[] $vettedIps
+	 * @return array{0: string, 1: string, 2: string}
+	 */
+	protected function downloadUrlBody(string $url, string $host, array $vettedIps, ?HeaderBag $headers = null): array
+	{
 		$origin = isset(parse_url($url)['scheme'], parse_url($url)['host'])
 			? parse_url($url)['scheme'] . '://' . parse_url($url)['host'] . '/'
 			: null;
@@ -194,8 +222,16 @@ class UploadedFileService
 			);
 		}
 
+		// Force the cURL handler. With stream:true and allow_url_fopen on, Guzzle
+		// otherwise routes to the PHP StreamHandler, which reads the body via the
+		// http:// wrapper: on a keep-alive connection its read loop blocks for the
+		// entire timeout and then dies "Unable to read from stream", and it
+		// silently IGNORES the CURLOPT_RESOLVE DNS-rebind pin set above. cURL
+		// streams the body cleanly, honours the pin, and respects the timeout.
+		$client = new Client(['handler' => HandlerStack::create(new CurlHandler())]);
+
 		try {
-			$response = (new Client)->request('GET', $url, $options);
+			$response = $client->request('GET', $url, $options);
 		} catch (GuzzleException $e) {
 			if ($this->shouldRetryWithTls13($e)) {
 				try {
@@ -203,7 +239,7 @@ class UploadedFileService
 					// Preserve the CURLOPT_RESOLVE pin (and any other curl opts)
 					// while adding the TLS 1.3 fallback.
 					$retryOptions['curl'] = ($options['curl'] ?? []) + [CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_3];
-					$response = (new Client)->request('GET', $url, $retryOptions);
+					$response = $client->request('GET', $url, $retryOptions);
 				} catch (GuzzleException $e2) {
 					// Log the upstream detail (URL, DNS/connection error) server
 					// side; return a generic message so the client can't use the
@@ -233,19 +269,8 @@ class UploadedFileService
 				throw new \RuntimeException('The downloaded file exceeds the maximum allowed size.');
 			}
 		}
-		$contentType = $response->getHeaderLine('Content-Type');
-		$contentDisposition = $response->getHeaderLine('Content-Disposition');
-		$this->replaceFromData($file, $data, $this->resolveDownloadFilename($url, $contentType, $contentDisposition));
-		$blob = $file->getBlob();
-		if ($blob !== null) {
-			$this->ensureBlobSource($blob, $url, $adapter);
-			// Clear the pending URL + adapter columns — provenance is now
-			// on the Blob's BlobSource set. Without this, a retried
-			// download would leave both stuck on the row even though
-			// they're already attached.
-			$file->setSourceUrl(null);
-			$file->setSourceAdapter(null);
-		}
+
+		return [$data, $response->getHeaderLine('Content-Type'), $response->getHeaderLine('Content-Disposition')];
 	}
 
 	/**

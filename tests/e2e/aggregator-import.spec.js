@@ -172,36 +172,41 @@ test.describe('Aggregator import flow', () => {
 		await page.evaluate(() => {
 			const win = Ext.ComponentQuery.query('window[title="Add Part"]')[0];
 			if (!win || !win.saveButton) throw new Error('PartEditorWindow not found');
+			// Stash the editor record so we can read its server-assigned @id
+			// straight off the save response. Looking the Part up in the grid
+			// store instead was flaky: the grid only holds the selected category's
+			// current page, and its reload after save is async — the new Part
+			// need not be there when we check.
+			window.__e2ePartRecord = win.editor.record;
 			win.saveButton.fireHandler();
 		});
 		await page.waitForSelector('div.x-window:has-text("Add Part")', {state: 'hidden', timeout: 15000});
-		await page.waitForSelector(`.x-grid-cell:has-text("${uniq.MPN}")`, {timeout: 10000});
+
+		// The create POST writes the new @id back onto the record; poll for it
+		const iri = await page.waitForFunction(() => {
+			const rec = window.__e2ePartRecord;
+			const id = rec && rec.get('@id');
+			return id || null;
+		}, null, {timeout: 15000}).then((handle) => handle.jsonValue());
 
 		// Re-fetch the persisted Part from the REST API and prove the relations
 		// survived (distributor SKU + parameter name are scalars that must
 		// serialize in the detail group)
-		const persisted = await page.evaluate(async (data) => {
-			const pm = Ext.getCmp('limas-partmanager');
-			const rec = pm.grid.getStore().findRecord('name', data.MPN, 0, false, true, true);
-			const iri = rec ? rec.get('@id') : null;
-			if (!iri) {
-				return {iri: null, body: ''};
-			}
+		const body = await page.evaluate(async (partIri) => {
 			const headers = Limas.Auth.AuthenticationProvider.getAuthenticationProvider().getHeaders();
-			const body = await new Promise((resolve) => {
+			return await new Promise((resolve) => {
 				Ext.Ajax.request({
-					url: Limas.getBasePath() + iri,
+					url: Limas.getBasePath() + partIri,
 					method: 'GET',
 					headers: headers,
 					success: (r) => resolve(r.responseText),
 					failure: () => resolve('')
 				});
 			});
-			return {iri: iri, body: body};
-		}, uniq);
+		}, iri);
 
-		expect(persisted.iri).toBeTruthy();
-		expect(persisted.body).toContain(uniq.SKU);
-		expect(persisted.body).toContain(uniq.PARAM);
+		expect(iri).toBeTruthy();
+		expect(body).toContain(uniq.SKU);
+		expect(body).toContain(uniq.PARAM);
 	});
 });

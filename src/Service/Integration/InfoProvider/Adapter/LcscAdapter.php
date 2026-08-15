@@ -260,7 +260,9 @@ final class LcscAdapter
 		// productDescEn when available so the candidate row in the UI
 		// shows something useful even before Phase-2 detail merge.
 		if ($desc === null && $detail !== null) {
-			$desc = $this->trimOrNull($detail['productDescEn'] ?? null);
+			$desc = $this->trimOrNull($detail['productDescEn'] ?? null)
+				?? $this->trimOrNull($detail['productNameEn'] ?? null)
+				?? $this->trimOrNull($detail['productKeyAttributes'] ?? null);
 		}
 		return new InfoProviderSearchResult(
 			source: $this->getName(),
@@ -299,7 +301,13 @@ final class LcscAdapter
 				$image = $first;
 			}
 		}
-		$description = $this->trimOrNull($r['productDescEn'] ?? null);
+		// Many wmsc detail rows (passives especially) carry NO productDescEn at
+		// all — the human summary lives in productNameEn / productKeyAttributes
+		// (e.g. "FIXED IND 4.7uH 350mA 400mΩ 0805"). Fall back so Phase-2 detail
+		// — and therefore the /deepen re-merge — still yields a description.
+		$description = $this->trimOrNull($r['productDescEn'] ?? null)
+			?? $this->trimOrNull($r['productNameEn'] ?? null)
+			?? $this->trimOrNull($r['productKeyAttributes'] ?? null);
 
 		return new InfoProviderResult(
 			source: $this->getName(),
