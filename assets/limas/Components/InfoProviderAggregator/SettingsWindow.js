@@ -46,7 +46,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SettingsWindow', {
 		});
 
 		me.rowsStore = Ext.create('Ext.data.Store', {
-			fields: ['name', 'enabled', 'iconCls', 'caps'],
+			fields: ['name', 'displayName', 'enabled', 'iconCls', 'caps'],
 			data: rows
 		});
 
@@ -78,11 +78,12 @@ Ext.define('Limas.Components.InfoProviderAggregator.SettingsWindow', {
 					}
 				},
 				{
-					dataIndex: 'name',
+					dataIndex: 'displayName',
 					flex: 1,
 					renderer: function (val, meta, rec) {
 						let caps = rec.get('caps') || '';
-						return '<b>' + val + '</b>' + (caps ? ' <span class="limas-text-muted" style="font-size:10px">— ' + caps + '</span>' : '');
+						let label = val || rec.get('name');
+						return '<b>' + Ext.htmlEncode(label) + '</b>' + (caps ? ' <span class="limas-text-muted" style="font-size:10px">— ' + caps + '</span>' : '');
 					}
 				}
 			],
@@ -164,6 +165,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SettingsWindow', {
 	rowFor: function (s) {
 		return {
 			name: s.name,
+			displayName: s.displayName || s.name,
 			enabled: this.enabledSources[s.name] !== false,
 			iconCls: s.name,
 			caps: (s.capabilities || []).join(', ').toLowerCase()

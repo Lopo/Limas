@@ -183,7 +183,7 @@ Ext.define('Limas.InfoProviderAggregator.ApplyReviewDialog', {
 					name: radioName,
 					inputValue: opt.disp,
 					checked: isChosen,
-					boxLabel: '<b>' + Ext.htmlEncode(opt.sources.join(', ')) + (isChosen ? ' · <span class="limas-text-success">' + i18n('current') + '</span>' : '') + '</b> <span class="limas-text-muted" style="margin-left:8px;">' + Ext.htmlEncode(opt.disp) + '</span>'
+					boxLabel: '<b>' + Ext.htmlEncode(opt.sources.map(Limas.distributorLabel).join(', ')) + (isChosen ? ' · <span class="limas-text-success">' + i18n('current') + '</span>' : '') + '</b> <span class="limas-text-muted" style="margin-left:8px;">' + Ext.htmlEncode(opt.disp) + '</span>'
 				});
 			});
 			if (!anyChecked && radios.length > 0) {
@@ -356,7 +356,7 @@ Ext.define('Limas.InfoProviderAggregator.ApplyReviewDialog', {
 			let thumb = cfg.isImage
 				? '<img src="' + Ext.htmlEncode(entry.url) + '" alt="" style="max-height:44px; max-width:64px; vertical-align:middle; margin-right:8px; border:1px solid #ccc; background:#fff;" onerror="this.style.display=\'none\'"/>'
 				: '';
-			let label = thumb + '<b>' + Ext.htmlEncode(entry.sources.join(', ')) + (preChecked ? ' · <span class="limas-text-success">' + i18n('consensus') + '</span>' : '') + '</b>' + ' <a href="' + Ext.htmlEncode(entry.url) + '" target="_blank" rel="noopener" style="margin-left:8px;">' + (cfg.isImage ? '🖼 ' : '📄 ') + i18n('open') + '</a>' + ' <span class="limas-text-muted" style="margin-left:6px; font-size:11px;">' + Ext.htmlEncode(entry.url) + '</span>';
+			let label = thumb + '<b>' + Ext.htmlEncode(entry.sources.map(Limas.distributorLabel).join(', ')) + (preChecked ? ' · <span class="limas-text-success">' + i18n('consensus') + '</span>' : '') + '</b>' + ' <a href="' + Ext.htmlEncode(entry.url) + '" target="_blank" rel="noopener" style="margin-left:8px;">' + (cfg.isImage ? '🖼 ' : '📄 ') + i18n('open') + '</a>' + ' <span class="limas-text-muted" style="margin-left:6px; font-size:11px;">' + Ext.htmlEncode(entry.url) + '</span>';
 			checkboxes.push({
 				xtype: 'checkbox',
 				name: cfg.key,

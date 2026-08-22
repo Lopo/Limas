@@ -77,6 +77,11 @@ final readonly class DigiKeyAdapter
 		return 'digikey';
 	}
 
+	public function getDisplayName(): string
+	{
+		return 'DigiKey';
+	}
+
 	public function getAttribution(): string
 	{
 		// DigiKey API User Agreement §3.1.4 — "clearly and conspicuously

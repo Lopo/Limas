@@ -56,6 +56,11 @@ final class LcscAdapter
 		return 'lcsc';
 	}
 
+	public function getDisplayName(): string
+	{
+		return 'LCSC';
+	}
+
 	public function getAttribution(): ?string
 	{
 		// Uses the community jlcsearch + public wmsc.lcsc.com endpoints, which

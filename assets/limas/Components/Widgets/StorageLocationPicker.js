@@ -48,8 +48,22 @@ Ext.define('Limas.StorageLocationPicker', {
 
 		this.on('keyup', Ext.bind(this.onFieldChange, this));
 		this.on('blur', Ext.bind(this.onBlur, this));
+		this.on('expand', this.onPickerExpand, this);
 
 		this.callParent();
+	},
+	/**
+	 * Refresh the storage-location list every time the picker opens, so
+	 * locations created elsewhere while this field is alive (e.g. adding a
+	 * missing location without closing the Part editor) show up on reopen.
+	 * The store autoLoads once at init and would otherwise stay stale.
+	 * Skip if a typeahead search already started a load — that path filters
+	 * and loads the store itself, so reloading here would double-fetch.
+	 */
+	onPickerExpand: function () {
+		if (!this.store.isLoading()) {
+			this.store.load();
+		}
 	},
 	onFieldChange: function (field, e) {
 		let newValue = this.inputEl.getValue();

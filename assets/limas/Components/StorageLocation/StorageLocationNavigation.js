@@ -57,6 +57,7 @@ Ext.define('Limas.StorageLocationNavigation', {
 		this.callParent(arguments);
 
 		this.getTree().on('itemclick', this.onCategoryClick, this);
+		this.getTree().on('reloadclick', this.syncChanges, this);
 		this.getGrid().on('storageLocationMultiAdd', this.onMultiAddStorageLocation, this);
 		this.getGrid().on('itemAdd', this.onAddStorageLocation, this);
 		this.getGrid().on('itemDelete', function (id) {

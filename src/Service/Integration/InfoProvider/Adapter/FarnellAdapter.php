@@ -43,7 +43,8 @@ final class FarnellAdapter
 		private readonly FarnellService $service,
 		private readonly string         $apiKey = '',
 		private readonly string         $currency = 'EUR',
-		private readonly string         $name = 'farnell'
+		private readonly string         $name = 'farnell',
+		private readonly string         $displayName = 'Farnell'
 	)
 	{
 	}
@@ -51,6 +52,11 @@ final class FarnellAdapter
 	public function getName(): string
 	{
 		return $this->name;
+	}
+
+	public function getDisplayName(): string
+	{
+		return $this->displayName;
 	}
 
 	public function getAttribution(): string

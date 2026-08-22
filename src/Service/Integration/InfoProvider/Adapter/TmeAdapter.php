@@ -60,6 +60,11 @@ final class TmeAdapter
 		return 'tme';
 	}
 
+	public function getDisplayName(): string
+	{
+		return 'TME';
+	}
+
 	public function getAttribution(): string
 	{
 		// TME API Terms §8.7 — exact required wording

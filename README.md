@@ -5,7 +5,7 @@ Limas is "major refactor" of [PartKeepr](https://github.com/partkeepr/PartKeepr)
 
 Beyond the original PartKeepr feature set, Limas ships a built-in
 **[InfoProvider Aggregator](documentation/InfoProviderAggregator.md)** —
-vendor-neutral cross-distributor parts search (DigiKey, Farnell/element14,
+vendor-neutral cross-distributor parts search (DigiKey, Mouser, Farnell/element14,
 TME, LCSC, OEMSecrets, …) that replaces the dead Octopart free tier.
 
 

@@ -110,6 +110,10 @@ services:
             $clientId: '%env(DIGIKEY_ID)%'
             $clientSecret: '%env(DIGIKEY_SECRET)%'
             $currency: "@=parameter('distributors')['digikey']['locale_currency']"
+    Limas\Service\Integration\InfoProvider\Adapter\MouserAdapter:
+        arguments:
+            $service: '@Limas\Service\Integration\InfoProvider\MouserService'
+            $currency: 'EUR'
     Limas\Service\Integration\InfoProvider\Adapter\TmeAdapter:
         arguments:
             $service: '@Limas\Service\Integration\InfoProvider\TMEService'
@@ -140,6 +144,7 @@ services:
             $apiKey: '%env(ELEMENT14_KEY)%'
             $currency: 'USD'
             $name: 'newark'
+            $displayName: 'Newark'
         tags: ['limas.info_provider']
 
     # element14 APAC — the third regional catalog under the same element14
@@ -161,6 +166,7 @@ services:
             $apiKey: '%env(ELEMENT14_KEY)%'
             $currency: 'USD'
             $name: 'element14apac'
+            $displayName: 'element14 APAC'
         tags: ['limas.info_provider']
 
     Limas\Service\Integration\InfoProvider\OemSecretsService:

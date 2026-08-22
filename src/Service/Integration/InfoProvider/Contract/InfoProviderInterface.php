@@ -26,8 +26,19 @@ interface InfoProviderInterface
 {
 	/**
 	 * Short provider identifier — 'tme', 'digikey', 'farnell', 'mouser', 'octopart'.
+	 * Stable, lowercase; used as the source key everywhere (grouping, priority,
+	 * per-field source maps). NOT for display — see getDisplayName().
 	 */
 	public function getName(): string;
+
+	/**
+	 * Human-facing brand name as the distributor spells it — 'Mouser',
+	 * 'DigiKey', 'LCSC', 'element14 APAC'. Presentation only; the frontend
+	 * renders this instead of the lowercase getName() id. Adapters serving
+	 * several storefronts (Farnell → Farnell/Newark/element14) return the
+	 * per-instance brand.
+	 */
+	public function getDisplayName(): string;
 
 	/**
 	 * Legal attribution / source-credit line the distributor's API terms require

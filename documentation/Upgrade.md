@@ -6,6 +6,30 @@ that drop data, configuration that moved, infra that has to be running,
 new hard requirements. Read every version newer than your current install
 before running `doctrine:migrations:migrate`.
 
+## Every upgrade
+
+`public/js/models.js` (the ExtJS entity models the prod frontend loads) is a
+generated, un-versioned build artifact. It is now regenerated automatically by
+`composer install` / `composer update` (via the `limas:extjs:models`
+auto-script), so a normal deploy keeps it in sync. If you ever build the
+frontend without a fresh `composer install` — or the models look stale in the
+browser (`Uncaught Error: No such Entity "Limas.Entity.<X>"` when opening a
+dialog) — regenerate it by hand:
+
+```
+php bin/console limas:extjs:models
+```
+
+## v1.2.1 → v1.2.2
+
+No schema change, no new requirements — a plain code upgrade. Two notes:
+
+1. **Rebuild the frontend** (`yarn build`). This release changes JS (Mouser
+   source, distributor brand display names, storage-location picker). The
+   ExtJS `models.js` is regenerated on its own by `composer install` — see
+   *Every upgrade* above.
+2. **New optional source: Mouser.** Set `MOUSER_KEY` in `.env.local` to enable it.
+
 ## v1.1.x → v1.2.0
 
 Back up first — this release changes schema, tightens secret handling, and

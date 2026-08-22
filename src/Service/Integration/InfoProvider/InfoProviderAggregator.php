@@ -856,7 +856,7 @@ final class InfoProviderAggregator
 	}
 
 	/**
-	 * @return array<int, array{name: string, configured: bool, capabilities: array<int, string>}>
+	 * @return array<int, array{name: string, displayName: string, configured: bool, capabilities: array<int, string>}>
 	 */
 	public function sourcesWithCapabilities(): array
 	{
@@ -864,6 +864,7 @@ final class InfoProviderAggregator
 		foreach ($this->adapters as $adapter) {
 			$out[] = [
 				'name' => $adapter->getName(),
+				'displayName' => $adapter->getDisplayName(),
 				'configured' => $adapter->isConfigured(),
 				'capabilities' => array_map(static fn(ProviderCapability $c) => $c->value, $adapter->getCapabilities()),
 				'attribution' => $adapter->getAttribution()

@@ -22,6 +22,7 @@ links and per-vendor notes.
 | Source | Auth | Notes |
 |---|---|---|
 | DigiKey | OAuth2 client_credentials | V4 Product Information API |
+| Mouser | API key (query param) | V2 plain `/search/keyword` + `/partnumber`. Contributes price/stock/datasheet/image only — **no technical parameters** (Mouser's Search API omits them; other sources fill them on merge) |
 | Farnell / element14 EU | API key (query param) | One key, one storeId per region |
 | Newark | shares `ELEMENT14_KEY` | US sibling catalog of Farnell |
 | element14 APAC | shares `ELEMENT14_KEY` | Asia-Pacific (`au.element14.com`) |
@@ -99,6 +100,9 @@ distributor's block in the results detail panel, driven by
   (their §8.7, exact wording).
 - **DigiKey** — `Data provided by DigiKey` (§3.1.4 requires a clear,
   conspicuous source credit; no fixed string mandated).
+- **Mouser** — `Data provided by Mouser Electronics` (their API Terms of Use
+  require you to "clearly and conspicuously attribute the source of all Mouser
+  Electronics Data"; like DigiKey, no fixed string is mandated).
 - **Farnell / Newark / element14** — `Data provided by … (Premier Farnell)`
   (§5).
 - **LCSC** (community jlcsearch + public endpoints) and **OEMSecrets** impose
@@ -107,12 +111,17 @@ distributor's block in the results detail panel, driven by
 TME and DigiKey also want product-photo watermarks left intact — Limas'
 CAS stores the fetched bytes as-is and never re-encodes, so that holds.
 
-**A note on the element14/DigiKey "no caching / no own-database" clauses.**
-Read literally, element14 §4 ("you will not … store any portion of the
-Farnell Content") and DigiKey §5.1 ("build/update your own database") would
-make any inventory tool impossible. The intent is clearly to stop someone
-bulk-scraping the whole catalogue and re-selling it as a competing data
-service. Limas is a **self-hosted, bring-your-own-key** tool that stores only
+**A note on the element14/DigiKey "no caching / no own-database" and Mouser
+"no undistinguished aggregation" clauses.** Read literally, element14 §4
+("you will not … store any portion of the Farnell Content"), DigiKey §5.1
+("build/update your own database"), and Mouser's ban on aggregating its
+content "with third party content (without distinction)" would make any
+multi-distributor inventory tool impossible. The intent is clearly to stop
+someone bulk-scraping the whole catalogue and re-selling it as a competing
+data service — and, for Mouser, blending sources into an anonymous blob. The
+aggregator's per-source provenance + attribution (below) is exactly what
+Mouser's "without distinction" qualifier asks for: sources stay labelled, not
+merged into an unattributed whole. Limas is a **self-hosted, bring-your-own-key** tool that stores only
 the handful of parts a user chooses to keep as local records — not a 1:1 dump
 or a data product. Each deployment's own API key means the distributor's terms
 bind **the deployer**, who is responsible for their own compliance. Keeping the

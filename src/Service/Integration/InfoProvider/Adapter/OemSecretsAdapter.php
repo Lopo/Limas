@@ -75,6 +75,11 @@ final class OemSecretsAdapter
 		return 'oemsecrets';
 	}
 
+	public function getDisplayName(): string
+	{
+		return 'OEMSecrets';
+	}
+
 	public function getAttribution(): ?string
 	{
 		// No attribution mandated by OEMSecrets' public terms (a formal API licence may be issued privately at key-request time)

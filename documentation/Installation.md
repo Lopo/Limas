@@ -53,7 +53,7 @@ InfoProvider Aggregator setup
 
 The [InfoProvider Aggregator](InfoProviderAggregator.md) is automatic — adapters with their env vars set in `.env.local` activate; the rest stay hidden. To enable it:
 
-1. Copy distributor credential examples: `cat .env.example.distributors >> .env.local`, then edit `.env.local` and fill in the keys for whichever providers you signed up for (DigiKey / Farnell-element14 / TME / OEMSecrets …). LCSC needs no key — just set `LCSC_ENABLED=1` to opt in.
+1. Copy distributor credential examples: `cat .env.example.distributors >> .env.local`, then edit `.env.local` and fill in the keys for whichever providers you signed up for (DigiKey / Mouser / Farnell-element14 / TME / OEMSecrets …). LCSC needs no key — just set `LCSC_ENABLED=1` to opt in.
 2. Load the Octopart-seeded `ParameterAlias` taxonomy (757 canonical attribute names + per-vendor mappings): `php bin/console doctrine:fixtures:load --group=parameter-taxonomy --append`
 3. Reload Limas in the browser. The **Aggregator…** button appears in the Part editor toolbar when at least one source is configured.
 

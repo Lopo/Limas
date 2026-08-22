@@ -720,6 +720,21 @@ Limas.isAggregatorAvailable = function () {
 	return Limas.aggregatorAvailable;
 };
 
+Limas.distributorLabels = {};
+
+Limas.setDistributorLabels = function (sources) {
+	Limas.distributorLabels = {};
+	(sources || []).forEach(function (s) {
+		if (s && s.name) {
+			Limas.distributorLabels[s.name] = s.displayName || s.name;
+		}
+	});
+};
+
+Limas.distributorLabel = function (id) {
+	return (id && Limas.distributorLabels[id]) ? Limas.distributorLabels[id] : id;
+};
+
 Limas.bytesToSize = function (bytes) {
 	if (bytes === 0) {
 		return '0 Bytes';

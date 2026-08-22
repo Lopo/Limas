@@ -152,8 +152,8 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 						// and Newark share the element14 glyph so hover is the only way to tell them apart
 						return v.map(s =>
 							'<i class="distributor-icon ' + Ext.String.htmlEncode(s) +
-							'" title="' + Ext.htmlEncode(s) +
-							'" data-qtip="' + Ext.htmlEncode(s) + '" style="margin:0 2px;"></i>'
+							'" title="' + Ext.htmlEncode(Limas.distributorLabel(s)) +
+							'" data-qtip="' + Ext.htmlEncode(Limas.distributorLabel(s)) + '" style="margin:0 2px;"></i>'
 						).join('');
 					}
 				},
@@ -401,6 +401,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				let configured = (data.sources || []).filter(s => s.configured);
 				this.serverDefaults = data.defaults || {priority: [], mergeStrategy: 'majority'};
 				this.configuredSourceData = configured;
+				Limas.setDistributorLabels(data.sources || []);
 				// Drop the "Discovering providers…" placeholder; we're
 				// about to fill that slot with the real chips. Any leftover
 				// chips from a previous call get removed too (shouldn't
@@ -444,7 +445,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 						enableToggle: true,
 						pressed: on,
 						iconCls: 'distributor-icon ' + s.name,
-						tooltip: Ext.String.format('{0} — {1}', s.name, caps),
+						tooltip: Ext.String.format('{0} — {1}', s.displayName || s.name, caps),
 						width: 32,
 						scale: 'small',
 						cls: 'aggregator-source-toggle ' + (on ? 'aggregator-source-on' : 'aggregator-source-off'),
@@ -588,7 +589,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				enableToggle: true,
 				pressed: on,
 				iconCls: 'distributor-icon ' + s.name,
-				tooltip: Ext.String.format('{0} — {1}', s.name, caps),
+				tooltip: Ext.String.format('{0} — {1}', s.displayName || s.name, caps),
 				width: 32,
 				scale: 'small',
 				cls: 'aggregator-source-toggle ' + (on ? 'aggregator-source-on' : 'aggregator-source-off'),
@@ -1183,7 +1184,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				// Ext's QuickTips overlay. Both keyed off the source name so
 				// look-alike sprites (Farnell vs Newark share the element14
 				// glyph) become distinguishable on hover.
-				let srcEnc = Ext.htmlEncode(src);
+				let srcEnc = Ext.htmlEncode(Limas.distributorLabel(src));
 				let icon = '<i class="distributor-icon ' + Ext.String.htmlEncode(src) +
 					'" title="' + srcEnc + '" data-qtip="' + srcEnc + '"></i>';
 				out += '<tr>'
@@ -1228,10 +1229,9 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 		let fmtStock = s => (s === null || s === undefined) ? '—' : Ext.util.Format.number(s, '0,000');
 		Ext.Object.each(providerSpecific, (source, info) => {
 			if (!info) return;
-			let srcEnc = Ext.htmlEncode(source);
-			let icon = '<i class="distributor-icon ' + Ext.String.htmlEncode(source) +
-				'" title="' + srcEnc + '" data-qtip="' + srcEnc + '" style="margin-right:6px;"></i>';
-			let header = '<span style="font-weight:bold;font-size:13px;">' + icon + srcEnc + '</span>';
+			let srcLabel = Ext.htmlEncode(Limas.distributorLabel(source));
+			let icon = '<i class="distributor-icon ' + Ext.String.htmlEncode(source) + '" title="' + srcLabel + '" data-qtip="' + srcLabel + '" style="margin-right:6px;"></i>';
+			let header = '<span style="font-weight:bold;font-size:13px;">' + icon + srcLabel + '</span>';
 			let openLink = info.productUrl
 				? '<a href="' + Ext.htmlEncode(info.productUrl) + '" target="_blank" rel="noopener" style="float:right;font-size:11px;">' + i18n('Open ↗') + '</a>'
 				: '';
@@ -1807,8 +1807,7 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			let dist = this.findStoreRecordCi(store, 'name', sourceKey);
 			if (dist === null) {
 				Ext.toast({
-					html: i18n('Distributor not in DB:') + ' <b>' + Ext.htmlEncode(sourceKey) + '</b>. ' +
-						i18n('Create it manually and re-apply.'),
+					html: i18n('Distributor not in DB:') + ' <b>' + Ext.htmlEncode(Limas.distributorLabel(sourceKey)) + '</b>. ' + i18n('Create it manually and re-apply.'),
 					align: 't',
 					slideInDuration: 200,
 					autoCloseDelay: 5000

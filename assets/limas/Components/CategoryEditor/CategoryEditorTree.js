@@ -153,6 +153,7 @@ Ext.define('Limas.CategoryEditorTree', {
 	},
 	_onReloadClick: function () {
 		this.store.load();
+		this.fireEvent('reloadclick', this);
 	},
 	_onExpandClick: function () {
 		this.getRootNode().firstChild.expand(true);

@@ -2,12 +2,12 @@
 
 namespace Limas\Service\Integration\InfoProvider;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
 use Nette\Utils\Strings;
 use Psr\Cache\CacheItemInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 
 /**
@@ -15,14 +15,23 @@ use Symfony\Contracts\Cache\CacheInterface;
  *
  * API Documentation (Swagger): https://api.mouser.com/api/docs/V2
  *
- * Auth: API key passed as ?apiKey=... query parameter
+ * Auth: API key passed as ?apiKey=... query parameter. The key must be
+ * activated once via the emailed verification code before it works — an
+ * unactivated key returns "Invalid unique identifier" on every call.
  *
- * V2 endpoints (subset of Search API only):
- *   POST /api/v2/search/keywordandmanufacturer  — keyword search; manufacturerName optional
- *   POST /api/v2/search/partnumberandmanufacturer — part-number search; up to 10 PNs pipe-separated
+ * Endpoints used:
+ *   POST /api/v2/search/keyword    — SearchByKeywordRequest, max 50 parts
+ *   POST /api/v2/search/partnumber — SearchByPartRequest, max 50 parts
  *   GET  /api/v2/search/manufacturerlist
  *
- * Response shape is identical to V1 (SearchResults.Parts[] of MouserPart).
+ * Response shape: SearchResults.Parts[] of MouserPart (see MouserAdapter for
+ * the field map). Errors come back HTTP-200 with a non-empty top-level
+ * `Errors` array rather than an error status.
+ *
+ * Public API surface:
+ *  - `searchByKeyword()` / `searchByPartnumber()` — sync wrappers.
+ *  - `searchByKeywordAsync()` / `searchByPartnumberAsync()` — return lazy
+ *    Symfony `ResponseInterface`; feed to `awaitAndCache()`.
  */
 class MouserService
 {
@@ -30,6 +39,7 @@ class MouserService
 
 
 	public function __construct(
+		private readonly HttpClientInterface           $httpClient,
 		private readonly CacheInterface                $mouserCache,
 		#[\SensitiveParameter] private readonly string $clientKey,
 		private readonly int                           $limit = 50
@@ -38,102 +48,103 @@ class MouserService
 	}
 
 	/**
-	 * Keyword search. manufacturerName is optional (passing null/empty = global search).
-	 *
-	 * @param string $q
-	 * @param int $pageNumber 1-based page number (V2 uses pageNumber, not startingRecord)
-	 * @param string|null $manufacturerName Optional manufacturer filter; get exact name via getManufacturerList()
+	 * True when an API key is present. Note this only checks the key exists —
+	 * an unactivated key still passes here but fails at the API.
 	 */
-	public function searchByKeyword(string $q, int $pageNumber = 1, ?string $manufacturerName = null): array
+	public function isConfigured(): bool
 	{
-		$request = [
-			'keyword' => Strings::substring($q, 0, 40),
-			'records' => $this->limit,
-			'pageNumber' => $pageNumber
-		];
-		if ($manufacturerName !== null && $manufacturerName !== '') {
-			$request['manufacturerName'] = $manufacturerName;
-		}
-
-		$body = (new Client)->request(
-			'POST',
-			self::MOUSER_ENDPOINT . '/api/v2/search/keywordandmanufacturer',
-			[
-				RequestOptions::JSON => ['SearchByKeywordMfrNameRequest' => $request],
-				RequestOptions::QUERY => ['apiKey' => $this->clientKey]
-			]
-		)->getBody();
-
-		return $this->parseResponse((string)$body);
+		return $this->clientKey !== '';
 	}
 
 	/**
-	 * Part-number search. Up to 10 part numbers may be passed pipe-separated.
-	 *
-	 * @param string $q One MPN/Mouser PN, or multiple separated by '|'
-	 * @param string $partSearchOptions 'Exact' or 'None' (default None — fuzzy)
-	 * @param string|null $manufacturerName Optional manufacturer filter
+	 * Keyword search — no manufacturer required. Returns up to `$this->limit`
+	 * parts ranked by Mouser's relevance sort.
 	 */
-	public function searchByPartnumber(string $q, string $partSearchOptions = 'Exact', ?string $manufacturerName = null): array
+	public function searchByKeyword(string $q): array
 	{
-		$request = [
-			'mouserPartNumber' => Strings::substring($q, 0, 400), // 10 × 40 chars
-			'partSearchOptions' => $partSearchOptions
-		];
-		if ($manufacturerName !== null && $manufacturerName !== '') {
-			$request['manufacturerName'] = $manufacturerName;
-		}
+		return $this->awaitAndCache($this->searchByKeywordAsync($q));
+	}
 
-		$body = (new Client)->request(
+	public function searchByKeywordAsync(string $q): ResponseInterface
+	{
+		return $this->httpClient->request(
 			'POST',
-			self::MOUSER_ENDPOINT . '/api/v2/search/partnumberandmanufacturer',
+			self::MOUSER_ENDPOINT . '/api/v2/search/keyword',
 			[
-				RequestOptions::JSON => ['SearchByPartMfrNameRequest' => $request],
-				RequestOptions::QUERY => ['apiKey' => $this->clientKey]
+				'query' => ['apiKey' => $this->clientKey],
+				'json' => ['SearchByKeywordRequest' => [
+					'keyword' => Strings::substring($q, 0, 40),
+					'records' => $this->limit,
+					'startingRecord' => 0,
+					'searchOptions' => '',
+					'searchWithYourSignUpLanguage' => ''
+				]]
 			]
-		)->getBody();
-
-		return $this->parseResponse((string)$body);
+		);
 	}
 
 	/**
-	 * Full manufacturer-name list — useful for resolving fuzzy manufacturer names
+	 * Part-number search. Matches both Mouser part numbers and manufacturer
+	 * part numbers. `$partSearchOptions` = 'Exact' pins exact matches only,
+	 * 'None' (default) is fuzzy.
 	 */
-	public function getManufacturerList(): array
+	public function searchByPartnumber(string $q, string $partSearchOptions = 'None'): array
 	{
-		$body = (new Client)->request(
-			'GET',
-			self::MOUSER_ENDPOINT . '/api/v2/search/manufacturerlist',
-			[RequestOptions::QUERY => ['apiKey' => $this->clientKey]]
-		)->getBody();
+		return $this->awaitAndCache($this->searchByPartnumberAsync($q, $partSearchOptions));
+	}
 
-		$data = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-		if (is_array($data['Errors'] ?? null) && $data['Errors'] !== []) {
-			throw new \RuntimeException('Mouser API error: ' . Json::encode($data['Errors']));
+	public function searchByPartnumberAsync(string $q, string $partSearchOptions = 'None'): ResponseInterface
+	{
+		return $this->httpClient->request(
+			'POST',
+			self::MOUSER_ENDPOINT . '/api/v2/search/partnumber',
+			[
+				'query' => ['apiKey' => $this->clientKey],
+				'json' => ['SearchByPartRequest' => [
+					'mouserPartNumber' => Strings::substring($q, 0, 40),
+					'partSearchOptions' => $partSearchOptions
+				]]
+			]
+		);
+	}
+
+	/**
+	 * Await a lazy response, decode JSON, warm the per-part cache keyed by
+	 * MouserPartNumber. Mirrors FarnellService::awaitAndCache. Does NOT throw
+	 * on a Mouser `Errors` payload — the adapter degrades to an empty Parts
+	 * list so one misconfigured source can't abort the aggregator fan-out.
+	 */
+	public function awaitAndCache(ResponseInterface $response): array
+	{
+		$data = $response->toArray(false);
+
+		foreach ($data['SearchResults']['Parts'] ?? [] as $part) {
+			$id = $part['MouserPartNumber'] ?? null;
+			if (is_string($id) && $id !== '') {
+				$this->mouserCache->delete('product_' . rawurlencode($id));
+				$this->mouserCache->get('product_' . rawurlencode($id), static fn(CacheItemInterface $item) => Json::encode($part));
+			}
 		}
+
 		return $data;
 	}
 
-	private function parseResponse(string $body): array
+	/**
+	 * Full manufacturer-name list — useful for resolving fuzzy manufacturer
+	 * names. Throws on an API error since callers expect a usable list.
+	 */
+	public function getManufacturerList(): array
 	{
-		$parts = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+		$data = $this->httpClient->request(
+			'GET',
+			self::MOUSER_ENDPOINT . '/api/v2/search/manufacturerlist',
+			['query' => ['apiKey' => $this->clientKey]]
+		)->toArray(false);
 
-		if (is_array($parts['Errors'] ?? null) && $parts['Errors'] !== []) {
-			throw new \RuntimeException('Mouser API error: ' . Json::encode($parts['Errors']));
-		}
-		if (!is_array($parts['SearchResults'] ?? null)) {
-			throw new \RuntimeException('Mouser API unexpected response: ' . substr($body, 0, 500));
-		}
-
-		foreach ($parts['SearchResults']['Parts'] ?? [] as $part) {
-			$id = $part['MouserPartNumber'] ?? null;
-			if ($id === null) {
-				continue;
-			}
-			$this->mouserCache->delete($id);
-			$this->mouserCache->get($id, static fn(CacheItemInterface $item) => Json::encode($part));
+		if (is_array($data['Errors'] ?? null) && $data['Errors'] !== []) {
+			throw new \RuntimeException('Mouser API error: ' . Json::encode($data['Errors']));
 		}
 
-		return $parts;
+		return $data;
 	}
 }
