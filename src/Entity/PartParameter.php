@@ -193,24 +193,25 @@ class PartParameter
 
 	protected function recalculateNormalizedValues(): self
 	{
-		if ($this->getSiPrefix() === null) {
-			$this->setNormalizedValue($this->getValue());
-		} else {
-			$this->setNormalizedValue($this->getSiPrefix()->calculateProduct($this->getValue()));
-		}
-
-		if ($this->getMinSiPrefix() === null) {
-			$this->setNormalizedMinValue($this->getMinValue());
-		} else {
-			$this->setNormalizedMinValue($this->getMinSiPrefix()->calculateProduct($this->getMinValue()));
-		}
-
-		if ($this->getMaxSiPrefix() === null) {
-			$this->setNormalizedMaxValue($this->getMaxValue());
-		} else {
-			$this->setNormalizedMaxValue($this->getMaxSiPrefix()->calculateProduct($this->getMaxValue()));
-		}
+		$this->setNormalizedValue($this->normalizeWithPrefix($this->getSiPrefix(), $this->getValue()));
+		$this->setNormalizedMinValue($this->normalizeWithPrefix($this->getMinSiPrefix(), $this->getMinValue()));
+		$this->setNormalizedMaxValue($this->normalizeWithPrefix($this->getMaxSiPrefix(), $this->getMaxValue()));
 		return $this;
+	}
+
+	/**
+	 * A parameter can carry an SI prefix on a slot whose value is null — e.g.
+	 * a range-only spec ("180 mm" → maxValue set, value null) where the parser
+	 * still attached a prefix to the empty `value` slot. calculateProduct()
+	 * takes a non-null float, so guard: a null value normalizes to null
+	 * regardless of the prefix, otherwise scale by the prefix when present.
+	 */
+	private function normalizeWithPrefix(?SiPrefix $prefix, ?float $value): ?float
+	{
+		if ($value === null) {
+			return null;
+		}
+		return $prefix === null ? $value : $prefix->calculateProduct($value);
 	}
 
 	public function getSiPrefix(): ?SiPrefix

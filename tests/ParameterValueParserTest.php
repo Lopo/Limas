@@ -172,4 +172,32 @@ class ParameterValueParserTest
 		self::assertNull($p->numericMin);
 		self::assertNull($p->numericMax);
 	}
+
+	/**
+	 * Package/case codes with a significant leading zero must NOT be numeric-
+	 * parsed — "0603" -> 603 would drop the zero. They stay string
+	 * (numeric fields null; frontend renders stringValue).
+	 */
+	public function testLeadingZeroPackageCodesStayString(): void
+	{
+		foreach (['0603', '0805', '0402', '0201', '0603 (1608 Metric)', '01005'] as $code) {
+			$p = $this->parse($code, 'Case/Package');
+			self::assertNull($p->numericValue, "'$code' must not become a number");
+			self::assertNull($p->numericMin, "'$code' must not become a range");
+			self::assertNull($p->numericMax, "'$code' must not become a range");
+		}
+	}
+
+	/**
+	 * The leading-zero guard must not swallow real measurements: a bare zero,
+	 * a decimal below one, and non-leading-zero codes still parse numerically
+	 */
+	public function testLeadingZeroGuardDoesNotBreakRealValues(): void
+	{
+		self::assertSame(0.0, $this->parse('0')->numericValue);
+		self::assertSame(0.0, $this->parse('0 Ω')->numericValue);
+		self::assertSame(0.5, $this->parse('0.5')->numericValue);
+		self::assertSame(0.1, $this->parse('0.1 W')->numericValue);
+		self::assertSame(1206.0, $this->parse('1206')->numericValue);
+	}
 }

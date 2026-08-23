@@ -216,9 +216,17 @@ class UploadedFileService
 		if ($vettedIps !== [] && filter_var($host, FILTER_VALIDATE_IP) === false) {
 			$scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
 			$port = parse_url($url, PHP_URL_PORT) ?? ($scheme === 'http' ? 80 : 443);
+			// Prefer IPv4 in the DNS-rebind pin. On a host with no working IPv6
+			// route, pinning a dual-stack CDN's AAAA next to its A makes cURL
+			// fail the connect outright ("cURL error 7 … after 0 ms") instead of
+			// falling back to IPv4 — so images from dual-stack CDNs (DigiKey,
+			// LCSC) silently became URL-only attachments. Pin the vetted IPv4
+			// addresses when any exist; fall back to IPv6 only for IPv6-only
+			// hosts. SSRF safety is unchanged — assertHostIsPublic() still vets
+			// every A and AAAA; we only narrow which of them we connect to.
 			$options['curl'][CURLOPT_RESOLVE] = array_map(
 				static fn(string $ip): string => sprintf('%s:%d:%s', $host, $port, $ip),
-				$vettedIps
+				$this->preferIpv4Pin($vettedIps)
 			);
 		}
 
@@ -271,6 +279,26 @@ class UploadedFileService
 		}
 
 		return [$data, $response->getHeaderLine('Content-Type'), $response->getHeaderLine('Content-Disposition')];
+	}
+
+	/**
+	 * Which vetted IPs to feed the CURLOPT_RESOLVE DNS-rebind pin. Returns the
+	 * IPv4 addresses when any exist, else the input unchanged (IPv6-only host).
+	 * Pinning a dual-stack host's IPv6 next to its IPv4 breaks the connect on a
+	 * box without a working IPv6 route (cURL error 7), so narrow the pin to the
+	 * family that reliably connects. Vetting still covers every A and AAAA — this
+	 * only chooses which vetted addresses we actually dial.
+	 *
+	 * @param list<string> $vettedIps
+	 * @return list<string>
+	 */
+	private function preferIpv4Pin(array $vettedIps): array
+	{
+		$ipv4 = array_values(array_filter(
+			$vettedIps,
+			static fn(string $ip): bool => filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false
+		));
+		return $ipv4 !== [] ? $ipv4 : $vettedIps;
 	}
 
 	/**

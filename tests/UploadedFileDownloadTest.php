@@ -98,4 +98,21 @@ PHP;
 			proc_close($proc);
 		}
 	}
+
+	/**
+	 * Regression guard: the CURLOPT_RESOLVE pin must prefer IPv4 on dual-stack
+	 * hosts. Pinning a CDN's AAAA next to its A made the connect fail outright
+	 * ("cURL error 7 … after 0 ms") on a box with no IPv6 route, so DigiKey/LCSC
+	 * images silently fell back to URL-only attachments. IPv6-only hosts still
+	 * pin their AAAA.
+	 */
+	public function testResolvePinPrefersIpv4(): void
+	{
+		$svc = self::getContainer()->get(UploadedFileService::class);
+		$prefer = new \ReflectionMethod($svc, 'preferIpv4Pin');
+
+		self::assertSame(['104.18.12.179'], $prefer->invoke($svc, ['104.18.12.179', '2606:4700::6812:cb3']));
+		self::assertSame(['1.2.3.4', '5.6.7.8'], $prefer->invoke($svc, ['1.2.3.4', '2606::1', '5.6.7.8']));
+		self::assertSame(['2606::1', '2606::2'], $prefer->invoke($svc, ['2606::1', '2606::2']));
+	}
 }

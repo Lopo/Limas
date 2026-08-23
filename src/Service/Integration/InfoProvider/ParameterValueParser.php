@@ -127,6 +127,16 @@ final class ParameterValueParser
 		if ($value === '') {
 			return;
 		}
+		// Package/case codes ("0603", "0805", "0402 (1005 Metric)") are
+		// identifiers, not quantities — a significant leading zero means numeric
+		// parsing would corrupt them ("0603" -> 603, dropping the zero). Leave
+		// the whole value as a string; the frontend falls back to stringValue.
+		// Real measurements never start with a zero glued to another digit
+		// (it's "0.5" or a bare "0", never "0603"), so a value-shape check beats
+		// a fragile package-parameter name list.
+		if (preg_match('/^[-+]?0[0-9]/u', $value) === 1) {
+			return;
+		}
 		if (preg_match('/^(?<head>.+?)\s*@\s*(?<tail>.+)$/u', $value, $m) === 1) {
 			$value = trim($m['head']);
 			$p->valueText = trim($m['tail']);
