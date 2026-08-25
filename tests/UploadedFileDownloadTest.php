@@ -2,6 +2,7 @@
 
 namespace Limas\Tests;
 
+use Limas\Entity\TempUploadedFile;
 use Limas\Service\UploadedFileService;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -114,5 +115,29 @@ PHP;
 		self::assertSame(['104.18.12.179'], $prefer->invoke($svc, ['104.18.12.179', '2606:4700::6812:cb3']));
 		self::assertSame(['1.2.3.4', '5.6.7.8'], $prefer->invoke($svc, ['1.2.3.4', '2606::1', '5.6.7.8']));
 		self::assertSame(['2606::1', '2606::2'], $prefer->invoke($svc, ['2606::1', '2606::2']));
+	}
+
+	/**
+	 * Regression guard: a link-only temp attachment (Blob null, sourceUrl set
+	 * because the proxy download was blocked) must keep its sourceUrl when
+	 * copied onto the permanent attachment. It used to be dropped, so the
+	 * retry cron — which queries `blob IS NULL AND sourceUrl IS NOT NULL` —
+	 * never found these rows and the deferred download was lost forever.
+	 */
+	public function testUrlOnlyProvenanceSurvivesCopy(): void
+	{
+		$svc = self::getContainer()->get(UploadedFileService::class);
+
+		$source = new TempUploadedFile;
+		$source->setOriginalFilename('image.jpg');
+		$source->setSourceUrl('https://cdn.example/image.jpg');
+		$source->setSourceAdapter('digikey');
+
+		$target = new TempUploadedFile;
+		$svc->replaceFromUploadedFile($target, $source);
+
+		self::assertNull($target->getBlob(), 'link-only copy has no blob');
+		self::assertSame('https://cdn.example/image.jpg', $target->getSourceUrl());
+		self::assertSame('digikey', $target->getSourceAdapter());
 	}
 }

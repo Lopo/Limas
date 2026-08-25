@@ -62,6 +62,13 @@ services:
             $syncTipsCron: "@=parameter('limas')['scheduler']['sync_tips_cron']"
             $backupCron: "@=parameter('limas')['scheduler']['backup_cron']"
             $retryAttachmentDownloadsCron: "@=parameter('limas')['scheduler']['retry_attachment_downloads_cron']"
+            $purgeTempUploadsCron: "@=parameter('limas')['scheduler']['purge_temp_uploads_cron']"
+    Limas\Command\PurgeTempUploadsCommand:
+        arguments:
+            $defaultTtlDays: "@=parameter('limas')['temp_upload_ttl_days']"
+    Limas\MessageHandler\PurgeTempUploadsMessageHandler:
+        arguments:
+            $ttlDays: "@=parameter('limas')['temp_upload_ttl_days']"
     Limas\Service\BackupService:
         arguments:
             $backupDirectory: "@=parameter('limas')['backup']['directory']"

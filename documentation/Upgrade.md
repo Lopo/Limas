@@ -20,6 +20,19 @@ dialog) — regenerate it by hand:
 php bin/console limas:extjs:models
 ```
 
+**Restart the background worker after every deploy.** The
+`messenger:consume scheduler_default async` worker is a long-running process
+that loads the code, service container and schedule once at start and keeps
+them in memory, so new code, config, cron changes and message handlers only
+take effect after a restart — otherwise it silently keeps running the old
+version (a stale schedule won't pick up newly added jobs; fixed handlers keep
+running the buggy code). Signal a graceful stop and let your process manager
+(systemd / supervisor) bring it back up:
+
+```
+php bin/console messenger:stop-workers
+```
+
 ## v1.2.1 → v1.2.2
 
 No schema change, no new requirements — a plain code upgrade. Two notes:

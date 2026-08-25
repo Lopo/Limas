@@ -4,6 +4,7 @@ namespace Limas\Scheduler;
 
 use Limas\Message\BackupMessage;
 use Limas\Message\CreateStatisticSnapshotMessage;
+use Limas\Message\PurgeTempUploadsMessage;
 use Limas\Message\RetryAttachmentDownloadsMessage;
 use Limas\Message\SyncTipsMessage;
 use Limas\Message\VersionCheckMessage;
@@ -39,7 +40,8 @@ final readonly class LimasSchedule
 		private string $statisticSnapshotCron,
 		private string $syncTipsCron,
 		private string $backupCron,
-		private string $retryAttachmentDownloadsCron
+		private string $retryAttachmentDownloadsCron,
+		private string $purgeTempUploadsCron
 	)
 	{
 	}
@@ -51,6 +53,7 @@ final readonly class LimasSchedule
 			->add(RecurringMessage::cron($this->statisticSnapshotCron, new CreateStatisticSnapshotMessage))
 			->add(RecurringMessage::cron($this->syncTipsCron, new SyncTipsMessage))
 			->add(RecurringMessage::cron($this->backupCron, new BackupMessage))
-			->add(RecurringMessage::cron($this->retryAttachmentDownloadsCron, new RetryAttachmentDownloadsMessage));
+			->add(RecurringMessage::cron($this->retryAttachmentDownloadsCron, new RetryAttachmentDownloadsMessage))
+			->add(RecurringMessage::cron($this->purgeTempUploadsCron, new PurgeTempUploadsMessage));
 	}
 }

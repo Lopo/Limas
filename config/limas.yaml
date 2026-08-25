@@ -43,6 +43,10 @@ parameters:
             sync_tips_cron: '0 4 * * 1'                # weekly Mon 04:00
             backup_cron: '0 2 * * *'                   # daily 02:00
             retry_attachment_downloads_cron: '40 3 * * *'  # daily 03:40
+            purge_temp_uploads_cron: '50 3 * * *'          # daily 03:50
+        # Temp uploads are copied to permanent attachments on part save and
+        # left behind; the scheduled purge drops those older than this many days
+        temp_upload_ttl_days: 7
         # Bundled backup task — packs DB dump + attachments + secrets
         # into a single tarball. Local-only by design; operator can
         # mount an SMB/NFS share at `directory` for off-host storage.

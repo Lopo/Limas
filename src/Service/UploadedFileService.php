@@ -109,6 +109,14 @@ class UploadedFileService
 		// disk.
 		$target->setOriginalFilename($source->getOriginalFilename());
 		$target->setBlob($source->getBlob());
+		// Carry the URL-only pending-download provenance too. When the source is
+		// a link-only temp (Blob null, sourceUrl set because the proxy download
+		// was blocked), the permanent copy must keep sourceUrl/sourceAdapter —
+		// otherwise the attachment lands with both Blob and sourceUrl null and
+		// the retry cron (which queries `blob IS NULL AND sourceUrl IS NOT NULL`)
+		// can never pick it up, so the deferred download is lost forever.
+		$target->setSourceUrl($source->getSourceUrl());
+		$target->setSourceAdapter($source->getSourceAdapter());
 	}
 
 	public function replaceFromURL(UploadedFile $file, string $url, ?HeaderBag $headers = null, ?string $adapter = null): void
@@ -401,6 +409,46 @@ class UploadedFileService
 			}
 		}
 		return ['ok' => $ok, 'fail' => $fail, 'pending' => count($pending)];
+	}
+
+	/**
+	 * Prune temp upload rows older than $ttlDays. Temp files are transient: a
+	 * saved part gets its own permanent copy (they carry no FK back to the
+	 * part), so once a temp is past the retention window it is either abandoned
+	 * or already copied and safe to drop. Deletion goes through em->remove so
+	 * the FileRemoval listener refcounts + prunes the shared Blob — CAS keeps
+	 * the permanent copy's bytes, only genuinely-orphaned blobs are removed.
+	 *
+	 * NOTE: this also drops link-only temps (Blob null, sourceUrl set) once
+	 * they age out — those are the source the one-off orphan-relink recovery
+	 * reads, so run that recovery BEFORE the retention window elapses if you
+	 * have pre-`replaceFromUploadedFile`-fix attachments to rescue.
+	 *
+	 * @return array{deleted: int, considered: int}
+	 */
+	public function purgeExpiredTempUploads(int $ttlDays, bool $dryRun = false): array
+	{
+		$cutoff = new \DateTimeImmutable(sprintf('-%d days', max(0, $ttlDays)));
+		$deleted = 0;
+		$considered = 0;
+		foreach ([\Limas\Entity\TempUploadedFile::class, \Limas\Entity\TempImage::class] as $class) {
+			$rows = $this->entityManager->getRepository($class)->createQueryBuilder('t')
+				->where('t.created < :cutoff')
+				->setParameter('cutoff', $cutoff)
+				->getQuery()
+				->getResult();
+			foreach ($rows as $row) {
+				$considered++;
+				if (!$dryRun) {
+					$this->entityManager->remove($row);
+					$deleted++;
+				}
+			}
+		}
+		if (!$dryRun) {
+			$this->entityManager->flush();
+		}
+		return ['deleted' => $deleted, 'considered' => $considered];
 	}
 
 	/**
