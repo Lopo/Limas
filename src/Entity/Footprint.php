@@ -38,16 +38,16 @@ class Footprint
 	private string $name;
 	#[ORM\Column(type: Types::TEXT, nullable: true)]
 	#[Groups(['default'])]
-	private ?string $description;
+	private ?string $description = null;
 	#[ORM\ManyToOne(targetEntity: FootprintCategory::class, inversedBy: 'footprints')]
 	#[Groups(['default'])]
 	#[ApiProperty(readableLink: true, writableLink: true)]
-	private ?FootprintCategory $category;
+	private ?FootprintCategory $category = null;
 	#[ORM\OneToOne(targetEntity: FootprintImage::class, mappedBy: 'footprint', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	#[UploadedFile]
 	#[ApiProperty(readableLink: true, writableLink: true)]
-	private ?FootprintImage $image;
+	private ?FootprintImage $image = null;
 	/** @var Collection<FootprintAttachment> */
 	#[ORM\OneToMany(targetEntity: FootprintAttachment::class, mappedBy: 'footprint', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[UploadedFileCollection]
