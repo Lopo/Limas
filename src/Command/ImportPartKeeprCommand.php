@@ -115,13 +115,6 @@ class ImportPartKeeprCommand
 		return [$bytes, hash('sha256', $bytes)];
 	}
 
-
-	/**
-	 * Resolve a PartKeepr attachment/image path. Some legacy rows have a
-	 * NULL/empty `extension` even though the stored file has the extension
-	 * present (usually recoverable from `originalname`).
-	 */
-
 	/**
 	 * Convert legacy MySQL zero-dates into values accepted by MySQL 8.
 	 * Nullable destination columns receive null; required dates receive a
@@ -136,6 +129,11 @@ class ImportPartKeeprCommand
 		return (string)$value;
 	}
 
+	/**
+	 * Resolve a PartKeepr attachment/image path. Some legacy rows have a
+	 * NULL/empty `extension` even though the stored file has the extension
+	 * present (usually recoverable from `originalname`).
+	 */
 	private function resolveImportFilePath(string $dataDir, array $row): ?string
 	{
 		$filename = (string)$row['filename'];
@@ -161,7 +159,10 @@ class ImportPartKeeprCommand
 		}
 
 		// Last-resort lookup for legacy rows whose metadata is incomplete.
-		$matches = glob($dataDir . '/' . $filename . '.*') ?: [];
+		$matches = glob($dataDir . '/' . $filename . '.*');
+		if ($matches === false) {
+			$matches = [];
+		}
 		if (count($matches) === 1 && is_file($matches[0])) {
 			return $matches[0];
 		}
@@ -1242,6 +1243,13 @@ class ImportPartKeeprCommand
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
 			$fos = $pk->executeQuery('SELECT * FROM ' . ($this->lowercase ? 'fosuser' : 'FOSUser') . ' WHERE username = :username', ['username' => $row['username']])->fetchAssociative();
+			$roles = [];
+			if ($fos !== false && isset($fos['roles']) && $fos['roles'] !== '') {
+				$decodedRoles = unserialize($fos['roles'], ['allowed_classes' => false, 'max_depth' => 0]);
+				if ($decodedRoles !== false) {
+					$roles = $decodedRoles;
+				}
+			}
 			$qb->insert($this->entityManager->getClassMetadata(User::class)->getTableName())
 				->values([
 					'id' => ':id',
@@ -1263,9 +1271,7 @@ class ImportPartKeeprCommand
 					'lastSeen' => $this->normalizeLegacyDate($row['lastSeen'], true),
 					'active' => $row['active'],
 					'protected' => $row['protected'],
-					'roles' => Json::encode($fos !== false && !empty($fos['roles'])
-					? (unserialize($fos['roles'], ['allowed_classes' => false, 'max_depth' => 0]) ?: [])
-					: [])
+					'roles' => Json::encode($roles)
 				])
 				->executeStatement();
 			$bar->advance();
