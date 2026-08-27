@@ -4,6 +4,7 @@ namespace Limas\Command;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\Migrations\Configuration\Configuration;
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
@@ -115,6 +116,61 @@ class ImportPartKeeprCommand
 	}
 
 	/**
+	 * Convert legacy MySQL zero-dates into values accepted by MySQL 8.
+	 * Nullable destination columns receive null; required dates receive a
+	 * deterministic epoch placeholder because the source date is unknown.
+	 */
+	private function normalizeLegacyDate(mixed $value, bool $nullable = false): ?string
+	{
+		if ($value === null || $value === '' || str_starts_with((string)$value, '0000-00-00')) {
+			return $nullable ? null : '1970-01-01 00:00:01';
+		}
+
+		return (string)$value;
+	}
+
+	/**
+	 * Resolve a PartKeepr attachment/image path. Some legacy rows have a
+	 * NULL/empty `extension` even though the stored file has the extension
+	 * present (usually recoverable from `originalname`).
+	 */
+	private function resolveImportFilePath(string $dataDir, array $row): ?string
+	{
+		$filename = (string)$row['filename'];
+		$extension = trim((string)($row['extension'] ?? ''), ". \t\n\r\0\x0B");
+		$candidates = [];
+
+		if ($extension !== '') {
+			$candidates[] = $dataDir . '/' . $filename . '.' . $extension;
+		}
+
+		$originalExtension = pathinfo((string)($row['originalname'] ?? ''), PATHINFO_EXTENSION);
+		if ($originalExtension !== '') {
+			$candidates[] = $dataDir . '/' . $filename . '.' . $originalExtension;
+		}
+
+		// A few legacy records may genuinely be stored without an extension.
+		$candidates[] = $dataDir . '/' . $filename;
+
+		foreach (array_unique($candidates) as $candidate) {
+			if (is_file($candidate)) {
+				return $candidate;
+			}
+		}
+
+		// Last-resort lookup for legacy rows whose metadata is incomplete.
+		$matches = glob($dataDir . '/' . $filename . '.*');
+		if ($matches === false) {
+			$matches = [];
+		}
+		if (count($matches) === 1 && is_file($matches[0])) {
+			return $matches[0];
+		}
+
+		return null;
+	}
+
+	/**
 	 * Ensure a Blob row exists for these bytes; write the file into the
 	 * blob CAS pool if needed. Returns the Blob's id so the attachment
 	 * insert can set blob_id. Idempotent — re-running the import won't
@@ -171,8 +227,14 @@ class ImportPartKeeprCommand
 			$io->error('Limas DB already contains some data');
 			return Command::FAILURE;
 		}
+		$dsnParser = new DsnParser(['mysql' => 'pdo_mysql', ]);
 
-		$pk = DriverManager::getConnection(['url' => $input->getOption('pkdsn')], new \Doctrine\DBAL\Configuration);
+		$connectionParams = $dsnParser->parse($input->getOption('pkdsn'));
+		// PartKeepr stores text as UTF-8. MariaDB 5.5 may otherwise negotiate
+		// a latin1 client connection, corrupting values such as the degree symbol.
+		$connectionParams['charset'] ??= 'utf8';
+
+		$pk = DriverManager::getConnection($connectionParams, new \Doctrine\DBAL\Configuration());
 		if (!$pk->createSchemaManager()->tablesExist(['SchemaVersions'])) {
 			$io->error('PartKeepr DB error - SchemaVersions table not found');
 			return Command::FAILURE;
@@ -661,7 +723,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(FootprintAttachment::class)->getTableName())
 				->values([
@@ -679,7 +752,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'blob_id' => $blobId
 				])
 				->executeStatement();
@@ -698,7 +771,7 @@ class ImportPartKeeprCommand
 		$bar = $io->createProgressBar($pk->executeQuery("SELECT COUNT(id) FROM $pkTable")->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
-		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY parent_id")->fetchAllAssociative() as $row) {
+		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY lft")->fetchAllAssociative() as $row) {
 			$qb->insert($this->entityManager->getClassMetadata(FootprintCategory::class)->getTableName())
 				->values([
 					'id' => ':id',
@@ -706,7 +779,7 @@ class ImportPartKeeprCommand
 					'lft' => ':lft',
 					'rgt' => ':rgt',
 					'lvl' => ':lvl',
-					'root' => ':root',
+					'root_id' => ':root_value',
 					'name' => ':name',
 					'description' => ':description',
 					'categoryPath' => ':path'
@@ -717,7 +790,7 @@ class ImportPartKeeprCommand
 					'lft' => $row['lft'],
 					'rgt' => $row['rgt'],
 					'lvl' => $row['lvl'],
-					'root' => $row['root'],
+					'root_value' => $row['root'],
 					'name' => $row['name'],
 					'description' => $row['description'],
 					'path' => $row['categoryPath']
@@ -738,7 +811,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(FootprintImage::class)->getTableName())
 				->values([
@@ -756,7 +840,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'blob_id' => $blobId
 				])
 				->executeStatement();
@@ -874,7 +958,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(ManufacturerICLogo::class)->getTableName())
 				->values([
@@ -892,7 +987,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'blob_id' => $blobId
 				])
 				->executeStatement();
@@ -991,7 +1086,7 @@ class ImportPartKeeprCommand
 					'needsReview' => $row['needsReview'],
 					'partCondition' => $row['partCondition'],
 					'productionRemarks' => $row['productionRemarks'],
-					'createDate' => $row['createDate'],
+					'createDate' => $this->normalizeLegacyDate($row['createDate'], true),
 					'internalPartNumber' => $row['internalPartNumber'],
 					'removals' => $row['removals'],
 					'lowStock' => $row['lowStock'],
@@ -1016,7 +1111,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(PartAttachment::class)->getTableName())
 				->values([
@@ -1035,7 +1141,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'isImage' => $row['isImage'],
 					'blob_id' => $blobId
 				])
@@ -1055,7 +1161,7 @@ class ImportPartKeeprCommand
 		$bar = $io->createProgressBar($pk->executeQuery("SELECT COUNT(id) FROM $pkTable")->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
-		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY parent_id")->fetchAllAssociative() as $row) {
+		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY lft")->fetchAllAssociative() as $row) {
 			$qb->insert($this->entityManager->getClassMetadata(PartCategory::class)->getTableName())
 				->values([
 					'id' => ':id',
@@ -1063,7 +1169,7 @@ class ImportPartKeeprCommand
 					'lft' => ':lft',
 					'rgt' => ':rgt',
 					'lvl' => ':lvl',
-					'root' => ':root',
+					'root_id' => ':root_value',
 					'name' => ':name',
 					'description' => ':description',
 					'categoryPath' => ':path'
@@ -1074,7 +1180,7 @@ class ImportPartKeeprCommand
 					'lft' => $row['lft'],
 					'rgt' => $row['rgt'],
 					'lvl' => $row['lvl'],
-					'root' => $row['root'],
+					'root_value' => $row['root'],
 					'name' => $row['name'],
 					'description' => $row['description'],
 					'path' => $row['categoryPath']
@@ -1137,6 +1243,13 @@ class ImportPartKeeprCommand
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
 			$fos = $pk->executeQuery('SELECT * FROM ' . ($this->lowercase ? 'fosuser' : 'FOSUser') . ' WHERE username = :username', ['username' => $row['username']])->fetchAssociative();
+			$roles = [];
+			if ($fos !== false && isset($fos['roles']) && $fos['roles'] !== '') {
+				$decodedRoles = unserialize($fos['roles'], ['allowed_classes' => false, 'max_depth' => 0]);
+				if ($decodedRoles !== false) {
+					$roles = $decodedRoles;
+				}
+			}
 			$qb->insert($this->entityManager->getClassMetadata(User::class)->getTableName())
 				->values([
 					'id' => ':id',
@@ -1155,10 +1268,10 @@ class ImportPartKeeprCommand
 					'username' => $row['username'],
 					'password' => $row['password'],
 					'email' => $row['email'],
-					'lastSeen' => $row['lastSeen'],
+					'lastSeen' => $this->normalizeLegacyDate($row['lastSeen'], true),
 					'active' => $row['active'],
 					'protected' => $row['protected'],
-					'roles' => Json::encode(unserialize($fos['roles'], ['allowed_classes' => false, 'max_depth' => 0]))
+					'roles' => Json::encode($roles)
 				])
 				->executeStatement();
 			$bar->advance();
@@ -1321,7 +1434,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(ProjectAttachment::class)->getTableName())
 				->values([
@@ -1339,7 +1463,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'blob_id' => $blobId
 				])
 				->executeStatement();
@@ -1706,7 +1830,7 @@ class ImportPartKeeprCommand
 		$bar = $io->createProgressBar($pk->executeQuery("SELECT COUNT(id) FROM $pkTable")->fetchOne());
 		$bar->start();
 		$this->connect->beginTransaction();
-		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY parent_id")->fetchAllAssociative() as $row) {
+		foreach ($pk->executeQuery("SELECT * FROM $pkTable ORDER BY lft")->fetchAllAssociative() as $row) {
 			$qb->insert($this->entityManager->getClassMetadata(StorageLocationCategory::class)->getTableName())
 				->values([
 					'id' => ':id',
@@ -1714,7 +1838,7 @@ class ImportPartKeeprCommand
 					'lft' => ':lft',
 					'rgt' => ':rgt',
 					'lvl' => ':lvl',
-					'root' => ':root',
+					'root_id' => ':root_value',
 					'name' => ':name',
 					'description' => ':description',
 					'categoryPath' => ':path'
@@ -1725,7 +1849,7 @@ class ImportPartKeeprCommand
 					'lft' => $row['lft'],
 					'rgt' => $row['rgt'],
 					'lvl' => $row['lvl'],
-					'root' => $row['root'],
+					'root_value' => $row['root'],
 					'name' => $row['name'],
 					'description' => $row['description'],
 					'path' => $row['categoryPath']
@@ -1747,7 +1871,18 @@ class ImportPartKeeprCommand
 		$bar->start();
 		$this->connect->beginTransaction();
 		foreach ($pk->executeQuery("SELECT * FROM $pkTable")->fetchAllAssociative() as $row) {
-			[$bytes, $sha] = $this->readBytesAndHash($dataDir . '/' . $row['filename'] . '.' . $row['extension']);
+			$sourcePath = $this->resolveImportFilePath($dataDir, $row);
+			if ($sourcePath === null) {
+				$io->warning(sprintf(
+					'Skipping missing file for %s #%s: %s',
+					(string)($row['type'] ?? 'attachment'),
+					(string)($row['id'] ?? '?'),
+					(string)($row['originalname'] ?? $row['filename'] ?? 'unknown')
+				));
+				$bar->advance();
+				continue;
+			}
+			[$bytes, $sha] = $this->readBytesAndHash($sourcePath);
 			$blobId = $this->ensureBlobForImport($bytes, $sha, $row['mimetype'], (int)$row['size']);
 			$qb->insert($this->entityManager->getClassMetadata(StorageLocationImage::class)->getTableName())
 				->values([
@@ -1765,7 +1900,7 @@ class ImportPartKeeprCommand
 					'type' => $row['type'],
 					'originalname' => $row['originalname'],
 					'description' => $row['description'],
-					'created' => $row['created'],
+					'created' => $this->normalizeLegacyDate($row['created']),
 					'blob_id' => $blobId
 				])
 				->executeStatement();
@@ -1796,7 +1931,7 @@ class ImportPartKeeprCommand
 				])
 				->setParameters([
 					'id' => $row['id'],
-					'date' => $row['date'],
+					'date' => $this->normalizeLegacyDate($row['date']),
 					'title' => $row['title'],
 					'description' => $row['description'],
 					'acknowledged' => $row['acknowledged'],
