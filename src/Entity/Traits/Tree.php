@@ -21,7 +21,7 @@ trait Tree
 	#[ApiProperty(writableLink: true)]
 	#[Groups(['default', 'tree'])]
 	protected ?self $parent = null;
-	/** @var Collection<self> */
+	/** @var Collection<int|string, \Limas\Entity\AbstractCategory> */
 	#[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
 	#[ORM\OrderBy(['lft' => 'ASC'])]
 	#[Groups(['tree'])]
