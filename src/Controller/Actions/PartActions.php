@@ -2,6 +2,7 @@
 
 namespace Limas\Controller\Actions;
 
+use ApiPlatform\State\Util\RequestParser;
 use ApiPlatform\Doctrine\Orm\State\CollectionProvider;
 use ApiPlatform\Doctrine\Orm\State\ItemProvider;
 use ApiPlatform\Metadata\GetCollection;
@@ -160,7 +161,17 @@ class PartActions
 
 	public function getPartsAction(Request $request, CollectionProvider $dataProvider): iterable
 	{
-		$items = $dataProvider->provide(new GetCollection(class: Part::class));
+		$queryString = RequestParser::getQueryString($request);
+		$filters = $queryString ? RequestParser::parseRequestParams($queryString) : null;
+
+		$items = $dataProvider->provide(
+			new GetCollection(class: Part::class),
+			[],
+			[
+				'request' => $request,
+				'filters' => $filters,
+			]
+		);
 		$parts = [];
 		foreach ($items as $part) {
 			$parts[] = $part;
