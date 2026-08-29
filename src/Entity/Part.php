@@ -345,6 +345,7 @@ class Part
 		return $this;
 	}
 
+	#[Groups(['default'])]
 	public function getCategoryPath(): string
 	{
 		return $this->category !== null
