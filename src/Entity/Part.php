@@ -204,6 +204,16 @@ class Part
 	#[VirtualField(type: 'auto')]
 	#[Groups(['readonly'])]
 	private array $paramValues = [];
+	/**
+	 * Flat category path, surfaced as an ExtJS model field so the parts grid
+	 * can group rows by category client-side. The grid's groupField needs a
+	 * flat field — ExtJS `record.get()` can't resolve the nested
+	 * `category.categoryPath`. The value itself is serialized via
+	 * getCategoryPath() (derived from the owning category); this property only
+	 * exists so ReflectionService emits the `categoryPath` model field.
+	 */
+	#[VirtualField(type: 'string')]
+	private string $categoryPath = '';
 
 
 	public function __construct()
@@ -345,11 +355,21 @@ class Part
 		return $this;
 	}
 
+	#[ORM\PostLoad]
+	public function refreshCategoryPath(): void
+	{
+		$this->categoryPath = $this->category?->getCategoryPath() ?? '';
+	}
+
+	#[Groups(['default'])]
 	public function getCategoryPath(): string
 	{
-		return $this->category !== null
-			? $this->category->getCategoryPath()
-			: '';
+		// Prefer the value primed on load; fall back to deriving it live for
+		// parts built in-memory (not yet loaded), so callers like the label
+		// generator still get the right path
+		return $this->categoryPath !== ''
+			? $this->categoryPath
+			: ($this->category?->getCategoryPath() ?? '');
 	}
 
 	public function getFootprint(): ?Footprint

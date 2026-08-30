@@ -160,7 +160,17 @@ class PartActions
 
 	public function getPartsAction(Request $request, CollectionProvider $dataProvider): iterable
 	{
-		$items = $dataProvider->provide(new GetCollection(class: Part::class));
+		// Pass the request query as the `filters` context so API Platform's
+		// PaginationExtension sees `page`/`itemsPerPage` — without it every
+		// request collapses to page 1 (LIMIT applied, OFFSET always 0), so the
+		// list returns the same first page no matter which page is requested.
+		// AdvancedSearchFilter reads the request from the RequestStack directly,
+		// so search/category filtering is unaffected by this.
+		$items = $dataProvider->provide(
+			new GetCollection(class: Part::class),
+			[],
+			['filters' => $request->query->all()]
+		);
 		$parts = [];
 		foreach ($items as $part) {
 			$parts[] = $part;

@@ -15,6 +15,8 @@ Ext.application({
 
 		Limas.application = this;
 
+		Limas.installClipboardHandler();
+
 		Limas.setMaxUploadSize(window.parameters.maxUploadSize);
 		Limas.setAvailableImageFormats(window.parameters.availableImageFormats);
 		Limas.setOctoPartAvailable(window.parameters.isOctoPartAvailable);
@@ -733,6 +735,76 @@ Limas.setDistributorLabels = function (sources) {
 
 Limas.distributorLabel = function (id) {
 	return (id && Limas.distributorLabels[id]) ? Limas.distributorLabels[id] : id;
+};
+
+/**
+ * Write text to the clipboard, with a short confirmation toast. Prefers the
+ * async Clipboard API (available in a secure context — Limas runs over HTTPS);
+ * falls back to a hidden textarea + execCommand('copy') for older browsers or
+ * non-secure contexts.
+ */
+Limas.copyToClipboard = function (text) {
+	text = text == null ? '' : String(text);
+	let notify = function () {
+		Ext.toast({
+			html: i18n('Copied to clipboard'),
+			align: 't',
+			slideInDuration: 200,
+			autoCloseDelay: 1500
+		});
+	};
+	let fallback = function () {
+		let ta = document.createElement('textarea');
+		ta.value = text;
+		ta.style.position = 'fixed';
+		ta.style.top = '-1000px';
+		ta.style.opacity = '0';
+		document.body.appendChild(ta);
+		ta.focus();
+		ta.select();
+		try {
+			if (document.execCommand('copy')) {
+				notify();
+			}
+		} catch (e) {
+			// clipboard blocked — nothing more we can do silently
+		}
+		document.body.removeChild(ta);
+	};
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(text).then(notify, fallback);
+		return;
+	}
+	fallback();
+};
+
+/**
+ * Returns HTML for a small inline copy-to-clipboard icon. Drop it into any
+ * panel title / XTemplate / grid renderer / raw HTML — the text to copy is
+ * carried in a data-copy attribute and a single delegated click handler
+ * (installed in launch) reads it and calls Limas.copyToClipboard, so no
+ * per-site wiring is needed.
+ */
+Limas.copyIconHtml = function (text, tooltip) {
+	return '<span class="web-icon page_copy limas-copy-name" role="button" tabindex="0"' +
+		' title="' + Ext.htmlEncode(tooltip || i18n('Copy to clipboard')) + '"' +
+		' data-copy="' + Ext.htmlEncode(text == null ? '' : String(text)) + '"' +
+		' style="cursor:pointer; vertical-align:-3px;"></span>';
+};
+
+/**
+ * Installs the single delegated click handler that powers every
+ * Limas.copyIconHtml() icon on the page. Called once from launch.
+ */
+Limas.installClipboardHandler = function () {
+	Ext.getBody().on('click', function (e) {
+		let el = e.getTarget('.limas-copy-name', null, true);
+		if (!el) {
+			return;
+		}
+		e.stopEvent();
+		Limas.copyToClipboard(el.getAttribute('data-copy') || '');
+	}, null, {delegate: '.limas-copy-name'});
 };
 
 Limas.bytesToSize = function (bytes) {

@@ -1606,8 +1606,11 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 				return;
 			}
 
-			// Find first URL whose filename isn't already on the Part — if any exists, we treat that task as already satisfied
-			let pendingUrls = task.urls.filter(u => !this.attachmentExists(part, u));
+			// Find first URL whose filename isn't already on the Part — if any exists, we treat that task as already satisfied.
+			// The leading `u &&` also drops blank/placeholder entries so a task
+			// carrying only falsy URLs collapses to length 0 (→ runNext) instead
+			// of shifting a falsy value and flashing an empty failure toast.
+			let pendingUrls = task.urls.filter(u => u && !this.attachmentExists(part, u));
 			if (pendingUrls.length === 0) {
 				runNext();
 				return;
@@ -1618,15 +1621,21 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 			let tryUrl = () => {
 				let url = pendingUrls.shift();
 				if (!url) {
-					// All candidate URLs failed — give up on this attachment, surface the last attempt so user can grab it manually
-					Ext.toast({
-						html: '<b>' + Ext.htmlEncode(task.description) + '</b> ' + i18n('could not be downloaded') +
-							' (' + Ext.htmlEncode(lastErr.substring(0, 120)) + ').<br><a href="' +
-							Ext.htmlEncode(lastUrl) + '" target="_blank" rel="noopener">' + i18n('Open URL') + '</a>',
-						align: 't',
-						slideInDuration: 200,
-						autoCloseDelay: 8000
-					});
+					// All candidate URLs failed — surface the last real error so the
+					// user can grab the file manually. Guard on lastErr: a task that
+					// only ever held blank URLs never actually made a request, so
+					// lastErr stays '' — stay silent instead of flashing an empty
+					// "could not be downloaded ()" toast.
+					if (lastErr) {
+						Ext.toast({
+							html: '<b>' + Ext.htmlEncode(task.description) + '</b> ' + i18n('could not be downloaded') +
+								' (' + Ext.htmlEncode(lastErr.substring(0, 120)) + ').<br><a href="' +
+								Ext.htmlEncode(lastUrl) + '" target="_blank" rel="noopener">' + i18n('Open URL') + '</a>',
+							align: 't',
+							slideInDuration: 200,
+							autoCloseDelay: 8000
+						});
+					}
 					runNext();
 					return;
 				}
@@ -1682,20 +1691,38 @@ Ext.define('Limas.Components.InfoProviderAggregator.SearchPanel', {
 	},
 
 	/**
-	 * Robust case-insensitive exact lookup. ExtJS findRecord's `exactMatch=true`
-	 * + `caseSensitive=false` combo has been flaky for vendor-cased names
-	 * (`STMICROELECTRONICS` vs `STMicroelectronics`), so we iterate manually.
+	 * Fold a name for comparison the way the DB's unique index does.
+	 * Manufacturer/Distributor names are stored under `utf8mb4_unicode_ci`,
+	 * which is case- AND accent-insensitive: 'Würth' and 'Wurth' collide as one
+	 * row. A plain JS lowercase compare is accent-SENSITIVE, so when the
+	 * aggregator returns 'Würth Elektronik' but the DB already holds
+	 * 'Wurth Elektronik', the lookup misses and we POST a "new" manufacturer —
+	 * which MySQL then rejects as a 1062 duplicate (→ 500). Stripping diacritics
+	 * (NFD + drop combining marks) makes the client lookup match the server's
+	 * uniqueness, so the existing row is reused instead.
+	 */
+	foldName: function (s) {
+		return String(s == null ? '' : s)
+			.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase().trim();
+	},
+
+	/**
+	 * Robust case- and accent-insensitive exact lookup. ExtJS findRecord's
+	 * `exactMatch=true` + `caseSensitive=false` combo has been flaky for
+	 * vendor-cased names (`STMICROELECTRONICS` vs `STMicroelectronics`), so we
+	 * iterate manually and fold via foldName() to mirror the DB collation.
 	 */
 	findStoreRecordCi: function (store, fieldName, needle) {
 		if (!store || !needle) return null;
-		let target = String(needle).toLowerCase().trim();
+		let target = this.foldName(needle);
 		let hit = null;
 		store.each(function (r) {
-			if (String(r.get(fieldName) || '').toLowerCase().trim() === target) {
+			if (this.foldName(r.get(fieldName)) === target) {
 				hit = r;
 				return false;
 			}
-		});
+		}, this);
 		return hit;
 	},
 

@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Put;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -39,6 +40,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 	operations: [
 		new GetCollection,
 		new Get,
+		new Put,
 		new Patch,
 		new Delete
 	],

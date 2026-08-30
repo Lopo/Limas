@@ -117,7 +117,7 @@ Ext.define('Limas.PartDisplay', {
 		this.attachmentDisplay.bindStore(this.record.attachments());
 		this.partParameterGrid.bindStore(this.record.parameters());
 		this.infoGrid.applyFromPart(this.record);
-		this.infoGrid.setTitle('<div>' + this.record.get('name') + '</div><small>' + this.record.get('description') + '</small>');
+		this.infoGrid.setTitle('<div>' + this.record.get('name') + ' ' + Limas.copyIconHtml(this.record.get('name'), i18n('Copy name to clipboard')) + '</div><small>' + this.record.get('description') + '</small>');
 		this.imageDisplay.setStore(this.record.attachments());
 
 		// Scroll the container to top in case the user scrolled the part, then switched to another part

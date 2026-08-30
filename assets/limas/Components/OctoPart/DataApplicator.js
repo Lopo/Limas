@@ -21,6 +21,34 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		this.part = part;
 	},
 	/**
+	 * Fold a name the way the DB's unique index does. Manufacturer names are
+	 * stored under utf8mb4_unicode_ci (case- AND accent-insensitive), so a
+	 * plain Ext findRecord('name', …) — which is accent-SENSITIVE — misses an
+	 * existing 'Wurth Elektronik' when Octopart returns 'Würth Elektronik' and
+	 * then POSTs a duplicate that MySQL rejects with a 1062 (→ 500). Strip
+	 * diacritics so the client lookup matches the server's uniqueness.
+	 */
+	foldName: function (s) {
+		return String(s == null ? '' : s)
+			.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase().trim();
+	},
+	findManufacturerCi: function (name) {
+		let store = Ext.data.StoreManager.lookup('ManufacturerStore'),
+			target = this.foldName(name),
+			hit = null;
+		if (!store || !name) {
+			return null;
+		}
+		store.each(function (r) {
+			if (this.foldName(r.get('name')) === target) {
+				hit = r;
+				return false;
+			}
+		}, this);
+		return hit;
+	},
+	/**
 	 * Loads the data via the Limas API from Octopart
 	 *
 	 * @param {String} id The Octopart UID to load
@@ -43,7 +71,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 	},
 	checkRequirements: function () {
 		let i, unit, file, image, distributor,
-			manufacturer = Ext.data.StoreManager.lookup('ManufacturerStore').findRecord('name', this.data.manufacturer.name);
+			manufacturer = this.findManufacturerCi(this.data.manufacturer.name);
 		if (manufacturer === null) {
 			this.displayWaitWindow(i18n('Creating Manufacturer…'), this.data.manufacturer.name);
 			manufacturer = Ext.create('Limas.Entity.Manufacturer');
@@ -225,7 +253,7 @@ Ext.define('Limas.Components.OctoPart.DataApplicator', {
 		this.part.set('description', this.data.shortDescription);
 
 		let spec, i, unit, value, siPrefix, distributor, partDistributor, k, o, p, found,
-			manufacturer = Ext.data.StoreManager.lookup('ManufacturerStore').findRecord('name', this.data.manufacturer.name),
+			manufacturer = this.findManufacturerCi(this.data.manufacturer.name),
 			partManufacturer;
 
 		if (manufacturer === null) {

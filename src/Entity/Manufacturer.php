@@ -15,10 +15,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Annotation\UploadedFileCollection;
 use Limas\Controller\Actions\ManufacturerActions;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 
 #[ORM\Entity]
+#[UniqueEntity('name')]
 #[ApiResource(
 	operations: [
 		new GetCollection,
