@@ -8,6 +8,14 @@
 flysystem:
     storages:
         blob.storage:
-            adapter: 'local'
-            options:
+            local:
                 directory: '%limas.filesystem.data_directory%blob/'
+                permissions:
+                    file:
+                        public: 416
+                        private: 384
+                    dir:
+                        public: 488
+                        private: 448
+            visibility: public
+            directory_visibility: public
