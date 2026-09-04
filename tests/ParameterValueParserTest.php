@@ -39,6 +39,41 @@ class ParameterValueParserTest
 		self::assertSame('F', $p->unit);
 	}
 
+	public function testSpelledOutUnitNamesResolveToSymbol(): void
+	{
+		// DigiKey writes resistance as "20 Ohms" — must map to the "Ω" Unit,
+		// otherwise every imported resistor's Resistance lands unit-less
+		$p = $this->parse('20 Ohms');
+		self::assertSame(20.0, $p->numericValue);
+		self::assertNull($p->siPrefix);
+		self::assertSame('Ω', $p->unit);
+
+		// Prefix + spelled-out unit ("4.7 kOhm" → 4.7 kΩ)
+		$p = $this->parse('4.7 kOhm');
+		self::assertSame(4.7, $p->numericValue);
+		self::assertSame('k', $p->siPrefix);
+		self::assertSame('Ω', $p->unit);
+
+		$p = $this->parse('0.1 Watts');
+		self::assertSame(0.1, $p->numericValue);
+		self::assertSame('W', $p->unit);
+	}
+
+	public function testAsciiMicroPrefix(): void
+	{
+		// Distributors routinely write micro as ASCII "u" — "4.7uH", "10 uF".
+		// Must normalise to the greek-mu SI prefix so it resolves to the seed.
+		$p = $this->parse('4.7uH');
+		self::assertSame(4.7, $p->numericValue);
+		self::assertSame('μ', $p->siPrefix);
+		self::assertSame('H', $p->unit);
+
+		$p = $this->parse('10 uF');
+		self::assertSame(10.0, $p->numericValue);
+		self::assertSame('μ', $p->siPrefix);
+		self::assertSame('F', $p->unit);
+	}
+
 	public function testUnitWithoutPrefix(): void
 	{
 		$p = $this->parse('5 V');

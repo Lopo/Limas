@@ -320,6 +320,15 @@ Ext.application({
 			pageSize: 99999999,
 			autoLoad: true
 		});
+		// StorageLocationStore — lets the applied-filters toolbar resolve a
+		// `storageLocation` filter's IRI value to the location name (Filter.js
+		// getFilterDescription); the picker combo has its own inline store
+		Ext.create('Ext.data.Store', {
+			model: 'Limas.Entity.StorageLocation',
+			storeId: 'StorageLocationStore',
+			pageSize: 99999999,
+			autoLoad: true
+		});
 		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.PartMeasurementUnit',
 			storeId: 'PartMeasurementUnitStore',

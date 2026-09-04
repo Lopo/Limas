@@ -60,9 +60,22 @@ final readonly class SimilarityCollapser
 		);
 
 		return $this->rewriteByClusters($values, $clusters, function (array $cluster) use ($values): string {
-			// Shortest raw — typical canonical form
-			usort($cluster, static fn(string $a, string $b) => strlen((string)$values[$a]) <=> strlen((string)$values[$b]));
-			return (string)$values[$cluster[0]];
+			// Representative = the spelling the most sources actually used
+			// (majority), ties broken by shortest (most canonical) form.
+			// Picking purely by "shortest" let a single distributor's compact
+			// spelling ("SOD123") represent a cluster four others wrote as
+			// "SOD-123", which then surfaced as a bogus single-source
+			// "consensus" on the minority form.
+			$freq = [];
+			foreach ($cluster as $src) {
+				$v = (string)$values[$src];
+				$freq[$v] = ($freq[$v] ?? 0) + 1;
+			}
+			uksort($freq, static function (string $a, string $b) use ($freq): int {
+				$byFreq = $freq[$b] <=> $freq[$a];
+				return $byFreq !== 0 ? $byFreq : strlen($a) <=> strlen($b);
+			});
+			return (string)array_key_first($freq);
 		});
 	}
 

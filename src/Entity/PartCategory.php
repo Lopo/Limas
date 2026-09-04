@@ -2,6 +2,7 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -65,6 +66,20 @@ class PartCategory
 {
 	use Tree;
 
+	#[ORM\ManyToOne(targetEntity: self::class)]
+	#[Gedmo\TreeRoot]
+	private ?self $root = null;
+	#[Gedmo\TreeParent]
+	#[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
+	#[ORM\JoinColumn(referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+	#[ApiProperty(writableLink: true)]
+	#[Groups(['default', 'tree'])]
+	protected ?self $parent = null;
+	/** @var Collection<self> */
+	#[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
+	#[ORM\OrderBy(['lft' => 'ASC'])]
+	#[Groups(['tree'])]
+	protected Collection $children;
 	/** @var Collection<PartCategoryDefaultParameter> */
 	#[ORM\OneToMany(targetEntity: PartCategoryDefaultParameter::class, mappedBy: 'category', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
@@ -75,6 +90,34 @@ class PartCategory
 	{
 		$this->children = new ArrayCollection;
 		$this->defaultParameters = new ArrayCollection;
+	}
+
+	public function setRoot(?self $root): self
+	{
+		$this->root = $root;
+		return $this;
+	}
+
+	public function getRoot(): ?self
+	{
+		return $this->root;
+	}
+
+	#[Groups(['default'])]
+	public function setParent(?self $parent): self
+	{
+		$this->parent = $parent;
+		return $this;
+	}
+
+	public function getParent(): ?self
+	{
+		return $this->parent;
+	}
+
+	public function getChildren(): Collection
+	{
+		return $this->children;
 	}
 
 	/**

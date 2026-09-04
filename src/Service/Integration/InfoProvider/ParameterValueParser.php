@@ -53,7 +53,7 @@ final class ParameterValueParser
 	private const array SI_PREFIXES_LONG = ['da', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi'];
 	private const array SI_PREFIXES_SHORT = [
 		'Q', 'R', 'Y', 'Z', 'E', 'P', 'T', 'G', 'M', 'k', 'h',
-		'd', 'c', 'm', 'μ', 'µ', 'n', 'p', 'f', 'a', 'z', 'y', 'r', 'q',
+		'd', 'c', 'm', 'μ', 'µ', 'u', 'n', 'p', 'f', 'a', 'z', 'y', 'r', 'q',
 	];
 	/**
 	 * Unit symbols (longest first so multi-char like "°C" / "Ah" wins over
@@ -67,6 +67,23 @@ final class ParameterValueParser
 		'Wb', 'Hz', 'Pa', 'rad', 'sr', 'eV',
 		'Ω', 'm', 'g', 's', 'K', 'A', 'V', 'N', 'J', 'W', 'C', 'F', 'S',
 		'T', 'H', '%',
+	];
+	/**
+	 * Spelled-out unit names distributors use in place of the symbol, mapped to
+	 * the seeded Unit symbol so the frontend's unit-store lookup resolves them.
+	 * Keyed lower-case; matched case-insensitively. The big one is "Ohm"/"Ohms"
+	 * (DigiKey writes resistance as "20 Ohms") which would otherwise never map to
+	 * the "Ω" Unit and every imported resistor's Resistance landed unit-less.
+	 * Also covers "<prefix>Ohm" like "kOhm"/"mOhm" via splitUnit's prefix loop.
+	 */
+	private const array UNIT_ALIASES = [
+		'ohm' => 'Ω', 'ohms' => 'Ω',
+		'volt' => 'V', 'volts' => 'V',
+		'amp' => 'A', 'amps' => 'A', 'ampere' => 'A', 'amperes' => 'A',
+		'watt' => 'W', 'watts' => 'W',
+		'farad' => 'F', 'farads' => 'F',
+		'henry' => 'H', 'henries' => 'H',
+		'hertz' => 'Hz',
 	];
 	/**
 	 * Tail markers on canonical names that indicate which of value/min/max
@@ -220,7 +237,9 @@ final class ParameterValueParser
 				continue;
 			}
 			if ($this->matchUnit($rest, $p)) {
-				$p->siPrefix = $prefix === 'µ' ? 'μ' : $prefix; // normalise micro to greek mu
+				// Normalise both the micro sign (µ) and the ASCII stand-in (u,
+				// as distributors write "uH"/"uF") to the canonical greek mu
+				$p->siPrefix = ($prefix === 'µ' || $prefix === 'u') ? 'μ' : $prefix;
 				return;
 			}
 		}
@@ -237,6 +256,11 @@ final class ParameterValueParser
 	 */
 	private function matchUnit(string $token, Parameter $p): bool
 	{
+		$alias = self::UNIT_ALIASES[mb_strtolower($token)] ?? null;
+		if ($alias !== null) {
+			$p->unit = $alias;
+			return true;
+		}
 		foreach (self::UNIT_SYMBOLS as $symbol) {
 			if ($token === $symbol) {
 				$p->unit = $symbol;

@@ -27,7 +27,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
 		new GetCollection,
 		new Post,
 		new Get,
-		new Put,
+		// standard_put => false: populate the existing (Doctrine-managed) entity
+		// on PUT instead of replacing it with a fresh object. `part` is an owned
+		// back-reference with no serialization group, so a replacing PUT can
+		// never repopulate it — the fresh object's uninitialized $part then
+		// crashed PersistProcessor (500). Populating keeps the loaded part and
+		// lets a partial body (e.g. just `unit`) merge onto the row.
+		new Put(extraProperties: ['standard_put' => false]),
 		new Delete
 	],
 	normalizationContext: ['groups' => ['default']],
@@ -41,7 +47,7 @@ class PartParameter
 	final public const array VALUE_TYPES = [self::VALUE_TYPE_STRING, self::VALUE_TYPE_NUMERIC];
 
 	#[ORM\ManyToOne(targetEntity: Part::class, inversedBy: 'parameters')]
-	private ?Part $part;
+	private ?Part $part = null;
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
 	private string $name;

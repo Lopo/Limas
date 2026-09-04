@@ -44,6 +44,23 @@ class SimilarityCollapserTest
 		self::assertSame('TO92', $out['tme']);
 	}
 
+	public function testCollapsePackagePicksMajoritySpelling(): void
+	{
+		// Four sources write "SOD-123", one writes "SOD123" — same package.
+		// The representative must be the majority spelling, not the lone
+		// distributor's compact form (which used to win purely on "shortest"
+		// and then surfaced as a bogus single-source "consensus").
+		$out = $this->collapser->collapsePackages([
+			'digikey' => 'SOD-123',
+			'farnell' => 'SOD-123',
+			'lcsc' => 'SOD-123',
+			'element14' => 'SOD-123',
+			'tme' => 'SOD123'
+		]);
+		self::assertSame('SOD-123', $out['tme']);
+		self::assertSame('SOD-123', $out['digikey']);
+	}
+
 	public function testCollapsePackageDoesNotMatchOnTooShortPrefix(): void
 	{
 		// Short prefixes shouldn't bridge clusters: "SOT23" vs "SOT223" must NOT collapse — they're genuinely different packages

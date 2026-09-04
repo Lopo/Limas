@@ -95,19 +95,20 @@ Ext.define('Limas.JsonWithAssociations', {
 						data[key] = convertNestedToIri(data[key]);
 					}
 				}
-				// Handle arrays
+				// Handle arrays (hasMany associations — parameters, distributors,
+				// manufacturers, …). These are owned child collections the user
+				// edits in place, so every row must serialize its FULL field data.
+				// convertNestedToIri keeps the row's @id, preserves scalar fields
+				// and turns nested single-valued associations (e.g. a parameter's
+				// unit/siPrefix) into IRI strings. Previously existing rows (with
+				// an @id) collapsed to a bare {'@id': …}, which silently dropped
+				// every edited field — so inline edits to a parameter's unit, a
+				// distributor's price, etc. never persisted through the Part PUT.
 				else if (Array.isArray(data[key])) {
 					data[key] = data[key].map(item => {
 						if (typeof item === 'object' && item !== null) {
 							cleanObject(item);
-							if (item['@id']) {
-								return {'@id': item['@id']};
-							} else if (typeof item.getId === 'function') {
-								return {'@id': item.getId()};
-							} else {
-								// Recursively convert nested objects in array items
-								return convertNestedToIri(item);
-							}
+							return convertNestedToIri(item);
 						}
 						return item;
 					});
