@@ -33,6 +33,29 @@ running the buggy code). Signal a graceful stop and let your process manager
 php bin/console messenger:stop-workers
 ```
 
+## v1.2.6 → v1.2.7
+
+No schema change, no new requirements. Run `yarn build` and `cache:clear`, and
+restart the worker (see *Every upgrade*) — the backup fix runs inside it.
+
+**Check your backups.** Older versions could not compress an archive larger
+than PHP's `memory_limit`: the worker died during the nightly backup, so if
+your `limas-*.tar.gz` files are about 20 bytes they are empty. The usable data
+is in the matching `limas-*.tar` files. After the first good backup on this
+version:
+
+1. Verify it: `gzip -t <newest>.tar.gz`, and check it is a realistic size.
+2. Delete the empty `.tar.gz` files, and the `.tar` files you no longer want —
+   retention never removes those. Gzip the ones you keep.
+3. Delete any leftover `limas-*.staging` directories from the system temp dir.
+   They hold a plaintext database dump and a copy of `.env.local`, readable by
+   other local users, so consider rotating those secrets on a shared host.
+
+**Backup directory.** Set `LIMAS_BACKUP_DIR` in `.env.local` instead of editing
+`config/limas.yaml`. If you changed `backup.directory` there, move the value
+over; a copy such as `limas.yaml.local` is not loaded at all, so check that
+your backups really land where you expect.
+
 ## v1.2.1 → v1.2.2
 
 No schema change, no new requirements — a plain code upgrade. Two notes:
@@ -166,8 +189,11 @@ benefit from a human checking the tarball first.
 
 - `enabled` — set to `false` to disable the scheduled task (the CLI
   command still works).
-- `directory` — where archives land. Point at an SMB/NFS mount for
-  off-host storage. Default `%kernel.project_dir%/var/backups`.
+- `directory` — where archives land. Default
+  `%kernel.project_dir%/var/backups`. To point it at an SMB/NFS mount for
+  off-host storage, set `LIMAS_BACKUP_DIR=/path/to/mount` in `.env.local`
+  rather than editing `limas.yaml` (a copied `limas.yaml.local` is NOT
+  loaded by Symfony — only `.env.local` is).
 - `retention_count` — keep N newest, prune the rest. Default 7.
 - `mysqldump_path` — absolute path to mysqldump if it's not on PATH.
 

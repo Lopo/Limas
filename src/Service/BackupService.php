@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
  * a human inspecting the tarball first.
  *
  * Remote upload (S3 / SFTP) is intentionally out of scope here — the
- * operator is expected to point `backup.directory` at a network-mounted
+ * operator is expected to point LIMAS_BACKUP_DIR at a network-mounted
  * share (SMB/NFS) if they want off-host storage.
  */
 final readonly class BackupService
@@ -48,7 +48,9 @@ final readonly class BackupService
 		$stamp = (new \DateTimeImmutable)->format('Ymd-His');
 		$archivePath = sprintf('%s/limas-%s.tar', $this->backupDirectory, $stamp);
 		$workDir = sprintf('%s/limas-%s.staging', sys_get_temp_dir(), $stamp);
-		$fs->mkdir($workDir);
+		// Staging holds a plaintext DB dump + .env.local secrets — keep it
+		// private to the backup user while it exists
+		$fs->mkdir($workDir, 0700);
 
 		try {
 			// Archive shape mirrors the project root: db.sql, data/...,
@@ -58,6 +60,12 @@ final readonly class BackupService
 			$this->copyConfig($workDir);
 			$this->copyAttachments($workDir . '/data');
 			$this->buildArchive($archivePath, $workDir);
+		} catch (\Throwable $e) {
+			// Never leave a half-written archive behind: a truncated .tar.gz
+			// would be counted as a valid backup by prune(), and a stray .tar
+			// is never pruned at all
+			$fs->remove([$archivePath, $archivePath . '.gz', $archivePath . '.gz.part']);
+			throw $e;
 		} finally {
 			// Always clear the staging dir, even if any of the above
 			// threw — we don't want orphan plaintext SQL + secrets lying around in /tmp
@@ -146,12 +154,46 @@ final readonly class BackupService
 		// Two-step "build .tar, then .compress to .tar.gz" mirrors PharData's own API.
 		$tar = new \PharData($archivePath);
 		$tar->buildFromDirectory($workDir);
-		$tar->compress(\Phar::GZ);
 		unset($tar);
 
-		// PharData::compress writes the .gz alongside the .tar and leaves
-		// the uncompressed file around — prune it so we only ship .tar.gz.
+		// Stream-gzip the tar instead of PharData::compress(), which loads the
+		// whole archive into memory: once a backup outgrew memory_limit the
+		// worker died with a fatal error every night, leaving an empty .tar.gz,
+		// the raw .tar and the plaintext staging dir behind
+		$this->gzipFile($archivePath, $archivePath . '.gz');
 		(new Filesystem)->remove($archivePath);
+	}
+
+	/**
+	 * Writes under a temporary `.part` name and renames only once complete, so
+	 * a process killed mid-write never leaves a truncated file named like a
+	 * valid backup (prune() would count it)
+	 */
+	private function gzipFile(string $source, string $target): void
+	{
+		$partial = $target . '.part';
+		$in = fopen($source, 'rb');
+		if ($in === false) {
+			throw new \RuntimeException(sprintf('Cannot open %s for reading', $source));
+		}
+		$out = fopen('compress.zlib://' . $partial, 'wb');
+		if ($out === false) {
+			fclose($in);
+			throw new \RuntimeException(sprintf('Cannot open %s for writing', $partial));
+		}
+		try {
+			$copied = stream_copy_to_stream($in, $out);
+		} finally {
+			fclose($in);
+			fclose($out);
+		}
+		clearstatcache(true, $source);
+		if ($copied === false || $copied !== filesize($source)) {
+			throw new \RuntimeException(sprintf('Compressing %s failed', $source));
+		}
+		if (!rename($partial, $target)) {
+			throw new \RuntimeException(sprintf('Cannot move %s to %s', $partial, $target));
+		}
 	}
 
 	/**
@@ -160,6 +202,12 @@ final readonly class BackupService
 	 */
 	private function prune(): void
 	{
+		// A leftover .part can only come from a run that was killed outright
+		// (no catch/finally); this run's own file was already renamed
+		$stale = glob($this->backupDirectory . '/limas-*.tar.gz.part');
+		foreach ($stale === false ? [] : $stale as $file) {
+			@unlink($file);
+		}
 		if ($this->retentionCount <= 0) {
 			return;
 		}

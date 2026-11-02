@@ -32,7 +32,10 @@ security:
         api_token_refresh:
             pattern: ^/api/token/refresh
             stateless: true
-            refresh_jwt: ~
+            # gesdinet v2 defaults check_path to /login_check, so a bare
+            # `refresh_jwt: ~` never handled this route
+            refresh_jwt:
+                check_path: gesdinet_jwt_refresh_token
             provider: chain_provider
         api:
             pattern: ^/api/.*
@@ -70,7 +73,7 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/api/users/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/users/jwt, roles: PUBLIC_ACCESS }
-        - { path: ^/api/token_refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

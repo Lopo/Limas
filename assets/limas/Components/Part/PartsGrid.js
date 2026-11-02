@@ -463,10 +463,16 @@ Ext.define('Limas.PartsGrid', {
 	 */
 	applySiPrefix: function (value, siPrefix) {
 		if (siPrefix instanceof Limas.Entity.SiPrefix) {
-			let fractionValue = value * Math.pow(siPrefix.get('base'), siPrefix.get('exponent'));
+			let exponent = siPrefix.get('exponent'),
+				fractionValue = value * Math.pow(siPrefix.get('base'), exponent);
 
-			if (siPrefix.get('exponent') < 0) {
-				return fractionValue.toFixed(Math.abs(siPrefix.get('exponent')));
+			if (exponent < 0) {
+				// Decimals needed = the prefix magnitude PLUS the value's own
+				// decimal places. toFixed(|exponent|) alone rounded e.g. 4.7 µ
+				// (0.0000047, needs 7 places) to 0.000005, so the '=' filter on
+				// normalizedValue never matched the stored 4.7e-6.
+				let valueDecimals = (String(value).split('.')[1] || '').length;
+				return fractionValue.toFixed(Math.abs(exponent) + valueDecimals);
 			}
 			return fractionValue;
 		}
