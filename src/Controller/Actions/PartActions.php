@@ -361,6 +361,17 @@ class PartActions
 			throw new PartLimitExceededException;
 		}
 		$part = $this->serializer->deserialize($request->getContent(), Part::class, 'jsonld');
+		// Nested stockLevels on create are the editor's "initial stock". A
+		// regular user may only book that under their own name — choosing
+		// another user is admin-only, same as on the StockEntry resource
+		// itself. (GHSA-8883-2whw-gwhm)
+		if (!$this->isGranted('ROLE_ADMIN')) {
+			$user = $this->getUser();
+			assert($user instanceof User, 'PartPostAction requires an authenticated user');
+			foreach ($part->getStockLevels() as $entry) {
+				$entry->setUser($user);
+			}
+		}
 		if (!$this->partService->isInternalPartNumberUnique((string)$part->getInternalPartNumber())) {
 			throw new InternalPartNumberNotUniqueException;
 		}

@@ -33,6 +33,24 @@ running the buggy code). Signal a graceful stop and let your process manager
 php bin/console messenger:stop-workers
 ```
 
+## v1.2.7 → v1.2.8
+
+**Security release** (GHSA-8883-2whw-gwhm). No schema change; run
+`cache:clear` (the API metadata changed) and `yarn build` as usual.
+
+The stock history API (`/api/stock_entries`) now enforces on the server the
+rules the UI always had: only an admin may change an entry's amount, user or
+part, or delete an entry; the entry's author may still edit their own price
+and comment. Creating an entry directly (`POST /api/stock_entries`) is
+admin-only — stock movements go through the part's `addStock` /
+`removeStock` / `setStock` actions, which record the acting user. When a
+regular user creates a part with an initial stock, that stock is booked under
+their own name. Users embedded in other resources (stock entries, projects,
+import jobs) no longer include the `email` field; it is only returned by the
+user endpoints themselves. If you have scripts that write stock entries
+directly as a non-admin account, or read e-mails from embedded users, adapt
+them.
+
 ## v1.2.6 → v1.2.7
 
 No schema change, no new requirements. Run `yarn build` and `cache:clear`, and

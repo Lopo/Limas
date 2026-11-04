@@ -15,13 +15,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
+// The stock history is the "who took what, when, at what price" record, so
+// writes are gated the same way the UI's history grid already pretended they
+// were (AbstractStockHistoryGrid.onBeforeEdit): only an admin may change the
+// amount, the user or the part, or delete an entry; the entry's own author
+// may still fix their price and comment. Regular stock movements go through
+// the part's addStock/removeStock/setStock actions, which stamp the caller,
+// so the raw POST is admin-only. (GHSA-8883-2whw-gwhm)
 #[ApiResource(
 	operations: [
 		new GetCollection,
-		new Post,
+		new Post(security: "is_granted('ROLE_ADMIN')"),
 		new Get,
-		new Put,
-		new Delete
+		new Put(
+			// Populate the existing row so the owner's partial edit doesn't
+			// reset the fields they are not allowed to touch
+			extraProperties: ['standard_put' => false],
+			securityPostDenormalize: "is_granted('ROLE_ADMIN') or (previous_object.getUser() and previous_object.getUser().getId() == user.getId() and object.differsOnlyInPriceOrCommentFrom(previous_object))"
+		),
+		new Delete(security: "is_granted('ROLE_ADMIN')")
 	],
 	normalizationContext: ['groups' => ['default']],
 	denormalizationContext: ['groups' => ['default']]
@@ -121,6 +133,20 @@ class StockEntry
 	public function getUser(): ?User
 	{
 		return $this->user;
+	}
+
+	/**
+	 * Whether this (already denormalized) state differs from `$previous` only
+	 * in price and/or comment — i.e. nothing that changes what the history
+	 * records (amount, user, part, correction flag, time) was touched.
+	 */
+	public function differsOnlyInPriceOrCommentFrom(self $previous): bool
+	{
+		return $this->stockLevel === $previous->stockLevel
+			&& $this->correction === $previous->correction
+			&& $this->part?->getId() === $previous->part?->getId()
+			&& $this->user?->getId() === $previous->user?->getId()
+			&& $this->dateTime->getTimestamp() === $previous->dateTime->getTimestamp();
 	}
 
 	public function checkPrice(): void

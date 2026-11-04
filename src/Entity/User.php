@@ -69,8 +69,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 			name: 'changePassword'
 		)
 	],
-	normalizationContext: ['groups' => ['default']],
-	denormalizationContext: ['groups' => ['default']]
+	// `user:detail` carries fields that only the user endpoints themselves
+	// (admin-only, or the user's own record) may expose. Other resources that
+	// embed a user — stock entries, projects, import jobs — serialize with
+	// their own `default` group and so stay limited to the public fields.
+	normalizationContext: ['groups' => ['default', 'user:detail']],
+	denormalizationContext: ['groups' => ['default', 'user:detail']]
 )]
 class User
 	extends BaseEntity
@@ -91,8 +95,11 @@ class User
 	#[VirtualField(type: Types::STRING)]
 	#[Groups(['default'])]
 	private ?string $newPassword = null;
+	// Not in `default`: every stock entry embeds its user, and the history is
+	// readable by any account, which leaked the directory's e-mail addresses
+	// that the admin-only /api/users routes protect. (GHSA-8883-2whw-gwhm)
 	#[ORM\Column(type: Types::STRING, nullable: true)]
-	#[Groups(['default'])]
+	#[Groups(['user:detail'])]
 	#[Assert\Email]
 	private ?string $email;
 	#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
