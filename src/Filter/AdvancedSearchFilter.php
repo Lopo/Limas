@@ -14,8 +14,10 @@ use Doctrine\ORM\Query\Expr\Func;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Limas\Entity\PartParameter;
+use Limas\Entity\User;
 use Limas\Service\FilterService;
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -31,6 +33,18 @@ class AdvancedSearchFilter
 	 * parameters.value); 4 leaves generous headroom.
 	 */
 	private const int MAX_ASSOCIATION_DEPTH = 4;
+	/**
+	 * Fields that must never be filtered or sorted on, keyed by entity class.
+	 * `viaAssociation` applies when the class is reached through a join;
+	 * `root` when it is the queried resource itself (the admin-only user list
+	 * may still filter by e-mail).
+	 */
+	private const array RESTRICTED_FIELDS = [
+		User::class => [
+			'viaAssociation' => ['password', 'passwordChangedAt', 'newPassword', 'roles', 'lastSeen', 'email'],
+			'root' => ['password', 'passwordChangedAt', 'newPassword']
+		]
+	];
 
 	private array $aliases = [];
 	private int $parameterCount = 0;
@@ -77,24 +91,22 @@ class AdvancedSearchFilter
 	/**
 	 * Gets the ID from an URI or a raw ID
 	 */
-	private function getFilterValueFromUrl($value): array|string
+	private function getFilterValueFromUrl($value): mixed
 	{
 		if (is_array($value)) {
-			$items = [];
-			foreach ($value as $iri) {
-				try {
-					$items[] = $this->propertyAccessor->getValue($this->iriConverter->getResourceFromIri($iri), 'id');
-				} catch (\InvalidArgumentException|ItemNotFoundException $e) {
-					$items[] = $iri;
-				}
-			}
-			return $items;
+			return array_map(fn($item) => $this->getFilterValueFromUrl($item), $value);
 		}
-
+		// Only IRI-shaped strings are resolved. Handing arbitrary search text
+		// to the IRI converter made Symfony reject values containing quotes
+		// or backslashes ("Invalid URI" → 400) before they ever reached the
+		// query, so such names were simply unsearchable.
+		if (!is_string($value) || !str_starts_with($value, '/')) {
+			return $value;
+		}
 		try {
 			return $this->propertyAccessor->getValue($this->iriConverter->getResourceFromIri($value), 'id');
-		} catch (\InvalidArgumentException|ItemNotFoundException $e) {
-			// Do nothing, return the raw value
+		} catch (\InvalidArgumentException|ItemNotFoundException) {
+			// Not a resolvable IRI — use the raw value
 		}
 
 		return $value;
@@ -383,14 +395,19 @@ class AdvancedSearchFilter
 		if (null === $request) {
 			return;
 		}
-		$filter = $request->query->get('filter') !== null
-			? Json::decode($request->query->get('filter'))
-			: null;
-		$order = $request->query->get('order') !== null
-			? Json::decode($request->query->get('order'))
-			: null;
-
-		$properties = $this->extractConfiguration($filter, $order);
+		// Malformed filter/order input is the client's fault: answer 400, not
+		// a 500 from a JSON parse error or an unknown operator
+		try {
+			$filter = $request->query->get('filter') !== null
+				? Json::decode($request->query->get('filter'))
+				: null;
+			$order = $request->query->get('order') !== null
+				? Json::decode($request->query->get('order'))
+				: null;
+			$properties = $this->extractConfiguration($filter, $order);
+		} catch (JsonException|\RuntimeException|\TypeError $e) {
+			throw new BadRequestHttpException('Invalid filter or order: ' . $e->getMessage(), $e);
+		}
 
 		$this->assertPropertiesAllowed($properties['filters'], $properties['sorters'], $resourceClass);
 
@@ -406,7 +423,7 @@ class AdvancedSearchFilter
 	 * parameter-bound elsewhere, so this governs *which* columns/relations may
 	 * be referenced, not injection.
 	 */
-	private function assertPropertiesAllowed(array $filters, array $sorters, string $resourceClass): void
+	public function assertPropertiesAllowed(array $filters, array $sorters, string $resourceClass): void
 	{
 		foreach ($filters as $filter) {
 			$this->assertFilterAllowed($filter, $resourceClass);
@@ -453,6 +470,11 @@ class AdvancedSearchFilter
 		// `@id` is the Hydra IRI alias for the identifier
 		$field = $property === '@id' ? 'id' : $property;
 		if (!$metadata->hasField($field) && !$metadata->hasAssociation($field)) {
+			throw new BadRequestHttpException(sprintf('Unknown filter property "%s".', $property));
+		}
+		$restricted = self::RESTRICTED_FIELDS[$metadata->getName()][$association !== null && $association !== '' ? 'viaAssociation' : 'root'] ?? [];
+		if (in_array($field, $restricted, true)) {
+			// Same answer as a non-existent field: don't confirm it exists
 			throw new BadRequestHttpException(sprintf('Unknown filter property "%s".', $property));
 		}
 	}

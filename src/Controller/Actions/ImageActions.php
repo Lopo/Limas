@@ -23,6 +23,8 @@ use Symfony\Component\HttpFoundation\Response;
 class ImageActions
 	extends FileActions
 {
+	private const int MAX_IMAGE_DIMENSION = 4096;
+
 	use ActionUtilTrait;
 
 
@@ -44,8 +46,10 @@ class ImageActions
 	public function getImageAction(Request $request, int $id, LoggerInterface $logger): Response
 	{
 		$image = $this->entityManager->find($this->getEntityClass($request), $id);
-		$width = $request->query->getInt('maxWidth', 200);
-		$height = $request->query->getInt('maxHeight', 200);
+		// Bounded: every distinct size is rendered and cached on disk, and a
+		// huge one (even for a missing id) allocated a canvas of that size
+		$width = max(1, min(self::MAX_IMAGE_DIMENSION, $request->query->getInt('maxWidth', 200)));
+		$height = max(1, min(self::MAX_IMAGE_DIMENSION, $request->query->getInt('maxHeight', 200)));
 		if ($image === null) {
 			return $this->createImageResponse($width, $height, Response::HTTP_NOT_FOUND, '404 not found');
 		}

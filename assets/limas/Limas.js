@@ -89,6 +89,16 @@ Ext.application({
 	getLoginManager: function () {
 		return this.loginManager;
 	},
+	/**
+	 * Whether the logged-in user is an administrator. Only a UI hint (to hide
+	 * actions the server would refuse anyway); the server enforces it.
+	 * @returns {Boolean}
+	 */
+	isAdmin: function () {
+		let user = this.loginManager ? this.loginManager.getUser() : null,
+			roles = user ? (user.get('roles') || []) : [];
+		return roles.indexOf('ROLE_ADMIN') !== -1 || roles.indexOf('ROLE_SUPER_ADMIN') !== -1;
+	},
 	getPartManager: function () {
 		return this.partManager;
 	},
@@ -347,11 +357,13 @@ Ext.application({
 			pageSize: 99999999,
 			autoLoad: true
 		});
+		// The user directory is admin-only on the server; loading it for everyone produced a 403 on every regular user's login.
+		// Its only consumers (stock-history user editor, initial-stock user picker) are admin-only features.
 		Ext.create('Ext.data.Store', {
 			model: 'Limas.Entity.User',
 			storeId: 'UserStore',
 			pageSize: 99999999,
-			autoLoad: true
+			autoLoad: this.isAdmin()
 		});
 		Ext.create('Limas.Data.store.UserPreferenceStore', {
 			model: 'Limas.Entity.UserPreference',

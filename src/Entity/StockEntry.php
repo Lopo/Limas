@@ -2,6 +2,7 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -47,8 +48,10 @@ class StockEntry
 	#[ORM\ManyToOne(targetEntity: Part::class, inversedBy: 'stockLevels')]
 	#[Groups(['default'])]
 	private ?Part $part;
+	// Only ever referenced by IRI (see User's denormalization note)
 	#[ORM\ManyToOne(targetEntity: User::class)]
 	#[Groups(['default'])]
+	#[ApiProperty(writableLink: false)]
 	private ?User $user;
 	#[ORM\Column(type: Types::DECIMAL, precision: 13, scale: 4, nullable: true)]
 	#[Groups(['default'])]

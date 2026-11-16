@@ -20,6 +20,14 @@ api_platform:
         fetch_partial: true
     defaults:
 #        stateless: true
+        # PUT populates the existing entity instead of replacing it with a fresh
+        # object (API Platform 4's default). The ExtJS frontend was built on the
+        # populate semantics; with replace, unique constraints compared the
+        # "new" object against its own row (editing any manufacturer failed
+        # with "name already used") and owned back-references that are not
+        # serialized (e.g. PartParameter.part) were lost or crashed the write.
+        extra_properties:
+            standard_put: false
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
         pagination_client_items_per_page: true

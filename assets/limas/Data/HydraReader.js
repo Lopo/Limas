@@ -132,7 +132,11 @@ Ext.define('Limas.Data.HydraReader', {
 						fieldExtractorInfo);
 				}
 
-				this.loadedRecords[record.getId()] = record;
+				// On save, ExtJS reads the response with a recordCreator that yields plain data objects
+				// (merged into the existing record), not models — only models can be looked up by id later
+				if (record && record.isModel) {
+					this.loadedRecords[record.getId()] = record;
+				}
 
 				// Generally we don't want to have references to XML documents or XML nodes to hang around in memory
 				// but Trees need to be able to access the raw XML node data in order to process its children.

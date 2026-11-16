@@ -2,6 +2,24 @@ Ext.define('Limas.BatchJobEditor', {
 	extend: 'Limas.Editor',
 	alias: 'widget.BatchJobEditor',
 
+	statics: {
+		ALLOWED_BASE_ENTITIES: [
+			'Limas.Entity.Part',
+			'Limas.Entity.PartCategory',
+			'Limas.Entity.PartManufacturer',
+			'Limas.Entity.PartDistributor',
+			'Limas.Entity.PartParameter',
+			'Limas.Entity.StorageLocation',
+			'Limas.Entity.StorageLocationCategory',
+			'Limas.Entity.Footprint',
+			'Limas.Entity.FootprintCategory',
+			'Limas.Entity.Manufacturer',
+			'Limas.Entity.Distributor',
+			'Limas.Entity.Project',
+			'Limas.Entity.ProjectPart'
+		]
+	},
+
 	defaults: {
 		anchor: '100%',
 		labelWidth: 110
@@ -154,6 +172,16 @@ Ext.define('Limas.BatchJobEditor', {
 		this.on('startEdit', this.onEditStart, this, {delay: 50});
 
 		this.callParent(arguments);
+
+		// Batch jobs may only target inventory entities (the server enforces the same list: BatchJob::ALLOWED_BASE_ENTITIES)
+		this.down('#baseEntity').bindStore(Ext.create('Ext.data.ChainedStore', {
+			source: Ext.StoreManager.lookup('ModelStore'),
+			filters: [{
+				filterFn: function (record) {
+					return Limas.BatchJobEditor.ALLOWED_BASE_ENTITIES.indexOf(record.get('model')) !== -1;
+				}
+			}]
+		}));
 
 		this.down('#addQueryFieldButton').on('click', this.onAddQueryFieldButtonClick, this);
 		this.down('#deleteQueryFieldButton').on('click', this.onDeleteQueryFieldButtonClick, this);

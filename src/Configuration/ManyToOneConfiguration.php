@@ -139,6 +139,8 @@ class ManyToOneConfiguration
 
 				$filters = $configuration['filters'];
 				$sorters = $configuration['sorters'];
+				// Match fields come from the import preset and end up in the DQL as text
+				$this->advancedSearchFilter->assertPropertiesAllowed($filters, $sorters, $this->baseEntity);
 				$qb = new QueryBuilder($this->em);
 				$qb->select('o')->from($this->baseEntity, 'o');
 

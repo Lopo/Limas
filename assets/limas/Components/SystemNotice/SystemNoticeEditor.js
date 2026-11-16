@@ -15,9 +15,12 @@ Ext.define('Limas.SystemNoticeEditor', {
 	enableButtons: false,
 
 	initComponent: function () {
+		// Acknowledging hides the notice for everyone, so it is admin-only
 		this.acknowledgeButton = Ext.create('Ext.button.Button', {
 			text: i18n('Acknowledge Notice'),
-			iconCls: 'web-icon accept'
+			iconCls: 'web-icon accept',
+			disabled: !Limas.getApplication().isAdmin(),
+			tooltip: Limas.getApplication().isAdmin() ? null : i18n('Only an administrator can acknowledge notices')
 		});
 
 		this.acknowledgeButton.on('click', this.onAcknowledgeClick, this);

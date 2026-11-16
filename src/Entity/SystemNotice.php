@@ -17,11 +17,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
 	operations: [
 		new GetCollection,
-		new Post,
+		// Notices are raised by the server itself (backup failures, …);
+		// creating and acknowledging them is an admin decision
+		new Post(security: "is_granted('ROLE_ADMIN')"),
 		new Get,
 		new Put(
 			uriTemplate: 'system_notices/{id}/acknowledge',
 			controller: SystemNoticeAcknowledge::class,
+			security: "is_granted('ROLE_ADMIN')",
 			name: 'SystemNoticeAcknowledge'
 		)
 	],

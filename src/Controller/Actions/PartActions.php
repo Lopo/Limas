@@ -21,6 +21,7 @@ use Nette\Utils\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -360,11 +361,20 @@ class PartActions
 		if ($this->partService->checkPartLimit()) {
 			throw new PartLimitExceededException;
 		}
-		$part = $this->serializer->deserialize($request->getContent(), Part::class, 'jsonld');
+		// Same write groups as the Part resource, so server-managed fields
+		// (stockLevel, averagePrice, …) stay read-only
+		$part = $this->serializer->deserialize($request->getContent(), Part::class, 'jsonld', ['groups' => ['default', 'detail', 'stock']]);
 		// Nested stockLevels on create are the editor's "initial stock". A
 		// regular user may only book that under their own name — choosing
 		// another user is admin-only, same as on the StockEntry resource
 		// itself. (GHSA-8883-2whw-gwhm)
+		foreach ($part->getStockLevels() as $entry) {
+			// Only brand-new stock entries are accepted here; existing ones are
+			// changed through the StockEntry API and its rules
+			if ($entry->getId() !== null) {
+				throw new BadRequestHttpException('Existing stock entries cannot be attached to a new part.');
+			}
+		}
 		if (!$this->isGranted('ROLE_ADMIN')) {
 			$user = $this->getUser();
 			assert($user instanceof User, 'PartPostAction requires an authenticated user');

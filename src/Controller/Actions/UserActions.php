@@ -60,7 +60,8 @@ class UserActions
 
 		$user->setInitialUserPreferences(Json::encode($arrayUserPreferences));
 
-		return new JsonResponse($this->serializer->serialize($user, 'jsonld'), Response::HTTP_OK, ['Content-Type' => 'application/ld+json'], true);
+		// Same groups as GET /api/users/{id}: only the user's public fields
+		return new JsonResponse($this->serializer->serialize($user, 'jsonld', ['groups' => ['default', 'user:detail']]), Response::HTTP_OK, ['Content-Type' => 'application/ld+json'], true);
 	}
 
 	#[Route(path: '/api/users/logout')]
@@ -150,15 +151,27 @@ class UserActions
 			throw new UserProtectedException;
 		}
 
-		$data = $this->serializer->deserialize($request->getContent(), User::class, $request->attributes->get('_api_format') ?? $request->getRequestFormat(), [AbstractNormalizer::OBJECT_TO_POPULATE => $data]);
+		// Restrict to the user write group; roles, the password hash and its
+		// change stamp are not writable here
+		$data = $this->serializer->deserialize($request->getContent(), User::class, $request->attributes->get('_api_format') ?? $request->getRequestFormat(), [AbstractNormalizer::OBJECT_TO_POPULATE => $data, 'groups' => ['user:write']]);
 		if ($data->isActive() && $this->userService->checkUserLimit()) {
 			throw new UserLimitReachedException;
 		}
-		$data->setPassword($this->userPasswordHasher->hashPassword($data, $data->getNewPassword()))
-			->setNewPassword(null);
+		// Only an actually entered password replaces the stored one. The editor
+		// sends an empty newPassword when the admin just edits other fields;
+		// hashing that used to overwrite the user's password with the hash of
+		// an empty string, locking them out
+		$newPassword = $data->getNewPassword();
+		$data->setNewPassword(null);
+		$passwordChanged = $newPassword !== null && $newPassword !== '';
+		if ($passwordChanged) {
+			$data->setPassword($this->userPasswordHasher->hashPassword($data, $newPassword));
+		}
 		$this->entityManager->flush();
 		// An admin resetting a user's password force-logs them out everywhere
-		$this->revokeRefreshTokens($data->getUserIdentifier());
+		if ($passwordChanged) {
+			$this->revokeRefreshTokens($data->getUserIdentifier());
+		}
 		return $data;
 	}
 

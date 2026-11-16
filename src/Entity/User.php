@@ -73,15 +73,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 	// (admin-only, or the user's own record) may expose. Other resources that
 	// embed a user — stock entries, projects, import jobs — serialize with
 	// their own `default` group and so stay limited to the public fields.
+	// Writes use the dedicated `user:write` group, so nothing that merely
+	// shares `default` with an embedding resource is writable here; relations
+	// pointing at User are additionally `writableLink: false`.
 	normalizationContext: ['groups' => ['default', 'user:detail']],
-	denormalizationContext: ['groups' => ['default', 'user:detail']]
+	denormalizationContext: ['groups' => ['user:write']]
 )]
 class User
 	extends BaseEntity
 	implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
 	#[ORM\Column(type: Types::STRING, length: 50)]
-	#[Groups(['default', 'login:write'])]
+	#[Groups(['default', 'login:write', 'user:write'])]
 	private string $username;
 	#[ORM\Column(type: Types::STRING, nullable: true)]
 	#[Groups(['login:write'])]
@@ -93,21 +96,21 @@ class User
 	#[ORM\Column(type: Types::INTEGER, nullable: true)]
 	private ?int $passwordChangedAt = null;
 	#[VirtualField(type: Types::STRING)]
-	#[Groups(['default'])]
+	#[Groups(['user:write'])]
 	private ?string $newPassword = null;
 	// Not in `default`: every stock entry embeds its user, and the history is
 	// readable by any account, which leaked the directory's e-mail addresses
 	// that the admin-only /api/users routes protect. (GHSA-8883-2whw-gwhm)
 	#[ORM\Column(type: Types::STRING, nullable: true)]
-	#[Groups(['user:detail'])]
+	#[Groups(['user:detail', 'user:write'])]
 	#[Assert\Email]
 	private ?string $email;
 	#[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
 	private ?\DateTimeInterface $lastSeen;
 	#[ORM\ManyToOne(targetEntity: UserProvider::class)]
 	#[ORM\JoinColumn(nullable: false)]
-	#[Groups(['default'])]
-	#[ApiProperty(writableLink: true)]
+	#[Groups(['default', 'user:write'])]
+	#[ApiProperty(writableLink: false)]
 	private UserProvider $provider;
 	/** @var Collection<TipOfTheDayHistory> */
 	#[ORM\OneToMany(targetEntity: TipOfTheDayHistory::class, mappedBy: 'user', cascade: ['remove'], orphanRemoval: true)]
@@ -116,12 +119,15 @@ class User
 	#[Groups(['default'])]
 	private string $initialUserPreferences = '[]';
 	#[ORM\Column(type: Types::BOOLEAN)]
-	#[Groups(['default'])]
+	#[Groups(['default', 'user:write'])]
 	private bool $active = true;
 	#[ORM\Column(type: Types::BOOLEAN)]
 	#[Groups(['default'])]
 	private bool $protected = false;
+	// Readable on the user's own record (the frontend derives isAdmin() from
+	// it); never writable through the API
 	#[ORM\Column(type: Types::JSON)]
+	#[Groups(['user:detail'])]
 	private array $roles = [];
 
 

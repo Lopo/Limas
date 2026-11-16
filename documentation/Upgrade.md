@@ -51,6 +51,35 @@ user endpoints themselves. If you have scripts that write stock entries
 directly as a non-admin account, or read e-mails from embedded users, adapt
 them.
 
+The same release closes further authorization holes found in a follow-up
+audit. What changes for API clients and regular (non-admin) users:
+
+- **Admin-only now:** creating, editing and deleting user providers; creating
+  system notices and acknowledging them (the *Acknowledge* button is disabled
+  for regular users).
+- **Users:** reference users by IRI only; nested user objects in other
+  resources are rejected. When writing a user, send its `provider` as an
+  IRI. `roles` are read-only over the API; use `limas:user:admin` to grant
+  or revoke admin. The login response returns only the user's public fields.
+- **Batch jobs** can only target inventory entities (parts, categories,
+  storage locations, footprints, manufacturers, distributors, projects and
+  their child records), and may only update fields that are writable through
+  the API. Existing batch jobs with another base entity fail with a 400.
+- **Filters** (`?filter=` / `?order=`) reject password, role, e-mail and
+  last-seen fields of users; an invalid filter returns 400 instead of 500.
+- **Parts:** creating a part accepts only new stock entries; existing entries
+  in `stockLevels` are rejected (400).
+- **System information** hides server paths, OS release, load and cache
+  details from non-admins.
+- Tip-of-the-day history and bulk-import jobs are visible only to their owner
+  (and admins, for bulk imports).
+
+Fixed along the way: editing an existing manufacturer (or any entity with a
+unique name) failed with "name already used" since v1.2.5 — `PUT` now updates
+the existing record again (`standard_put: false` is the API default). Editing a
+user as an admin without typing a new password no longer wipes that user's
+password.
+
 ## v1.2.6 → v1.2.7
 
 No schema change, no new requirements. Run `yarn build` and `cache:clear`, and

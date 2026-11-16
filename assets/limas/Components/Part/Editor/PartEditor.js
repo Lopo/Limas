@@ -237,11 +237,13 @@ Ext.define('Limas.PartEditor', {
 				columnWidth: 0.5
 			});
 
+			// Booking the initial stock under another user is admin-only (the server stamps a regular user's own account regardless)
 			this.initialStockLevelUser = Ext.create('Limas.UserComboBox', {
 				fieldLabel: i18n('Stock User'),
 				name: 'initialStockLevelUser',
 				columnWidth: 0.5,
-				returnObject: true
+				returnObject: true,
+				hidden: !Limas.getApplication().isAdmin()
 			});
 
 			basicEditorFields.push({
@@ -378,7 +380,9 @@ Ext.define('Limas.PartEditor', {
 			if (this.record.phantom && initialStockLevel > 0) {
 				let stockLevel = Ext.create('Limas.Entity.StockEntry');
 				stockLevel.set('stockLevel', initialStockLevel);
-				stockLevel.setUser(this.initialStockLevelUser.getValue());
+				stockLevel.setUser(Limas.getApplication().isAdmin()
+					? this.initialStockLevelUser.getValue()
+					: Limas.getApplication().getLoginManager().getUser());
 
 				if (this.initialStockLevelPricePerItem.getValue() === false) {
 					stockLevel.set('price', this.initialStockLevelPrice.getValue() / initialStockLevel);

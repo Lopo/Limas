@@ -5,7 +5,9 @@ namespace Limas\Service;
 use ApiPlatform\Metadata\IriConverterInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Limas\Configuration\EntityConfiguration;
+use Limas\Entity\BatchJob;
 use Limas\Filter\AdvancedSearchFilter;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 
 class ImporterService
@@ -26,6 +28,11 @@ class ImporterService
 
 	public function setBaseEntity(string $baseEntity): self
 	{
+		// Same inventory-only allowlist as batch jobs: the importer builds
+		// entities of this class and writes their fields via PropertyAccess
+		if (!in_array($baseEntity, BatchJob::ALLOWED_BASE_ENTITIES, true)) {
+			throw new BadRequestHttpException('Imports can only target inventory entities.');
+		}
 		$this->baseEntity = $this->reflectionService->convertExtJSToPHPClassName($baseEntity);
 		return $this;
 	}

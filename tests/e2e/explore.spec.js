@@ -20,10 +20,13 @@ test.describe('Explore Limas ExtJS', () => {
 			const comps = [];
 			Ext.ComponentQuery.query('*').forEach(cmp => {
 				if (cmp.xtype && cmp.isVisible && cmp.isVisible()) {
+					// A header's title is a live component, not a string;
+					// returning it would make Playwright serialize the widget tree
+					const text = cmp.text || cmp.title || '';
 					comps.push({
 						xtype: cmp.xtype,
 						id: cmp.id,
-						text: cmp.text || cmp.title || ''
+						text: typeof text === 'string' ? text : ''
 					});
 				}
 			});

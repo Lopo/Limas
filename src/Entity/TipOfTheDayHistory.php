@@ -2,6 +2,7 @@
 
 namespace Limas\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -20,9 +21,11 @@ use Symfony\Component\Serializer\Attribute\Groups;
 			controller: GetTipHistoryCollection::class,
 			name: 'TipHistoriesGet'
 		),
-		new Get,
-		new Put,
-		new Delete
+		// A history row belongs to one user (which tips they have seen); item
+		// operations are owner-only, like the collection
+		new Get(security: "object.getUser() and object.getUser().getId() == user.getId()"),
+		new Put(securityPostDenormalize: "previous_object.getUser() and previous_object.getUser().getId() == user.getId() and object.getUser() and object.getUser().getId() == user.getId()"),
+		new Delete(security: "object.getUser() and object.getUser().getId() == user.getId()")
 	],
 	normalizationContext: ['groups' => ['default']],
 	denormalizationContext: ['groups' => ['default']]
@@ -33,8 +36,10 @@ class TipOfTheDayHistory
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
 	private string $name;
+	// Reference-only (IRI); users are written only through the user endpoints
 	#[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tipHistories')]
 	#[Groups(['default'])]
+	#[ApiProperty(writableLink: false)]
 	private ?User $user;
 
 

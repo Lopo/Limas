@@ -18,10 +18,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
 	operations: [
 		new GetCollection,
-		new Post,
+		// Providers decide how every account authenticates, so changing them is
+		// admin-only; the frontend only ever reads them
+		new Post(security: "is_granted('ROLE_ADMIN')"),
 		new Get,
-		new Put,
-		new Delete
+		new Put(security: "is_granted('ROLE_ADMIN')"),
+		new Delete(security: "is_granted('ROLE_ADMIN')")
 	],
 	normalizationContext: ['groups' => ['default']],
 	denormalizationContext: ['groups' => ['default']]

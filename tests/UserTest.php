@@ -81,6 +81,8 @@ class UserTest
 
 		unset($response->password);
 		$response->newPassword = 'foobar';
+		// Relations are written by IRI (as the frontend's writer does)
+		$response->provider = $response->provider->{'@id'};
 
 		$client->request(
 			'PUT',

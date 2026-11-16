@@ -14,6 +14,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Limas\Controller\Actions\BatchJobActions;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity]
@@ -47,8 +48,30 @@ class BatchJob
 	#[ORM\OneToMany(targetEntity: BatchJobUpdateField::class, mappedBy: 'batchJob', cascade: ['persist', 'remove'], orphanRemoval: true)]
 	#[Groups(['default'])]
 	private Collection $batchJobUpdateFields;
+	/**
+	 * Inventory content a batch job may query and update. Anything else —
+	 * users, providers, preferences, stock history, system notices — is off
+	 * limits. Kept in sync with the base-entity picker in BatchJobEditor.js.
+	 */
+	public const array ALLOWED_BASE_ENTITIES = [
+		'Limas.Entity.Part',
+		'Limas.Entity.PartCategory',
+		'Limas.Entity.PartManufacturer',
+		'Limas.Entity.PartDistributor',
+		'Limas.Entity.PartParameter',
+		'Limas.Entity.StorageLocation',
+		'Limas.Entity.StorageLocationCategory',
+		'Limas.Entity.Footprint',
+		'Limas.Entity.FootprintCategory',
+		'Limas.Entity.Manufacturer',
+		'Limas.Entity.Distributor',
+		'Limas.Entity.Project',
+		'Limas.Entity.ProjectPart'
+	];
+
 	#[ORM\Column(type: Types::STRING)]
 	#[Groups(['default'])]
+	#[Assert\Choice(choices: self::ALLOWED_BASE_ENTITIES, message: 'Batch jobs can only target inventory entities.')]
 	private string $baseEntity;
 
 

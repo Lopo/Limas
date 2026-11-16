@@ -151,7 +151,10 @@ class BulkImportActions
 	public function getJobAction(int $id): JsonResponse
 	{
 		$job = $this->em->find(BulkImportJob::class, $id);
-		if ($job === null) {
+		// Jobs belong to whoever started them (admins see all); answer like a
+		// missing job rather than confirming the id exists
+		$user = $this->getUser();
+		if ($job === null || (!$this->isGranted('ROLE_ADMIN') && (!$user instanceof User || $job->getCreatedBy()?->getId() !== $user->getId()))) {
 			return new JsonResponse(['error' => 'Job not found'], 404);
 		}
 		$items = [];
