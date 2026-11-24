@@ -115,7 +115,7 @@ class AdvancedSearchFilter
 	/**
 	 * Adds all required joins to the queryBuilder
 	 */
-	private function addJoins(QueryBuilder $queryBuilder, AssociationPropertyInterface $filter): void
+	private function addJoins(QueryBuilder $queryBuilder, AssociationPropertyInterface $filter, bool $useLeftJoin = false): void
 	{
 		if (in_array($filter->getAssociation(), $this->joins, true)) {
 			return; // Association already added, return
@@ -126,7 +126,12 @@ class AdvancedSearchFilter
 		foreach ($associations as $key => $association) {
 			$parent = $associations[$key - 1] ?? 'o';
 			$fullAssociation .= '.' . $association;
-			$queryBuilder->join($parent . '.' . $association, $this->getAlias($fullAssociation));
+
+			if ($useLeftJoin) {
+				$queryBuilder->leftJoin($parent . '.' . $association, $this->getAlias($fullAssociation));
+			} else {
+				$queryBuilder->join($parent . '.' . $association, $this->getAlias($fullAssociation));
+			}
 		}
 
 		$this->joins[] = $filter->getAssociation();
@@ -170,7 +175,7 @@ class AdvancedSearchFilter
 
 			foreach ($filter->getSubFilters() as $subFilter) {
 				if ($subFilter->getAssociation() !== null) {
-					$this->addJoins($queryBuilder, $subFilter);
+					$this->addJoins($queryBuilder, $subFilter, true);
 				}
 
 				$subFilterExpressions[] = $this->getFilterExpression($queryBuilder, $subFilter);
@@ -183,7 +188,7 @@ class AdvancedSearchFilter
 		}
 
 		if ($filter->getAssociation() !== null) {
-			$this->addJoins($queryBuilder, $filter);
+			$this->addJoins($queryBuilder, $filter, true);
 			$alias = $this->getAlias('o.' . $filter->getAssociation()) . '.' . $filter->getProperty();
 		} else {
 			$alias = 'o.' . $filter->getProperty();
